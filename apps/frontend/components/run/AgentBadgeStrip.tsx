@@ -30,7 +30,7 @@ export function AgentBadgeStrip({ agents }: AgentBadgeStripProps) {
             className={cn(
               'flex flex-col items-center justify-center gap-1',
               'w-8 h-8 rounded-sm border',
-              'font-mono text-[9px] tabular-nums tracking-wide',
+              'font-mono text-label-xs tabular-nums tracking-wide',
               isError
                 ? 'border-status-error/40 bg-status-error/10 text-status-error'
                 : 'border-status-done/40 bg-status-done/10 text-status-done',

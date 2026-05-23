@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Github } from 'lucide-react';
+import { Github, Play } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
 import { PrivacyToggle } from '@/components/PrivacyToggle';
+import { startDemoRun } from '@/lib/api';
 
 interface UsageData {
   runsInWindow: number;
@@ -25,9 +27,13 @@ export default function SettingsMenu({
   privacyMode,
   onTogglePrivacy,
 }: SettingsMenuProps) {
+  const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
   const [usage, setUsage] = useState<UsageData | null>(null);
   const [usageError, setUsageError] = useState(false);
+  const [demoVisible, setDemoVisible] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoError, setDemoError] = useState<string | null>(null);
 
   // Close on outside click
   useEffect(() => {
@@ -50,6 +56,24 @@ export default function SettingsMenu({
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [open, onClose]);
+
+  // Check presenter flag on mount (localStorage is client-only).
+  useEffect(() => {
+    setDemoVisible(localStorage.getItem('studio:demo-mode') === '1');
+  }, []);
+
+  async function handleDemoRun(): Promise<void> {
+    setDemoLoading(true);
+    setDemoError(null);
+    try {
+      const { run_id } = await startDemoRun();
+      onClose();
+      router.push(`/run/${run_id}`);
+    } catch (err) {
+      setDemoError(err instanceof Error ? err.message : 'Demo failed');
+      setDemoLoading(false);
+    }
+  }
 
   // Fetch usage when opened
   useEffect(() => {
@@ -147,6 +171,34 @@ export default function SettingsMenu({
           VIEW ON GITHUB
         </a>
       </div>
+
+      {/* Demo mode — only visible when localStorage flag is set */}
+      {demoVisible && (
+        <>
+          <div className="border-t border-border" />
+          <div className="px-3 py-2">
+            <span className="font-mono text-label-sm text-text-faint uppercase tracking-wider">
+              [ DEMO ]
+            </span>
+            <div className="mt-2">
+              <button
+                type="button"
+                disabled={demoLoading}
+                onClick={() => { void handleDemoRun(); }}
+                className="flex items-center gap-2 font-mono text-label-sm text-text-muted hover:text-text transition-colors disabled:opacity-50"
+              >
+                <Play className="h-4 w-4 shrink-0" />
+                {demoLoading ? 'STARTING...' : 'RUN DEMO'}
+              </button>
+              {demoError !== null && (
+                <span className="mt-1 block font-mono text-label-sm text-status-error">
+                  {demoError}
+                </span>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

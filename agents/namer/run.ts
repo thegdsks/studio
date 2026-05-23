@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import * as dotenv from 'dotenv';
 import { checkDomain } from '../_tools/domainr.js';
 import { NamerOutput } from './schema.js';
+import { recordCost, type RunContext } from '../_runtime/costRecorder.js';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const client = new GoogleGenAI({});
 export async function runNamer(opts: {
   idea: string;
   vibe: string;
+  runContext?: RunContext;
 }): Promise<NamerOutput> {
   let promptPath = path.join(__dirname, 'prompt.md');
   if (!fs.existsSync(promptPath) && promptPath.includes('/dist/')) {
@@ -37,6 +39,16 @@ export async function runNamer(opts: {
         responseMimeType: 'application/json',
       }
     });
+
+    if (opts.runContext) {
+      void recordCost({
+        runContext: opts.runContext,
+        model: 'gemini-3.5-flash',
+        provider: 'gemini',
+        inputTokens: (response.usageMetadata as { promptTokenCount?: number } | undefined)?.promptTokenCount ?? 0,
+        outputTokens: (response.usageMetadata as { candidatesTokenCount?: number } | undefined)?.candidatesTokenCount ?? 0,
+      });
+    }
 
     const text = response.text || "";
     let namesList: string[] = [];

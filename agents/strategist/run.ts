@@ -3,6 +3,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { spawnManagedAgent } from '../_runtime/managedAgent.js';
 import { ollamaInference, OllamaUnavailableError } from '../_runtime/ollamaClient.js';
+import type { RunContext } from '../_runtime/costRecorder.js';
 import { StrategistOutput } from './schema.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,14 +11,15 @@ const __dirname = path.dirname(__filename);
 
 interface RunCallbacks {
   onChunk?: (text: string) => void;
-  onToolCall?: (call: { name: string; args: any }) => void;
-  onToolResult?: (result: any) => void;
+  onToolCall?: (call: { name: string; args: unknown }) => void;
+  onToolResult?: (result: unknown) => void;
   /** Called when local Gemma actually produced the artifact (not on fallback). */
   onLocalRun?: () => void;
 }
 
 interface RunOptions {
   privacy_mode?: boolean;
+  runContext?: RunContext;
 }
 
 const PRIVACY_FORCE_CLOUD =
@@ -48,6 +50,7 @@ export async function runStrategist(
         responseSchema: 'json',
         onChunk: callbacks.onChunk,
         timeoutMs: 30_000,
+        runContext: opts.runContext,
       });
 
       if (isStrategistOutput(result.structured)) {
@@ -73,6 +76,7 @@ export async function runStrategist(
     onChunk: callbacks.onChunk ?? (() => {}),
     onToolCall: callbacks.onToolCall ?? (() => {}),
     onToolResult: callbacks.onToolResult ?? (() => {}),
+    runContext: opts.runContext,
   });
 
   if (result.structured && isStrategistOutput(result.structured)) {

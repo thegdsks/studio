@@ -7,7 +7,7 @@ interface QualityBadgeProps {
   critique?: string;
 }
 
-export default function QualityBadge({ score, critique }: QualityBadgeProps) {
+export function QualityBadge({ score, critique }: QualityBadgeProps) {
   if (score === undefined) {
     return (
       <span
@@ -62,3 +62,5 @@ export default function QualityBadge({ score, critique }: QualityBadgeProps) {
     </span>
   );
 }
+
+export default QualityBadge;

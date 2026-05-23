@@ -585,30 +585,36 @@ export function dbCostByRun(runId: string): CostByRun {
 export function dbCostGlobal(): CostGlobal {
   const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
 
-  function fetchTotals(whereClause: string, params: unknown[]): {
-    total_usd: number; input_tokens: number; output_tokens: number; images: number;
-  } {
-    return db.prepare(`
-      SELECT
-        COALESCE(SUM(usd), 0) AS total_usd,
-        COALESCE(SUM(input_tokens), 0) AS input_tokens,
-        COALESCE(SUM(output_tokens), 0) AS output_tokens,
-        COALESCE(SUM(images), 0) AS images
-      FROM cost_events ${whereClause}
-    `).get(...params) as { total_usd: number; input_tokens: number; output_tokens: number; images: number };
-  }
+  type TotalsRow = { total_usd: number; input_tokens: number; output_tokens: number; images: number };
 
-  function fetchByProvider(whereClause: string, params: unknown[]): Record<string, number> {
-    const rows = db.prepare(`
-      SELECT provider AS field, SUM(usd) AS usd FROM cost_events ${whereClause} GROUP BY provider
-    `).all(...params) as Array<{ field: string | null; usd: number }>;
-    return aggregateByField(rows);
-  }
+  const lifetimeTotals = db.prepare(`
+    SELECT
+      COALESCE(SUM(usd), 0) AS total_usd,
+      COALESCE(SUM(input_tokens), 0) AS input_tokens,
+      COALESCE(SUM(output_tokens), 0) AS output_tokens,
+      COALESCE(SUM(images), 0) AS images
+    FROM cost_events
+  `).get() as TotalsRow;
 
-  const lifetimeTotals = fetchTotals('', []);
-  const lifetimeByProvider = fetchByProvider('', []);
-  const last24hTotals = fetchTotals('WHERE created_at >= ?', [cutoff24h]);
-  const last24hByProvider = fetchByProvider('WHERE created_at >= ?', [cutoff24h]);
+  const last24hTotals = db.prepare(`
+    SELECT
+      COALESCE(SUM(usd), 0) AS total_usd,
+      COALESCE(SUM(input_tokens), 0) AS input_tokens,
+      COALESCE(SUM(output_tokens), 0) AS output_tokens,
+      COALESCE(SUM(images), 0) AS images
+    FROM cost_events WHERE created_at >= ?
+  `).get(cutoff24h) as TotalsRow;
+
+  const lifetimeByProviderRows = db.prepare(`
+    SELECT provider AS field, SUM(usd) AS usd FROM cost_events GROUP BY provider
+  `).all() as Array<{ field: string | null; usd: number }>;
+
+  const last24hByProviderRows = db.prepare(`
+    SELECT provider AS field, SUM(usd) AS usd FROM cost_events WHERE created_at >= ? GROUP BY provider
+  `).all(cutoff24h) as Array<{ field: string | null; usd: number }>;
+
+  const lifetimeByProvider = aggregateByField(lifetimeByProviderRows);
+  const last24hByProvider = aggregateByField(last24hByProviderRows);
 
   return {
     lifetime: {

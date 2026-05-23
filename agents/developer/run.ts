@@ -1,4 +1,5 @@
 import { spawnManagedAgent } from '../_runtime/managedAgent.js';
+import type { RunContext } from '../_runtime/costRecorder.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,12 +9,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export async function runDeveloper(
-  designerOutput: any,
-  copywriterOutput: any,
+  designerOutput: unknown,
+  copywriterOutput: unknown,
   callbacks?: {
     onChunk?: (text: string) => void;
-    onToolCall?: (call: { name: string; args: any }) => void;
-    onToolResult?: (result: any) => void;
+    onToolCall?: (call: { name: string; args: unknown }) => void;
+    onToolResult?: (result: unknown) => void;
+    runContext?: RunContext;
   }
 ): Promise<DeveloperOutput> {
   let promptPath = path.join(__dirname, 'prompt.md');
@@ -49,9 +51,10 @@ export async function runDeveloper(
     systemPrompt: systemPrompt,
     userMessage: `Deploy the merged landing page website to Vercel`,
     tools: tools,
-    onChunk: callbacks?.onChunk || (() => {}),
-    onToolCall: callbacks?.onToolCall || (() => {}),
-    onToolResult: callbacks?.onToolResult || (() => {})
+    onChunk: callbacks?.onChunk ?? (() => {}),
+    onToolCall: callbacks?.onToolCall ?? (() => {}),
+    onToolResult: callbacks?.onToolResult ?? (() => {}),
+    runContext: callbacks?.runContext,
   });
 
   if (result.structured) {

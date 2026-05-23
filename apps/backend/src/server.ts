@@ -5,7 +5,11 @@ import { listMedia, readMediaFile } from './media.js';
 import { sseHandler } from './sse.js';
 import { startRun, runAgent } from './orchestrator.js';
 import { MOCK_ONLY } from './runners.js';
+import { dbCostByRun, dbCostGlobal } from './db.js';
 import type { AgentId } from '@studio/shared';
+import { loadFixture, replayRun, FIXTURES_DIR } from './demo/replayer.js';
+import { attachRecorder } from './demo/recorder.js';
+import { resolve } from 'node:path';
 
 const app = express();
 const PORT = process.env['PORT'] ? Number(process.env['PORT']) : 4000;
@@ -32,11 +36,15 @@ app.get('/healthz', (_req, res) => {
 // Usage snapshot — for frontend cost indicator
 app.get('/api/usage', (_req, res) => {
   dropExpired(Date.now());
+  const costs = dbCostGlobal();
   res.json({
     runsInWindow: runTimestamps.length,
     maxPerHour: MAX_RUNS_PER_HOUR,
     mockOnly: MOCK_ONLY,
     windowMs: RATE_WINDOW_MS,
+    total_usd: costs.lifetime.total_usd,
+    last_24h_usd: costs.last_24h.total_usd,
+    by_provider: costs.lifetime.by_provider,
   });
 });
 
@@ -74,9 +82,14 @@ app.post('/api/runs', (req, res) => {
 
   const run = createRun(idea, { privacy_mode });
 
+  // When DEMO_RECORD=1, tap the event stream and write a fixture file.
+  if (process.env['DEMO_RECORD'] === '1') {
+    attachRecorder(run.run_id, idea, run.startedAt);
+  }
+
   // Kick off orchestrator without awaiting — fire and forget
   startRun(run.run_id).catch((err: unknown) => {
-    console.error(`[server] orchestrator error for run ${run.run_id}:`, err);
+    process.stderr.write(`[server] orchestrator error for run ${run.run_id}: ${String(err)}\n`);
   });
 
   res.status(201).json({ run_id: run.run_id });
@@ -98,6 +111,17 @@ app.get('/api/runs/:id', (req, res) => {
     return;
   }
   res.json(run);
+});
+
+// Cost breakdown for a single run
+app.get('/api/runs/:id/cost', (req, res) => {
+  const runId = req.params['id'] ?? '';
+  const run = getRun(runId);
+  if (!run) {
+    res.status(404).json({ error: 'Run not found' });
+    return;
+  }
+  res.json(dbCostByRun(runId));
 });
 
 // Media — list assets for a run
@@ -424,6 +448,40 @@ app.post('/api/runs/:id/agents/:agentId/rerun', (req, res) => {
   res.status(202).json({ accepted: true, iteration: newIteration });
 });
 
+/**
+ * POST /api/runs/demo
+ * Triggers a pre-recorded fixture replay. Accepts an optional body:
+ *   { fixture?: string }  — filename relative to demo/fixtures/ (default: "default.json")
+ *
+ * Returns { run_id } in the same shape as POST /api/runs so the frontend
+ * treats it identically. 404 if the fixture file does not exist.
+ */
+app.post('/api/runs/demo', (req, res) => {
+  const body = req.body as { fixture?: string };
+  const fixtureName = typeof body.fixture === 'string' && body.fixture.trim()
+    ? body.fixture.trim()
+    : 'default.json';
+
+  // Guard against path traversal.
+  if (fixtureName.includes('/') || fixtureName.includes('..')) {
+    res.status(400).json({ error: 'Invalid fixture name' });
+    return;
+  }
+
+  let fixture;
+  try {
+    fixture = loadFixture(fixtureName);
+  } catch (err) {
+    const expectedPath = resolve(FIXTURES_DIR, fixtureName);
+    process.stderr.write(`[server] Demo fixture not found: ${expectedPath}: ${String(err)}\n`);
+    res.status(404).json({ error: `Fixture not found: ${fixtureName}` });
+    return;
+  }
+
+  const run_id = replayRun(fixture);
+  res.status(200).json({ run_id });
+});
+
 app.listen(PORT, () => {
-  console.log(`[server] Studio backend listening on http://localhost:${PORT}`);
+  process.stderr.write(`[server] Studio backend listening on http://localhost:${PORT}\n`);
 });

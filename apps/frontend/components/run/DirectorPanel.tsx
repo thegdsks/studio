@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Agent, AgentId } from '@studio/shared';
 import { AGENT_REGISTRY } from '@studio/shared';
-import { Card, CardBody, CardHeader, Chip, Label } from '@studio/ui';
+import { Card, CardBody, CardHeader, Chip, Label, Button, useRetry } from '@studio/ui';
+import { DirectorReveal } from './DirectorReveal.js';
+import type { DirectorBriefingData } from './DirectorReveal.js';
 
 interface Inconsistency {
   severity: 'low' | 'medium' | 'high';
@@ -21,6 +23,7 @@ interface DirectorArtifact {
   next_7_days: string[];
   inconsistencies: Inconsistency[];
   confidence_by_agent: Record<string, number>;
+  briefing?: DirectorBriefingData;
 }
 
 function parseDirectorData(agent: Agent): DirectorArtifact | null {
@@ -43,33 +46,50 @@ interface DirectorPanelProps {
 }
 
 export function DirectorPanel({ agent }: DirectorPanelProps) {
-  const [expanded, setExpanded] = useState(false);
   const data = parseDirectorData(agent);
-
-  useEffect(() => {
-    if (data?.inconsistencies?.some((inc) => inc.severity === 'high')) {
-      setExpanded(true);
-    }
-  }, [data]);
+  const retryOp = useRetry(async () => {
+    // Director retry: surface error so user can act. No silent swallow.
+    throw new Error(`Director agent failed: ${agent.error ?? 'unknown error'}`);
+  }, { maxAttempts: 1 });
 
   if (agent.status === 'queued') return null;
 
+  // Running but no parsed data yet: explicit idle/waiting state
   if (agent.status === 'running' && !data) {
     return (
-      <Card tone="active" className="w-full">
-        <CardBody className="p-4 flex items-center gap-3 animate-pulse">
-          <Label>Director</Label>
-          <span className="text-body-sm text-text-muted">Synthesizing launch kit...</span>
+      <Card surface="glass" tone="active" className="w-full shadow-elev-2">
+        <CardBody className="p-4 flex items-center gap-3">
+          <Loader2 className="h-4 w-4 text-accent animate-spin shrink-0" aria-hidden />
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <Label>Director</Label>
+            <span className="text-body-sm text-text-muted">Synthesizing launch kit...</span>
+          </div>
         </CardBody>
       </Card>
     );
   }
 
+  // Error with no parsed data
   if (agent.status === 'error' && !data) {
     return (
-      <Card tone="error" className="w-full">
-        <CardBody className="p-4">
-          <p className="text-body-sm text-status-error">{agent.error ?? 'Failed to synthesize.'}</p>
+      <Card surface="glass" tone="error" className="w-full shadow-elev-2">
+        <CardBody className="p-4 flex flex-col gap-3">
+          <p className="text-body-sm text-status-error font-mono">
+            {agent.error ?? 'Director synthesis failed.'}
+          </p>
+          {retryOp.state !== 'pending' && (
+            <Button
+              variant="secondary"
+              size="sm"
+              iconLeft={<RotateCcw className="h-3.5 w-3.5" />}
+              onClick={() => { void retryOp.run(); }}
+            >
+              Retry director
+            </Button>
+          )}
+          {retryOp.state === 'pending' && (
+            <Loader2 className="h-4 w-4 animate-spin text-text-faint" aria-hidden />
+          )}
         </CardBody>
       </Card>
     );
@@ -77,18 +97,47 @@ export function DirectorPanel({ agent }: DirectorPanelProps) {
 
   if (!data) return null;
 
+  // Done with structured briefing
+  if (agent.status === 'done' && data.briefing) {
+    return (
+      <div className="w-full flex flex-col gap-6">
+        <DirectorReveal briefing={data.briefing} />
+        <DirectorSynthesisDetail data={data} />
+      </div>
+    );
+  }
+
+  // Fallback: streaming or old artifact without briefing
+  return <DirectorSynthesisDetail data={data} />;
+}
+
+// ── Synthesis detail ──────────────────────────────────────────────────────────
+
+interface DirectorSynthesisDetailProps {
+  data: DirectorArtifact;
+}
+
+function DirectorSynthesisDetail({ data }: DirectorSynthesisDetailProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (data?.inconsistencies?.some((inc) => inc.severity === 'high')) {
+      setExpanded(true);
+    }
+  }, [data]);
+
   return (
-    <Card tone="active" className="w-full">
+    <Card surface="glass" tone="active" className="w-full shadow-elev-2">
       <CardHeader>
         <Label>Director</Label>
         <span className="text-body-sm text-text-muted font-mono tabular-nums">
-          coherence: <span className="text-accent">{data.coherence_score}</span>
+          coherence: <span className="text-display-md text-accent tabular-nums">{data.coherence_score}</span>
         </span>
       </CardHeader>
       <CardBody className="p-4 flex flex-col gap-4">
         {/* Pitch */}
         <blockquote className="text-title-md text-text leading-tight border-l border-border-accent pl-3 italic">
-          "{data.one_line_pitch}"
+          &ldquo;{data.one_line_pitch}&rdquo;
         </blockquote>
 
         {/* Hot take */}
@@ -116,8 +165,8 @@ export function DirectorPanel({ agent }: DirectorPanelProps) {
                 const desc = parts[1] ?? item;
                 return (
                   <div key={idx} className="bg-surface-sunken border border-border rounded-sm p-2 flex flex-col gap-0.5">
-                    <Label className="truncate text-[10px]">{title}</Label>
-                    <p className="text-[10px] text-text-muted leading-tight">{desc}</p>
+                    <Label className="truncate text-label-xs">{title}</Label>
+                    <p className="text-label-xs text-text-muted leading-tight">{desc}</p>
                   </div>
                 );
               })}
@@ -178,7 +227,7 @@ export function DirectorPanel({ agent }: DirectorPanelProps) {
             <Label>Specialist confidence</Label>
             <div className="grid grid-cols-5 gap-1.5">
               {Object.entries(data.confidence_by_agent).map(([id, confidence]) => {
-                const meta = AGENT_REGISTRY[id as AgentId] ?? { name: id, emoji: '·' };
+                const meta = AGENT_REGISTRY[id as AgentId] ?? { name: id, emoji: '.' };
                 return (
                   <div key={id} className="bg-surface-sunken border border-border rounded-sm p-2 flex flex-col items-center text-center">
                     <span className="text-body-sm text-text-muted truncate max-w-full">{meta.name}</span>

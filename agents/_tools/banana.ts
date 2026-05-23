@@ -4,7 +4,7 @@ import { recordCost, type RunContext } from '../_runtime/costRecorder.js';
 dotenv.config();
 
 const MODEL = 'gemini-2.5-flash-image';
-const TIMEOUT_MS = 30_000;
+const TIMEOUT_MS = 90_000;
 const NO_TEXT_SUFFIX =
   'no text, no letters, no watermark, no logo, abstract composition only';
 

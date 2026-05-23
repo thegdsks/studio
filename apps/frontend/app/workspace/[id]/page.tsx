@@ -26,6 +26,7 @@ export default function WorkspacePage({ params }: WorkspacePageProps) {
   // Ensure each agent has a stable ref
   for (const id of AGENT_IDS) {
     if (!messageRefs.current[id]) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       messageRefs.current[id] = { current: null };
     }
   }

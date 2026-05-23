@@ -70,7 +70,8 @@ export default function DashboardPage() {
     const inProgress = total - completed;
     const privacy = runs.filter((r) => r.privacy_mode).length;
     const localCount = runs.reduce((acc, r) => acc + r.ranLocally, 0);
-    return { total, completed, inProgress, privacy, localCount };
+    const totalUsd = runs.reduce((acc, r) => acc + (r.cost_usd ?? 0), 0);
+    return { total, completed, inProgress, privacy, localCount, totalUsd };
   }, [runs]);
 
   const filtered = useMemo(() => {
@@ -174,21 +175,23 @@ interface Stats {
   inProgress: number;
   privacy: number;
   localCount: number;
+  totalUsd: number;
 }
 
 function StatsRow({ stats }: { stats: Stats }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
       <Stat label="Total runs" value={stats.total} />
       <Stat label="Completed" value={stats.completed} />
       <Stat label="In progress" value={stats.inProgress} highlight={stats.inProgress > 0} />
       <Stat label="Privacy mode" value={stats.privacy} iconAccent />
       <Stat label="Local agent runs" value={stats.localCount} iconAccent />
+      <Stat label="Cost (USD)" value={formatUsd(stats.totalUsd)} />
     </div>
   );
 }
 
-function Stat({ label, value, highlight, iconAccent }: { label: string; value: number; highlight?: boolean; iconAccent?: boolean }) {
+function Stat({ label, value, highlight, iconAccent }: { label: string; value: number | string; highlight?: boolean; iconAccent?: boolean }) {
   return (
     <Card tone={highlight ? 'active' : 'resting'} className="px-4 py-3 flex flex-col gap-1">
       <div className="flex items-center gap-1.5">
@@ -356,6 +359,10 @@ function RunRow({ run, onDelete }: { run: RunSummary; onDelete: (id: string) => 
             <Label className="mr-1.5">{done ? 'finished' : 'running'}</Label>
             <span className="text-text-muted font-mono tabular-nums">{elapsed}</span>
           </span>
+          <span className="text-body-sm">
+            <Label className="mr-1.5">cost</Label>
+            <span className="text-text-muted font-mono tabular-nums">{formatUsd(run.cost_usd ?? 0)}</span>
+          </span>
         </div>
       </Link>
 
@@ -459,4 +466,11 @@ function formatDuration(ms: number): string {
   if (sec < 60) return `${sec}s`;
   const min = Math.floor(sec / 60);
   return `${min}m ${(sec % 60).toString().padStart(2, '0')}s`;
+}
+
+function formatUsd(usd: number): string {
+  if (!usd || usd <= 0) return '$0.00';
+  if (usd < 0.01) return `$${usd.toFixed(4)}`;
+  if (usd < 1) return `$${usd.toFixed(3)}`;
+  return `$${usd.toFixed(2)}`;
 }
