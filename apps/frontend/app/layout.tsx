@@ -25,7 +25,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var s=localStorage.getItem('studio.theme');var sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var t=s||sys;document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}catch(e){document.documentElement.classList.add('dark');}})();` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var s=localStorage.getItem('studio.theme');var t=(s==='light')?'light':'dark';document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}catch(e){document.documentElement.classList.add('dark');}})();` }} />
+        {/* Default: dark (black). localStorage wins if present. No system fallback — black is the product identity. */}
         <ThemeStyle />
       </head>
       <body className="min-h-screen bg-bg text-text antialiased">

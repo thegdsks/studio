@@ -12,7 +12,10 @@ export { Button } from './Button.js';
 export type { ButtonVariant, ButtonSize } from './Button.js';
 
 export { Card, CardHeader, CardBody, CardFooter } from './Card.js';
-export type { CardTone, CardGlow, CardSurface } from './Card.js';
+export type { CardTone, CardGlow, CardSurface, CardCurve, CardPattern, CardAccentDomain } from './Card.js';
+
+export { Pattern } from './Pattern.js';
+export type { PatternType } from './Pattern.js';
 
 export { Chip } from './Chip.js';
 export type { ChipTone } from './Chip.js';

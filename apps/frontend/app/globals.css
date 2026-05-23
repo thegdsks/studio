@@ -6,11 +6,26 @@
  * Token CSS vars are injected by <ThemeProvider> on the <html> element from
  * @studio/design-system tokens.json. Do NOT add hex literals here — extend
  * tokens.json instead.
+ *
+ * Default theme: black (dark). Light is an opt-in toggle.
  */
 
 html {
   background-color: var(--color-bg);
   color: var(--color-text);
+  color-scheme: dark;
+
+  /*
+   * Chrome layout invariants — consumed by AppShell, TopBar, StatusBar.
+   * --sidebar-width: collapsed sidebar width (56px on md+, 0 on mobile).
+   */
+  --sidebar-width: 0px;
+}
+
+@media (min-width: 768px) {
+  html {
+    --sidebar-width: 56px;
+  }
 }
 
 html.dark {
@@ -31,20 +46,29 @@ html.light {
   /* Borders */
   --color-border: rgba(15, 23, 42, 0.08);
   --color-border-strong: rgba(15, 23, 42, 0.18);
-  --color-border-accent: rgba(37, 99, 235, 0.45);
-  /* Accent */
-  --color-accent: #2563EB;
-  --color-accent-soft: rgba(37, 99, 235, 0.12);
-  --color-accent-glow: rgba(37, 99, 235, 0.25);
+  --color-border-accent: rgba(15, 23, 42, 0.30);
+  /* Accent — slate in light mode */
+  --color-accent: #334155;
+  --color-accent-soft: rgba(51, 65, 85, 0.10);
+  --color-accent-glow: rgba(51, 65, 85, 0.15);
   /* Status */
   --color-status-queued: #94A3B8;
-  --color-status-running: #2563EB;
-  --color-status-running-soft: rgba(37, 99, 235, 0.12);
+  --color-status-running: #334155;
+  --color-status-running-soft: rgba(51, 65, 85, 0.10);
   --color-status-done: #15803D;
   --color-status-done-soft: rgba(21, 128, 61, 0.12);
   --color-status-warn: #B45309;
   --color-status-error: #B91C1C;
   --color-status-error-soft: rgba(185, 28, 28, 0.12);
+  /* Domain accent */
+  --color-accent-warm: #D97706;
+  --color-accent-warm-soft: rgba(217, 119, 6, 0.12);
+  --color-accent-cool: #0D9488;
+  --color-accent-cool-soft: rgba(13, 148, 136, 0.12);
+  --color-accent-violet: #9333EA;
+  --color-accent-violet-soft: rgba(147, 51, 234, 0.12);
+  --color-accent-rose: #E11D48;
+  --color-accent-rose-soft: rgba(225, 29, 72, 0.12);
   color-scheme: light;
 }
 
@@ -70,13 +94,13 @@ body {
 
 /* Selection */
 ::selection {
-  background-color: var(--color-primary-soft);
+  background-color: var(--color-accent-soft);
   color: var(--color-text);
 }
 
-/* Focus ring */
+/* Focus ring — cream on dark, slate on light */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -87,14 +111,82 @@ body {
           mask-image: linear-gradient(to bottom, transparent 0, black 24px);
 }
 
-/* Canvas dot-grid pattern — dark mode uses light dots, light mode uses dark dots */
-html.dark .canvas-dots {
+/*
+ * Background pattern utilities — purely decorative.
+ * Apply to a pointer-events-none absolutely-positioned child at low opacity.
+ * dark/default selectors cover both html.dark and html without .light class.
+ */
+
+html.dark .canvas-dots,
+html:not(.light) .canvas-dots {
   background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.04) 1px, transparent 0);
   background-size: 24px 24px;
 }
 html.light .canvas-dots {
   background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.04) 1px, transparent 0);
   background-size: 24px 24px;
+}
+
+html.dark .pattern-hairline-grid,
+html:not(.light) .pattern-hairline-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+html.light .pattern-hairline-grid {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+html.dark .pattern-iso-grid,
+html:not(.light) .pattern-iso-grid {
+  background-image:
+    repeating-linear-gradient(
+      60deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      -60deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+}
+html.light .pattern-iso-grid {
+  background-image:
+    repeating-linear-gradient(
+      60deg,
+      rgba(0, 0, 0, 0.03) 0px,
+      rgba(0, 0, 0, 0.03) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      -60deg,
+      rgba(0, 0, 0, 0.03) 0px,
+      rgba(0, 0, 0, 0.03) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+}
+
+html.dark .pattern-noise,
+html:not(.light) .pattern-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+html.light .pattern-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
 }
 
 @media (prefers-reduced-motion: reduce) {

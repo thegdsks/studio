@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowRight, Copy } from 'lucide-react';
-import Link from 'next/link';
 import type { AgentId } from '@studio/shared';
 import { AGENT_IDS } from '@studio/shared';
 import {
@@ -17,10 +17,12 @@ import {
   usePrefersReducedMotion,
 } from '@studio/ui';
 import { RunTopBarComposed } from '@/components/run/RunTopBarComposed';
+import type { ViewMode } from '@/components/run/RunTopBarComposed';
 import { AgentRail } from '@/components/run/AgentRail';
 import { DirectorPanel } from '@/components/run/DirectorPanel';
 import { FinalKitPanel } from '@/components/run/FinalKitPanel';
 import { DagCanvas } from '@/components/run/DagCanvas';
+import { RadialCanvas } from '@/components/run/RadialCanvas';
 import { useRunState } from '@/components/run/useRunState';
 import AgentCard from '@/components/AgentCard';
 import { AGENT_DEPENDENCIES } from '@/lib/useRunStream';
@@ -81,6 +83,17 @@ function CopyRunLink({ runId }: { runId: string }) {
   );
 }
 
+// ─── View mode persistence key ────────────────────────────────────────────────
+
+const VIEW_MODE_KEY = 'studio:run-view';
+
+function readStoredViewMode(): ViewMode {
+  if (typeof window === 'undefined') return 'radial';
+  const stored = window.localStorage.getItem(VIEW_MODE_KEY);
+  if (stored === 'dag' || stored === 'radial') return stored;
+  return 'radial';
+}
+
 // ─── Grid ─────────────────────────────────────────────────────────────────────
 
 interface RunPageProps {
@@ -89,6 +102,7 @@ interface RunPageProps {
 
 export default function RunPage({ params }: RunPageProps) {
   const runId = params.id;
+  const router = useRouter();
   const {
     agents,
     runComplete,
@@ -99,6 +113,19 @@ export default function RunPage({ params }: RunPageProps) {
   } = useRunState(runId);
 
   const prefersReduced = usePrefersReducedMotion();
+
+  // View mode: 'radial' (default) or 'dag'. Init from localStorage on mount.
+  const [viewMode, setViewModeRaw] = useState<ViewMode>('radial');
+  useEffect(() => {
+    setViewModeRaw(readStoredViewMode());
+  }, []);
+
+  function setViewMode(mode: ViewMode) {
+    setViewModeRaw(mode);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(VIEW_MODE_KEY, mode);
+    }
+  }
 
   const displayIds = AGENT_IDS.filter((id) => id !== 'director');
   const agentStatuses = Object.values(agents).map((a) => a.status);
@@ -134,6 +161,8 @@ export default function RunPage({ params }: RunPageProps) {
         runComplete={runComplete}
         doneCount={doneCount}
         totalCount={totalCount}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
       />
 
       {/* Three-column shell */}
@@ -150,7 +179,16 @@ export default function RunPage({ params }: RunPageProps) {
             actions={<CopyRunLink runId={runId} />}
           />
 
-          {/* 3x3 agent grid with stagger entry */}
+          {/* Canvas view: radial or DAG topology */}
+          <ErrorBoundary label="canvas">
+            {viewMode === 'radial' ? (
+              <RadialCanvas agents={agents} runId={runId} />
+            ) : (
+              <DagCanvas agents={agents} runId={runId} />
+            )}
+          </ErrorBoundary>
+
+          {/* 3x3 agent card grid — detail view below canvas */}
           <ErrorBoundary label="grid">
             <motion.div
               className="grid grid-cols-3 gap-4"
@@ -173,6 +211,7 @@ export default function RunPage({ params }: RunPageProps) {
                       agent={agent}
                       dependencies={deps}
                       index={i + 1}
+                      onOpen={() => router.push(`/run/${runId}/agent/${id}`)}
                     />
                   </motion.div>
                 );

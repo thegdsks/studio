@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { AGENT_REGISTRY, type Agent, type AgentId } from '@studio/shared';
 import {
   Card,
@@ -11,6 +12,7 @@ import {
   usePrefersReducedMotion,
   type CardTone,
   type CardSurface,
+  type CardAccentDomain,
 } from '@studio/ui';
 import ArtifactRenderer from './artifacts/ArtifactRenderer';
 import { AgentCardHeader } from './agent/AgentCardHeader';
@@ -43,6 +45,19 @@ export interface AgentCardProps {
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
 const FADE_LEN = 60;
+
+// Domain accent: maps agent id → Card accentDomain token
+const domainAccent: Record<string, CardAccentDomain> = {
+  strategist:  'warm',
+  namer:       'warm',
+  designer:    'violet',
+  copywriter:  'rose',
+  developer:   'cool',
+  marketer:    'primary',
+  growth:      'cool',
+  legal:       'violet',
+  analyst:     'rose',
+};
 
 const toneByStatus: Record<Agent['status'], CardTone> = {
   queued:  'resting',
@@ -160,17 +175,37 @@ export default function AgentCard({
     setTimeout(() => setRetrying(false), 1200);
   }
 
+  function handleOpen() {
+    if (!onOpen) return;
+    if (!runId) {
+      throw new Error('[AgentCard] runId is empty — cannot navigate to agent detail');
+    }
+    onOpen();
+  }
+
+  const accentDomain = domainAccent[agent.id] ?? 'primary';
+
+  const openAffordance = onOpen ? (
+    <span className="flex items-center gap-1 text-text-faint">
+      <span className="font-mono text-micro tracking-wide uppercase select-none">Open details</span>
+      <ChevronRight className="h-3 w-3" aria-hidden />
+    </span>
+  ) : undefined;
+
   return (
     <>
       <Card
         as={onOpen ? 'button' : 'div'}
         tone={tone}
         surface={surface}
+        curve="panel"
+        accentDomain={accentDomain}
         lift={agent.status === 'running' && !reducedMotion}
         hover
         interactive={!!onOpen}
+        affordance={openAffordance}
         className={`h-agent-card w-full text-left${flashDone ? ' animate-ring-flash' : ''}`}
-        onClick={onOpen}
+        onClick={onOpen ? handleOpen : undefined}
         {...(onOpen ? ({ type: 'button' } as Record<string, string>) : {})}
       >
         <AgentCardHeader agent={agent} index={index ?? 1} interactive={!!onOpen} />

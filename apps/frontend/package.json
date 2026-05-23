@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@microsoft/fetch-event-source": "^2.0.1",
+    "@thesvg/react": "file:../../../../thesvg/packages/react",
     "@phosphor-icons/react": "^2.1.10",
     "@studio/design-system": "workspace:*",
     "@studio/shared": "workspace:*",

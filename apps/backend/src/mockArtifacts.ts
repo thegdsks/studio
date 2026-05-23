@@ -55,9 +55,9 @@ interface BrandKit {
 }
 
 interface DesignerArtifact {
-  mockupUrl: string;
+  mockupUrl: string | null;
   exportedCode: string;
-  logoUrl: string;
+  logoUrl: string | null;
   logoVariants: string[];
   palette: { primary: string; secondary: string; accent: string };
   brandKit: BrandKit;
@@ -213,10 +213,10 @@ const namerSlots: [NamerArtifact, NamerArtifact, NamerArtifact] = [
 
 const designerSlots: [DesignerArtifact, DesignerArtifact, DesignerArtifact] = [
   {
-    mockupUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
+    mockupUrl: null,
     exportedCode:
       '<div class="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6"><h1 class="text-5xl font-bold">Studio</h1><p class="mt-3 text-slate-400">Nine agents, one idea.</p></div>',
-    logoUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
+    logoUrl: null,
     logoVariants: [],
     palette: { primary: "#6366f1", secondary: "#0f172a", accent: "#38bdf8" },
     brandKit: {
@@ -231,10 +231,10 @@ const designerSlots: [DesignerArtifact, DesignerArtifact, DesignerArtifact] = [
     },
   },
   {
-    mockupUrl: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb",
+    mockupUrl: null,
     exportedCode:
       '<div class="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6"><h1 class="text-5xl font-bold tracking-tight">LaunchKit</h1><p class="mt-3 text-gray-400">From idea to live in minutes.</p></div>',
-    logoUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
+    logoUrl: null,
     logoVariants: [],
     palette: { primary: "#10b981", secondary: "#064e3b", accent: "#34d399" },
     brandKit: {
@@ -249,10 +249,10 @@ const designerSlots: [DesignerArtifact, DesignerArtifact, DesignerArtifact] = [
     },
   },
   {
-    mockupUrl: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3",
+    mockupUrl: null,
     exportedCode:
       '<div class="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center p-6"><h1 class="text-5xl font-bold">VaultLaunch</h1><p class="mt-3 text-zinc-400">Your startup, deployed.</p></div>',
-    logoUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
+    logoUrl: null,
     logoVariants: [],
     palette: { primary: "#f59e0b", secondary: "#1c1917", accent: "#fbbf24" },
     brandKit: {
