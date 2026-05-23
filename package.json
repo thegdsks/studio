@@ -10,6 +10,8 @@
     "typecheck": "pnpm -r typecheck",
     "test:sdk": "tsx scratch/test-types.ts",
     "kill": "pkill -f 'tsx watch src/server.ts' 2>/dev/null; pkill -f 'next dev -p 3000' 2>/dev/null; pkill -f 'next-server' 2>/dev/null; lsof -ti:3000,4000 | xargs kill -9 2>/dev/null; true",
+    "stop": "pnpm run kill",
+    "start": "pnpm dev",
     "restart": "pnpm run kill && sleep 1 && pnpm dev",
     "fresh": "pnpm run kill && sleep 1 && rm -rf apps/frontend/.next && pnpm dev"
   },
