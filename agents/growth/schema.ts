@@ -1,12 +1,51 @@
+/**
+ * GrowthOutput: Produced by the Growth agent.
+ * The frontend renders prospect cards with outreach priority badges,
+ * the email draft in a copy-to-clipboard panel,
+ * and the outreach sequence as a timeline.
+ *
+ * PUBLIC RECORD ONLY: All prospects must come from publicly available
+ * sources (LinkedIn public profiles, company contact pages, public speaker
+ * bios). No scraped emails, no purchased lists.
+ */
 export interface Prospect {
+  /** Full name from a public profile. */
   name: string;
+  /** Job title as listed publicly. */
   role: string;
+  /** Company name. */
   company: string;
+  /** Full LinkedIn profile URL from public search results. */
   linkedin: string;
+  /** Why this person is a strong fit for this startup. 2-3 sentences. */
   why_fit: string;
+  /** Personalized cold outreach email draft. 100-150 words max. */
   email_draft: string;
+  /** Seniority level for prioritizing outreach order. */
+  seniority: 'C-level' | 'VP' | 'Director' | 'Manager' | 'IC';
+  /**
+   * One specific personalization hook based on their public activity.
+   * Example: "Spoke at SaaStr 2024 on go-to-market for vertical SaaS."
+   * Must be a verifiable public fact, not a guess.
+   */
+  connection_hook: string;
+  /** Outreach priority: 1 = best fit, 3 = good but lower priority. */
+  priority: 1 | 2 | 3;
 }
 
 export interface GrowthOutput {
+  /** 5-10 prospects ordered by priority (priority 1 first). */
   prospects: Prospect[];
+  /**
+   * 5-touch outreach sequence template. Rendered as a timeline on the Growth tab.
+   * Each touch is channel-specific and uses the prospect's name as {{name}}.
+   */
+  outreach_sequence: Array<{
+    /** Day relative to first contact (1, 3, 7, 14, 21). */
+    day: number;
+    /** Channel for this touch. */
+    channel: 'linkedin' | 'email' | 'twitter';
+    /** Message template. Use {{name}} for the prospect name. Under 100 words. */
+    template: string;
+  }>;
 }

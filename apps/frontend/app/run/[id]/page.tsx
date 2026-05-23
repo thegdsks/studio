@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useReducer, useRef, useState, useCallback } from 'react';
-import { ArrowRight, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, Copy, Check, ChevronDown, ChevronUp, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Agent, AgentEvent, AgentId } from '@studio/shared';
 import { AGENT_IDS, AGENT_REGISTRY } from '@studio/shared';
@@ -46,9 +47,18 @@ function buildInitialAgents(): AgentsState {
   ) as AgentsState;
 }
 
-type AgentsAction = { event: AgentEvent };
+type AgentsAction =
+  | { event: AgentEvent }
+  | { hydrate: AgentsState };
 
-function agentsReducer(state: AgentsState, { event }: AgentsAction): AgentsState {
+function agentsReducer(state: AgentsState, action: AgentsAction): AgentsState {
+  // Snapshot hydration: replace state with backend-authoritative version
+  if ('hydrate' in action) {
+    // Merge: keep frontend's queued shells for any agent missing from backend
+    return { ...state, ...action.hydrate };
+  }
+
+  const { event } = action;
   // Run-level events don't update agent state directly
   if (event.agent_id === '__run') return state;
 
@@ -114,6 +124,29 @@ function agentsReducer(state: AgentsState, { event }: AgentsAction): AgentsState
   }
 }
 
+// ─── PrivacyHeaderBadge ──────────────────────────────────────────────────────
+
+const PRIVACY_AGENT_IDS: AgentId[] = ['strategist', 'legal'];
+
+function PrivacyHeaderBadge({ agents }: { agents: AgentsState }) {
+  const localCount = PRIVACY_AGENT_IDS.filter((id) => agents[id]?.ranLocally).length;
+  return (
+    <div className="flex items-center justify-center gap-3 rounded-md border border-border-accent bg-accent-soft px-4 py-2">
+      <ShieldCheck className="h-4 w-4 text-accent shrink-0" />
+      <span className="text-body-sm text-text">
+        <Label className="text-accent mr-2">Privacy mode</Label>
+        Strategist + Legal run locally on Gemma&nbsp;4
+        {localCount > 0 && (
+          <span className="text-text-faint">
+            {' '}
+            · <span className="font-mono text-mono-sm text-text">{localCount}/{PRIVACY_AGENT_IDS.length}</span> on device
+          </span>
+        )}
+      </span>
+    </div>
+  );
+}
+
 // ─── RunIdBreadcrumb ──────────────────────────────────────────────────────────
 
 function RunIdBreadcrumb({ runId }: { runId: string }) {
@@ -147,6 +180,15 @@ function RunIdBreadcrumb({ runId }: { runId: string }) {
 
 // ─── Elapsed timer hook ───────────────────────────────────────────────────────
 
+function formatElapsed(ms: number): string {
+  const totalSec = Math.floor(Math.max(0, ms) / 1000);
+  const mins = Math.floor(totalSec / 60);
+  const secs = totalSec % 60;
+  return mins > 0
+    ? `${mins}m ${secs.toString().padStart(2, '0')}s`
+    : `${secs}s`;
+}
+
 function useElapsed(startedAt: number) {
   const [elapsed, setElapsed] = useState(0);
 
@@ -157,12 +199,7 @@ function useElapsed(startedAt: number) {
     return () => clearInterval(interval);
   }, [startedAt]);
 
-  const totalSec = Math.floor(elapsed / 1000);
-  const mins = Math.floor(totalSec / 60);
-  const secs = totalSec % 60;
-  return mins > 0
-    ? `${mins}m ${secs.toString().padStart(2, '0')}s`
-    : `${secs}s`;
+  return formatElapsed(elapsed);
 }
 
 // ─── Director Panel ───────────────────────────────────────────────────────────
@@ -386,8 +423,14 @@ export default function RunPage({ params }: RunPageProps) {
   const [privacyMode, setPrivacyMode] = useState(false);
   const [runComplete, setRunComplete] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [runStartedAt, setRunStartedAt] = useState<number>(mountedAt.current);
+  const [runFinishedAt, setRunFinishedAt] = useState<number | undefined>(undefined);
 
-  const elapsed = useElapsed(mountedAt.current);
+  // Elapsed: live ticks from run.startedAt while running; freezes at finishedAt when done
+  const elapsedFrom = useElapsed(runStartedAt);
+  const elapsed = runFinishedAt
+    ? formatElapsed(runFinishedAt - runStartedAt)
+    : elapsedFrom;
 
   const doneCount = Object.values(agents).filter(
     (a) => a.id !== 'director' && (a.status === 'done' || a.status === 'error'),
@@ -401,21 +444,43 @@ export default function RunPage({ params }: RunPageProps) {
     setRunComplete(true);
   }, []);
 
-  // Fetch run metadata (idea) — best-effort
+  // Hydrate from snapshot on mount, and re-hydrate every 5s as a safety net
+  // for cases where SSE drops events or the user opens a run that's already
+  // mostly done. The SSE stream still drives live updates between polls.
   useEffect(() => {
+    let cancelled = false;
     async function fetchRun() {
       try {
         const res = await fetch(`/api/runs/${runId}`);
-        if (res.ok) {
-          const data = (await res.json()) as { idea?: string; privacy_mode?: boolean };
-          if (data.idea) setIdea(data.idea);
-          if (data.privacy_mode) setPrivacyMode(true);
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          idea?: string;
+          privacy_mode?: boolean;
+          startedAt?: number;
+          finishedAt?: number;
+          agents?: Record<string, Agent>;
+        };
+        if (cancelled) return;
+        if (data.idea) setIdea(data.idea);
+        if (data.privacy_mode) setPrivacyMode(true);
+        if (typeof data.startedAt === 'number') setRunStartedAt(data.startedAt);
+        if (typeof data.finishedAt === 'number') {
+          setRunFinishedAt(data.finishedAt);
+          setRunComplete(true);
+        }
+        if (data.agents) {
+          dispatch({ hydrate: data.agents as AgentsState });
         }
       } catch {
-        // Non-critical; ignore
+        // Non-critical; SSE will fill in
       }
     }
     void fetchRun();
+    const id = setInterval(() => void fetchRun(), 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, [runId]);
 
   // Subscribe to SSE stream
@@ -428,7 +493,7 @@ export default function RunPage({ params }: RunPageProps) {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-header border-b border-border bg-surface">
-        <div className="mx-auto max-w-page px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6">
+        <div className="mx-auto max-w-page pl-20 pr-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6">
           <div className="flex-1 min-w-0">
             {idea ? (
               <p className="text-body-sm text-text truncate">
@@ -450,12 +515,23 @@ export default function RunPage({ params }: RunPageProps) {
               <span className="text-text">{doneCount}</span>
               <span className="text-text-faint"> / 9</span>
             </span>
+            <Link
+              href="/dashboard"
+              aria-label="Dashboard"
+              title="Dashboard"
+              className="inline-flex items-center gap-1.5 rounded-sm border border-border bg-surface-raised px-2 py-1 text-text-muted hover:border-border-strong hover:text-text transition-colors duration-micro"
+            >
+              <LayoutDashboard className="h-3 w-3" />
+              <Label>Dashboard</Label>
+            </Link>
           </div>
         </div>
       </header>
 
       {/* Grid */}
       <main className="flex-1 mx-auto w-full max-w-page px-4 py-6 flex flex-col gap-6">
+        {privacyMode && <PrivacyHeaderBadge agents={agents} />}
+
         {agents.director && agents.director.status !== 'queued' && (
           <DirectorPanel agent={agents.director} />
         )}

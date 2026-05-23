@@ -156,6 +156,93 @@ const designerRunner: AgentRunner = async (ctx, emit) => {
     onToolCall: (call) => emit({ agent_id: 'designer', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
     onToolResult: (res) => emit({ agent_id: 'designer', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
   });
+
+  // Banana post-processing: turn the palette into a real branding mockup that
+  // BrandPreview can render. Failure is non-fatal — we keep the agent's output
+  // and the preview still shows the swatches + brand name.
+  if (ctx.runId) {
+    try {
+      emit({ agent_id: 'designer', type: 'chunk', payload: { text: '\n🍌 generating banana backdrop…\n' } });
+      const { generateBackdrop, composeBrandingSvg } = await import('../../../agents/_tools/banana.js');
+      const { saveMedia } = await import('./media.js');
+
+      const palette = (result as { palette?: { primary: string; secondary: string; accent: string } }).palette;
+      const primary = palette?.primary ?? '#3B82F6';
+      const secondary = palette?.secondary ?? palette?.accent ?? '#22D3EE';
+
+      const backdrop = await generateBackdrop({
+        brief: `Hero backdrop for "${brandName}", a startup whose positioning is: ${positioning.slice(0, 200)}. Premium, calm, abstract. Color story uses ${primary} and ${secondary}.`,
+        palette: { primary, secondary },
+        aspectRatio: '3:2',
+      });
+
+      const saved = saveMedia({
+        runId: ctx.runId,
+        agentId: 'designer',
+        slug: 'hero-backdrop',
+        kind: 'backdrop',
+        mime: 'image/png',
+        bytes: backdrop.pngBytes,
+        prompt: backdrop.promptUsed,
+        width: 1200,
+        height: 800,
+      });
+      emit({ agent_id: 'designer', type: 'chunk', payload: { text: `↪︎ backdrop saved (${Math.round(backdrop.pngBytes.length / 1024)}KB) ${saved.url}\n` } });
+
+      const svg = composeBrandingSvg({
+        backdropPngBytes: backdrop.pngBytes,
+        brandName,
+        tagline: positioning.length > 80 ? positioning.slice(0, 77) + '…' : positioning,
+        headlineFont: 'Space Grotesk',
+        bodyFont: 'Inter',
+        primary,
+        surface: '#0A0A0F',
+        width: 1200,
+        height: 800,
+      });
+
+      const composed = saveMedia({
+        runId: ctx.runId,
+        agentId: 'designer',
+        slug: 'hero',
+        kind: 'mockup',
+        mime: 'image/svg+xml',
+        bytes: svg,
+        prompt: `composed brand SVG for ${brandName}`,
+        width: 1200,
+        height: 800,
+      });
+      emit({ agent_id: 'designer', type: 'chunk', payload: { text: `↪︎ composed brand mockup ${composed.url}\n` } });
+
+      const enriched = {
+        ...(result as unknown as Record<string, unknown>),
+        mockupUrl: composed.url,
+        brandKit: {
+          name: brandName,
+          tagline: positioning.length > 120 ? positioning.slice(0, 117) + '…' : positioning,
+          primary,
+          secondary,
+          surface: '#0F1015',
+          headlineFont: 'Space Grotesk' as const,
+          bodyFont: 'Inter' as const,
+          logoUrl: (result as { logoUrl?: string }).logoUrl,
+        },
+        media: {
+          backdropUrl: saved.url,
+          composedUrl: composed.url,
+        },
+      };
+      return enriched;
+    } catch (err) {
+      emit({
+        agent_id: 'designer',
+        type: 'chunk',
+        payload: { text: `↪︎ banana skipped (${err instanceof Error ? err.message.slice(0, 80) : 'unknown'})\n` },
+      });
+      // Fall through to original result — non-fatal.
+    }
+  }
+
   return result;
 };
 

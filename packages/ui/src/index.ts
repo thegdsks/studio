@@ -2,7 +2,18 @@ export { Button } from './Button.js';
 export type { ButtonVariant, ButtonSize } from './Button.js';
 
 export { Card, CardHeader, CardBody, CardFooter } from './Card.js';
-export type { CardTone } from './Card.js';
+export type { CardTone, CardGlow } from './Card.js';
+
+export {
+  fadeUp,
+  fadeIn,
+  staggerChildren,
+  scaleIn,
+  cardEnter,
+  slideUpPanel,
+  usePrefersReducedMotion,
+  withReducedMotion,
+} from './motion.js';
 
 export { Chip } from './Chip.js';
 export type { ChipTone } from './Chip.js';

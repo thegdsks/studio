@@ -1,5 +1,5 @@
 import type { AgentId } from '@studio/shared';
-import { getRun, updateAgent, emit, stampRunFinished } from './store.js';
+import { updateAgent, emit, stampRunFinished, appendChunk, getRun } from './store.js';
 import { agentRunners, MOCK_ONLY } from './runners.js';
 import type { RunContext } from './runners.js';
 import { getMockArtifact } from './mockArtifacts.js';
@@ -46,12 +46,9 @@ async function runAgent(
     if (!runner) throw new Error(`No runner registered for ${agentId}`);
 
     const artifact = await runner(ctx, (event) => {
-      // Mirror chunk events into streamedText on the run
+      // Mirror chunk events into streamedText on the run (SQL-side concat).
       if (event.type === 'chunk' && event.agent_id === agentId) {
-        const run = getRun(runId);
-        if (run) {
-          run.agents[agentId].streamedText += event.payload.text;
-        }
+        appendChunk(runId, agentId, event.payload.text);
       }
       // Persist ranLocally onto the agent so /api/runs/:id reflects it for late-joiners.
       if (event.type === 'meta' && event.agent_id === agentId && event.payload.ranLocally) {

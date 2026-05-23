@@ -68,7 +68,21 @@ export async function runCopywriter(opts: {
         { q: "Is domain lookup live?", a: "Yes, verified instantly through the Domainr registry." },
         { q: "How do I get started?", a: "Click the launch button below and step into your live site!" }
       ],
-      cta: "Launch Now"
+      cta: "Launch Now",
+      value_props: [
+        `Built for ${opts.icp} — every line of copy tailored to your ICP.`,
+        `Nine specialist agents shape ${opts.brandName} into a coherent launch story.`,
+        `Live deploy in minutes, with brand kit, legal drafts, and outreach included.`,
+      ],
+      email_subject_lines: [
+        `${opts.brandName} just launched`,
+        `Built ${opts.brandName} in 5 minutes — would love your eyes`,
+        `Quick favor: feedback on ${opts.brandName}?`,
+        `${opts.brandName} — for ${opts.icp.split(' ').slice(0, 4).join(' ')}`,
+        `Three minutes with ${opts.brandName}?`,
+      ],
+      meta_description: `${opts.brandName}. ${opts.positioning.slice(0, 110)}`.slice(0, 150),
+      social_bio: `${opts.brandName} — ${opts.positioning.slice(0, 140)}`.slice(0, 160),
     };
   }
 }

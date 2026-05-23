@@ -92,9 +92,18 @@ export async function runLegal(opts: {
   } catch (err) {
     console.warn('Legal agent failed, using fallback:', err);
     return {
-      terms_of_service: `# Terms of Service\n\n**This is an AI-generated draft, have a lawyer review before use**\n\nWelcome to ${opts.brandName}. By using our platform, you agree to these Terms. We provide automated ${opts.businessType} tools. We are not responsible for any direct or indirect damages resulting from your use of the generated materials or legal documents. All services are provided "as is" and without warranties of any kind.`,
-      privacy_policy: `# Privacy Policy\n\n**This is an AI-generated draft, have a lawyer review before use**\n\nAt ${opts.brandName}, we take your privacy seriously. We collect contact details, usage logs, and configuration inputs solely to operate our ${opts.businessType} services. We leverage cookies to authenticate users and analyze traffic. You have the right to request deletion of your account and personal records at any time by contacting our support team.`,
-      liability_summary: `AI fallback legal summaries. Operating a ${opts.businessType} startup involves key risks in automated data privacy regulations, IP infringement claims for generated assets, and potential warranty violations. Consult a lawyer for standard corporate coverage.`,
+      terms_md: `# Terms of Service\n\n**This is an AI-generated draft, have a lawyer review before use**\n\nWelcome to ${opts.brandName}. By using our platform, you agree to these Terms. We provide automated ${opts.businessType} tools. We are not responsible for any direct or indirect damages resulting from your use of the generated materials or legal documents. All services are provided "as is" and without warranties of any kind.`,
+      privacy_md: `# Privacy Policy\n\n**This is an AI-generated draft, have a lawyer review before use**\n\nAt ${opts.brandName}, we take your privacy seriously. We collect contact details, usage logs, and configuration inputs solely to operate our ${opts.businessType} services. We leverage cookies to authenticate users and analyze traffic. You have the right to request deletion of your account and personal records at any time by contacting our support team.`,
+      liability_md: `AI fallback legal summaries. Operating a ${opts.businessType} startup involves key risks in automated data privacy regulations, IP infringement claims for generated assets, and potential warranty violations. Consult a lawyer for standard corporate coverage.`,
+      cookies_md: `**Cookies.** ${opts.brandName} uses strictly necessary cookies to authenticate users and analytics cookies to measure product usage. By using the site you consent to these cookies. You can opt out of analytics in Settings.`,
+      risk_checklist: [
+        { item: `Data privacy regulations applicable to ${opts.businessType}`, severity: 'high',   mitigation: 'Map data flows, complete a DPIA, appoint a privacy lead before launch.' },
+        { item: 'Trademark conflict on the brand name',                          severity: 'medium', mitigation: 'Search USPTO + EUIPO before printing assets; consult IP counsel for clearance.' },
+        { item: 'AI-generated copy may include inaccurate or biased claims',     severity: 'medium', mitigation: 'Human review of all customer-facing copy; flag any product claims for legal sign-off.' },
+        { item: 'Open-source license obligations of generated code',             severity: 'low',    mitigation: 'Run an SCA scan; keep a NOTICE file listing third-party licenses.' },
+        { item: 'Contractual liability with downstream service providers',       severity: 'low',    mitigation: 'Maintain capped-liability + indemnity language in MSA templates.' },
+      ],
+      jurisdiction_note: `Default incorporation: Delaware C-Corp — investor-friendly, well-trodden case law. Consider Cayman or Singapore if you anticipate non-US capital, or an LLC if you remain bootstrapped and revenue-only.`,
     };
   }
 }

@@ -73,7 +73,7 @@ export async function runNamer(opts: {
 
     const results = await Promise.all(checkPromises);
     return {
-      names: results.slice(0, 5)
+      names: results.slice(0, 5).map(enrichName)
     };
   };
 
@@ -81,14 +81,57 @@ export async function runNamer(opts: {
     return await Promise.race([executionPromise(), timeoutPromise]);
   } catch (err) {
     console.warn("Namer agent failed, using fallback:", err);
+    void enrichName;  // referenced to satisfy lint when used in real path only
     return {
       names: [
-        { name: "studioscript", domain: "studioscript.com", available: true },
-        { name: "launchpadai", domain: "launchpadai.net", available: false, alternative_tld: "launchpadai.co" },
-        { name: "agentstudio", domain: "agentstudio.io", available: true },
-        { name: "shackio", domain: "shackio.com", available: false, alternative_tld: "shackio.net" },
-        { name: "geminilabs", domain: "geminilabs.co", available: true }
-      ]
+        { name: "studioscript", domain: "studioscript.com", available: true,  vibe: "modern, technical, premium", pronunciation: "STOO-dee-oh-script", trademark_risk: "low" },
+        { name: "launchpadai",  domain: "launchpadai.net", available: false, alternative_tld: "launchpadai.co", vibe: "kinetic, AI-forward",          pronunciation: "LAWNCH-pad-AY-eye",  trademark_risk: "medium" },
+        { name: "agentstudio",  domain: "agentstudio.io",  available: true,  vibe: "agentic, workspace, calm",    pronunciation: "AY-jent-STOO-dee-oh", trademark_risk: "low" },
+        { name: "shackio",      domain: "shackio.com",    available: false, alternative_tld: "shackio.net",     vibe: "indie, scrappy, builder",      pronunciation: "SHACK-ee-oh",         trademark_risk: "medium" },
+        { name: "geminilabs",   domain: "geminilabs.co",   available: true,  vibe: "research-driven, scientific", pronunciation: "JEM-in-eye-labs",    trademark_risk: "high" },
+      ],
     };
   }
+}
+
+/**
+ * Add heuristic vibe/pronunciation/trademark_risk to a Domainr check result
+ * so it satisfies the richer DomainOption schema without an extra LLM call.
+ */
+function enrichName(r: { name: string; domain: string; available: boolean; alternative_tld?: string }) {
+  return {
+    ...r,
+    vibe: vibeFor(r.name),
+    pronunciation: pronunciationFor(r.name),
+    trademark_risk: trademarkRiskFor(r.name),
+  };
+}
+
+function vibeFor(name: string): string {
+  const lower = name.toLowerCase();
+  if (/ai|gpt|ml|gen/.test(lower)) return 'AI-forward, technical';
+  if (/lab|studio|works|forge/.test(lower)) return 'craft, considered, premium';
+  if (/io|app|hq|stack/.test(lower)) return 'modern, product-led';
+  if (/co|labs/.test(lower)) return 'collaborative, calm';
+  return 'modern, clean';
+}
+
+function pronunciationFor(name: string): string {
+  // Crude phonetic: uppercase first syllable, hyphenate every 2-3 chars.
+  const chunks: string[] = [];
+  let i = 0;
+  while (i < name.length) {
+    const size = i === 0 ? Math.min(3, name.length) : Math.min(2 + Math.floor(Math.random() * 2), name.length - i);
+    chunks.push(name.slice(i, i + size).toUpperCase());
+    i += size;
+  }
+  return chunks.join('-');
+}
+
+function trademarkRiskFor(name: string): 'low' | 'medium' | 'high' {
+  const lower = name.toLowerCase();
+  // Common English words / well-known brand stems lean higher.
+  if (/^(amazon|google|apple|meta|gemini|claude|openai|stripe)/.test(lower)) return 'high';
+  if (/ai$|labs$|studio$/.test(lower)) return 'medium';
+  return 'low';
 }

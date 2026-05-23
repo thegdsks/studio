@@ -1,67 +1,75 @@
+/**
+ * Run/agent state lives in SQLite (see ./db.ts). This module is a thin
+ * facade that adds the runtime-only pieces:
+ *   - per-run EventEmitter for live SSE subscribers
+ *   - per-run in-memory replay buffer (so a late-joining SSE client gets
+ *     the events it missed between createRun and `connect`)
+ *   - 5-minute idempotency cache keyed by (normalised idea, privacy_mode)
+ *
+ * Emitters + buffers are intentionally NOT persisted — they would be
+ * meaningless after a process restart (the SSE clients are gone).
+ */
+
 import { EventEmitter } from 'node:events';
 import { nanoid } from 'nanoid';
-import type { AgentId, AgentEvent, Agent, AgentStatus } from '@studio/shared';
-import { AGENT_IDS, AGENT_REGISTRY } from '@studio/shared';
-import type { Run } from '@studio/shared';
+import type { AgentId, AgentEvent, Agent, Run, RunSummary } from '@studio/shared';
+import {
+  dbCreateRun,
+  dbGetRun,
+  dbDeleteRun,
+  dbAppendChunk,
+  dbUpdateAgent,
+  dbStampRunFinished,
+  dbListSummaries,
+} from './db.js';
 
-const runs = new Map<string, Run>();
 const emitters = new Map<string, EventEmitter>();
 const buffers = new Map<string, AgentEvent[]>();
 
-// Idempotency cache: same idea string within TTL returns the existing run_id
-// instead of starting a new (billable) run.
+// Idempotency cache: same (idea, privacy_mode) within TTL returns the existing
+// run_id instead of starting a new (billable) run.
 const IDEA_CACHE_TTL_MS = 5 * 60 * 1000;
 const ideaCache = new Map<string, { run_id: string; ts: number }>();
 
-function normaliseIdea(idea: string): string {
-  return idea.trim().toLowerCase().replace(/\s+/g, ' ');
+function normaliseIdea(idea: string, privacy_mode: boolean): string {
+  return `${privacy_mode ? '1' : '0'}::${idea.trim().toLowerCase().replace(/\s+/g, ' ')}`;
 }
 
-export function findCachedRun(idea: string): Run | undefined {
-  const key = normaliseIdea(idea);
+export function findCachedRun(idea: string, privacy_mode: boolean): Run | undefined {
+  const key = normaliseIdea(idea, privacy_mode);
   const cached = ideaCache.get(key);
   if (!cached) return undefined;
   if (Date.now() - cached.ts > IDEA_CACHE_TTL_MS) {
     ideaCache.delete(key);
     return undefined;
   }
-  return runs.get(cached.run_id);
-}
-
-function makeInitialAgent(id: AgentId): Agent {
-  const meta = AGENT_REGISTRY[id];
-  return {
-    id,
-    name: meta.name,
-    emoji: meta.emoji,
-    status: 'queued' as AgentStatus,
-    streamedText: '',
-    tools: [],
-  };
+  return dbGetRun(cached.run_id);
 }
 
 export function createRun(idea: string, opts?: { privacy_mode?: boolean }): Run {
   const run_id = nanoid();
-  const agents = {} as Record<AgentId, Agent>;
-  for (const id of AGENT_IDS) {
-    agents[id] = makeInitialAgent(id);
-  }
-  const run: Run = {
-    run_id,
-    idea,
-    startedAt: Date.now(),
-    agents,
-    privacy_mode: opts?.privacy_mode ?? false,
-  };
-  runs.set(run_id, run);
+  const startedAt = Date.now();
+  const privacy_mode = opts?.privacy_mode ?? false;
+
+  dbCreateRun({ run_id, idea, startedAt, privacy_mode });
+
   emitters.set(run_id, new EventEmitter());
   buffers.set(run_id, []);
-  ideaCache.set(normaliseIdea(idea), { run_id, ts: Date.now() });
+  ideaCache.set(normaliseIdea(idea, privacy_mode), { run_id, ts: Date.now() });
+
+  const run = dbGetRun(run_id);
+  if (!run) throw new Error(`[store] createRun: failed to read back ${run_id}`);
   return run;
 }
 
 export function getRun(id: string): Run | undefined {
-  return runs.get(id);
+  return dbGetRun(id);
+}
+
+export function deleteRun(id: string): boolean {
+  emitters.delete(id);
+  buffers.delete(id);
+  return dbDeleteRun(id);
 }
 
 export function updateAgent(
@@ -69,9 +77,15 @@ export function updateAgent(
   agentId: AgentId,
   patch: Partial<Agent>,
 ): void {
-  const run = runs.get(runId);
-  if (!run) return;
-  Object.assign(run.agents[agentId], patch);
+  dbUpdateAgent(runId, agentId, patch);
+}
+
+/**
+ * Append a chunk to the agent's streamed text in a single SQL update
+ * (no read-modify-write race). Used by the orchestrator's SSE mirror.
+ */
+export function appendChunk(runId: string, agentId: AgentId, chunk: string): void {
+  dbAppendChunk(runId, agentId, chunk);
 }
 
 export function emit(runId: string, event: AgentEvent): void {
@@ -90,6 +104,27 @@ export function getBuffer(runId: string): AgentEvent[] {
 }
 
 export function stampRunFinished(runId: string): void {
-  const run = runs.get(runId);
-  if (run) run.finishedAt = Date.now();
+  dbStampRunFinished(runId, Date.now());
+}
+
+export function listRunSummaries(): RunSummary[] {
+  const rows = dbListSummaries();
+  return rows.map((r) => {
+    const summary: RunSummary = {
+      run_id: r.run_id,
+      idea: r.idea,
+      startedAt: r.started_at,
+      privacy_mode: r.privacy_mode === 1,
+      counts: {
+        queued: r.queued,
+        running: r.running,
+        done: r.done,
+        error: r.error,
+      },
+      ranLocally: r.ran_locally,
+      total: r.total,
+    };
+    if (r.finished_at !== null) summary.finishedAt = r.finished_at;
+    return summary;
+  });
 }

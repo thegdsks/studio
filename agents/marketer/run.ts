@@ -52,19 +52,50 @@ export async function runMarketer(opts: {
   } catch (err) {
     console.warn("Marketer agent failed, using fallback:", err);
     return {
-      tweet_thread: [
-        `1/ Meet ${opts.brandName}: ${opts.positioning}. A brand new startup launches today! 🚀`,
-        `2/ Built and designed completely automatically using parallel generative agents.`,
-        `3/ Get complete copy deck, domains checked live, and automated landing page deployments.`,
-        "4/ Designed at Shack15 for the Google I/O Hackathon using Gemini Managed Agents. 🌟",
-        "5/ Check out the live URL and launch your next startup idea instantly! ⚡"
+      x_thread: [
+        `1/ Meet ${opts.brandName}: ${opts.positioning}. Launching today.`,
+        `2/ Built end-to-end by nine specialist agents working in parallel.`,
+        `3/ Complete copy deck, live domain checks, deployed landing page.`,
+        `4/ Designed at Shack15 for the Google I/O Hackathon using Gemini Managed Agents.`,
+        `5/ Click through, kick the tires, and tell me what to ship next.`,
       ],
       producthunt: {
-        tagline: `${opts.brandName} - Launch your startup instantly`,
-        description: `Create beautiful branding, domain check, copies, legal drafts, and landing pages instantly using Studio.`
+        tagline: `${opts.brandName} — launch your startup instantly`,
+        description: `Brand, copy, deployed site, prospects, legal — produced in parallel by nine specialist agents. Built on Gemini Managed Agents.`,
+        gallery_captions: [
+          'The 9-agent dashboard in flight',
+          'Director synthesises the full launch story',
+          'BrandPreview themed with the generated identity',
+        ],
       },
-      hn_show: `Show HN: ${opts.brandName} - Fully custom startup launched instantly by parallel AI agents`,
-      linkedin_post: `Launching a startup used to take weeks. Today we are launching ${opts.brandName} in under 5 minutes. Engineered by parallel specialist agents on the Gemini Managed Agents API. Read more and check out our dashboard!`
+      hn_show: {
+        title: `Show HN: ${opts.brandName} — startup launch kit from one sentence`,
+        body: `${opts.positioning}\n\nNine specialist agents (strategist, namer, designer, copywriter, developer, marketer, growth, legal, analyst) run in parallel against Gemini Managed Agents. A director synthesises the artifacts into a single coherent launch story. Built at the Google I/O hackathon at Shack15.\n\nWould love your feedback on the orchestration model and where the seams show.`,
+      },
+      linkedin_post: `Launching a startup used to take weeks. We just shipped ${opts.brandName} in under five minutes — nine specialist AI agents working in parallel on top of Gemini Managed Agents. ${opts.positioning} Check out the deployed landing page and the brand kit it produced.`,
+      email_blast: {
+        subject: `${opts.brandName} just shipped — 60 seconds of your time?`,
+        body: `Quick one — we just launched ${opts.brandName}, an entire startup scaffolded by nine parallel AI specialists in under five minutes. It's live and deployed. ${opts.positioning}\n\nWould love your raw read on the brand and the messaging. Reply with anything that doesn't land and I'll iterate.`,
+      },
+      posting_schedule: [
+        { day: 1, platform: 'producthunt', what: 'Launch on Product Hunt at 12:01am PT with the tagline and gallery captions above.' },
+        { day: 1, platform: 'x',           what: 'Post the X thread; pin the launch tweet to profile.' },
+        { day: 2, platform: 'hackernews',  what: 'Show HN post in the morning Pacific window; respond to comments hourly.' },
+        { day: 3, platform: 'linkedin',    what: 'Post the LinkedIn build story; tag two early supporters.' },
+        { day: 5, platform: 'email',       what: 'Email blast to warm list with the subject line above.' },
+      ],
+      replies_kit: {
+        positive: [
+          `Thank you — means a lot. The whole thing is open-source if you want to poke around.`,
+          `Appreciate it. The director-agent synthesis is the part I'm most proud of — happy to walk through it.`,
+          `Glad it resonates. What part would you want to see go deeper next?`,
+        ],
+        skeptical: [
+          `Fair pushback. The honest answer: the agents seed a quality floor; a human still needs to polish before customer-facing copy ships.`,
+          `Totally reasonable concern. Privacy mode lets Legal + Strategy run locally on Gemma if cloud is a non-starter for you.`,
+          `Agree the orchestration is the harder problem than any single agent. Happy to share the wave-based scheduler design.`,
+        ],
+      },
     };
   }
 }
