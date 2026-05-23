@@ -23,6 +23,7 @@ function isStrategist(a: unknown): a is StrategistShape {
 
 interface Props {
   artifact: unknown;
+  variant?: 'card' | 'detail';
 }
 
 export default function StrategistArtifact({ artifact }: Props): JSX.Element {

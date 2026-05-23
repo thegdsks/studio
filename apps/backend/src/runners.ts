@@ -11,9 +11,9 @@ export interface RunContext {
   /** When true, privacy-eligible agents try local Gemma before cloud Gemini. */
   privacy_mode?: boolean;
   /**
-   * User feedback supplied via POST /refine. When present the orchestrator
-   * pre-emits a visible chunk so the user sees the iteration is in progress.
-   * The underlying runner call is unchanged — the feedback is advisory.
+   * Critique feedback from a previous run. When present, each runner injects
+   * it into the LLM prompt as an explicit refinement directive so the model
+   * regenerates the output from scratch with the feedback applied.
    */
   refine_feedback?: string;
 }
@@ -26,6 +26,19 @@ export type AgentRunner = (ctx: RunContext, emit: Emit) => Promise<unknown>;
 
 function truncate(s: string, max: number): string {
   return s.length <= max ? s : s.slice(0, max) + '…';
+}
+
+/**
+ * Build an explicit refinement directive to append to the user message.
+ * Returns an empty string when no feedback is present (first-run pass).
+ */
+function refinementSuffix(ctx: RunContext): string {
+  if (!ctx.refine_feedback) return '';
+  return (
+    `\n\n# Refinement directive\n` +
+    `Your previous output was rated low quality. Apply this feedback verbatim and regenerate from scratch: "${ctx.refine_feedback}". ` +
+    `Focus entirely on the user's idea: "${ctx.idea}". Do not repeat or reference the prior output.`
+  );
 }
 
 function sleep(ms: number): Promise<void> {
@@ -66,11 +79,11 @@ function makeFakeRunner(agentId: AgentId): AgentRunner {
 const strategistRunner: AgentRunner = async (ctx, emit) => {
   const { runStrategist } = await import('../../../agents/strategist/run.js');
   const result = await runStrategist(
-    ctx.idea,
+    ctx.idea + refinementSuffix(ctx),
     {
       onChunk: (text) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text } }),
-      onToolCall: (call) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
-      onToolResult: (res) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
+      onToolCall: (call) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `\n[tool] ${call.name}(…)\n` } }),
+      onToolResult: (res) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `[result] ${truncate(JSON.stringify(res), 120)}\n` } }),
       onLocalRun: () => emit({ agent_id: 'strategist', type: 'meta', payload: { ranLocally: true } }),
     },
     {
@@ -88,7 +101,8 @@ const copywriterRunner: AgentRunner = async (ctx, emit) => {
   const namerOut = ctx.upstream['namer'] as { names?: Array<{ name: string }> } | undefined;
 
   const brandName = namerOut?.names?.[0]?.name ?? 'Studio';
-  const positioning = strategistOut?.['positioning'] ?? ctx.idea;
+  const basePositioning = strategistOut?.['positioning'] ?? ctx.idea;
+  const positioning = basePositioning + refinementSuffix(ctx);
   const icp = strategistOut?.['icp'] ?? 'Founders and builders';
 
   emit({ agent_id: 'copywriter', type: 'chunk', payload: { text: `Crafting copy for ${brandName}…\n` } });
@@ -114,7 +128,8 @@ const marketerRunner: AgentRunner = async (ctx, emit) => {
   const copywriterOut = ctx.upstream['copywriter'];
 
   const brandName = namerOut?.names?.[0]?.name ?? 'Studio';
-  const positioning = strategistOut?.['positioning'] ?? ctx.idea;
+  const basePositioning = strategistOut?.['positioning'] ?? ctx.idea;
+  const positioning = basePositioning + refinementSuffix(ctx);
 
   emit({ agent_id: 'marketer', type: 'chunk', payload: { text: `Drafting launch posts for ${brandName}…\n` } });
 
@@ -136,12 +151,13 @@ const legalRunner: AgentRunner = async (ctx, emit) => {
 
   const namerOut = ctx.upstream['namer'] as { names?: Array<{ name: string }> } | undefined;
   const brandName = namerOut?.names?.[0]?.name ?? 'Studio';
+  const businessType = `startup platform for the following idea: ${ctx.idea}` + refinementSuffix(ctx);
 
   emit({ agent_id: 'legal', type: 'chunk', payload: { text: `Drafting terms for ${brandName}…\n` } });
 
   const result = await runLegal({
     brandName,
-    businessType: 'AI SaaS startup platform',
+    businessType,
     privacy_mode: ctx.privacy_mode,
     runContext: ctx.runId ? { runId: ctx.runId, agentId: 'legal' } : undefined,
     callbacks: {
@@ -159,7 +175,7 @@ const namerRunner: AgentRunner = async (ctx, emit) => {
   const { runNamer } = await import('../../../agents/namer/run.js');
   emit({ agent_id: 'namer', type: 'chunk', payload: { text: `Searching for creative brand names…\n` } });
   const result = await runNamer({
-    idea: ctx.idea,
+    idea: ctx.idea + refinementSuffix(ctx),
     vibe: 'modern, clean, premium tech',
     runContext: ctx.runId ? { runId: ctx.runId, agentId: 'namer' } : undefined,
   });
@@ -173,7 +189,8 @@ const designerRunner: AgentRunner = async (ctx, emit) => {
   const namerOut = ctx.upstream['namer'] as { names?: Array<{ name: string }> } | undefined;
   const brandName = namerOut?.names?.[0]?.name ?? 'Studio';
   const strategistOut = ctx.upstream['strategist'] as Record<string, string> | undefined;
-  const positioning = strategistOut?.['positioning'] ?? ctx.idea;
+  const basePositioning = strategistOut?.['positioning'] ?? ctx.idea;
+  const positioning = basePositioning + refinementSuffix(ctx);
 
   const result = await runDesigner(brandName, positioning, {
     onChunk: (text) => emit({ agent_id: 'designer', type: 'chunk', payload: { text } }),
@@ -326,12 +343,13 @@ const growthRunner: AgentRunner = async (ctx, emit) => {
   const namerOut = ctx.upstream['namer'] as { names?: Array<{ name: string }> } | undefined;
   const brandName = namerOut?.names?.[0]?.name ?? 'Studio';
   const strategistOut = ctx.upstream['strategist'] as Record<string, string> | undefined;
-  const positioning = strategistOut?.['positioning'] ?? ctx.idea;
+  const basePositioning = strategistOut?.['positioning'] ?? ctx.idea;
+  const positioning = basePositioning + refinementSuffix(ctx);
 
   const result = await runGrowth({
     brandName,
     positioning,
-    idea: ctx.idea,
+    idea: ctx.idea + refinementSuffix(ctx),
     runContext: ctx.runId ? { runId: ctx.runId, agentId: 'growth' } : undefined,
     callbacks: {
       onChunk: (text) => emit({ agent_id: 'growth', type: 'chunk', payload: { text } }),
@@ -345,10 +363,10 @@ const growthRunner: AgentRunner = async (ctx, emit) => {
 const analystRunner: AgentRunner = async (ctx, emit) => {
   const { runAnalyst } = await import('../../../agents/analyst/run.js');
 
-  const result = await runAnalyst(ctx.idea, {
+  const result = await runAnalyst(ctx.idea + refinementSuffix(ctx), {
     onChunk: (text) => emit({ agent_id: 'analyst', type: 'chunk', payload: { text } }),
-    onToolCall: (call) => emit({ agent_id: 'analyst', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
-    onToolResult: (res) => emit({ agent_id: 'analyst', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
+    onToolCall: (call) => emit({ agent_id: 'analyst', type: 'chunk', payload: { text: `\n[tool] ${call.name}(…)\n` } }),
+    onToolResult: (res) => emit({ agent_id: 'analyst', type: 'chunk', payload: { text: `[result] ${truncate(JSON.stringify(res), 120)}\n` } }),
     runContext: ctx.runId ? { runId: ctx.runId, agentId: 'analyst' } : undefined,
   });
   return result;

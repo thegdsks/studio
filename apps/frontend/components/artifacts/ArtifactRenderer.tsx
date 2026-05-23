@@ -11,10 +11,14 @@ import MarketerArtifact from './MarketerArtifact';
 import GrowthArtifact from './GrowthArtifact';
 import LegalArtifact from './LegalArtifact';
 import AnalystArtifact from './AnalystArtifact';
+import DirectorArtifact from './DirectorArtifact';
 import RawFallback from './RawFallback';
+
+export type ArtifactVariant = 'card' | 'detail';
 
 interface ArtifactProps {
   artifact: unknown;
+  variant?: ArtifactVariant;
 }
 
 const RENDERERS: Partial<Record<AgentId, ComponentType<ArtifactProps>>> = {
@@ -27,14 +31,16 @@ const RENDERERS: Partial<Record<AgentId, ComponentType<ArtifactProps>>> = {
   growth: GrowthArtifact,
   legal: LegalArtifact,
   analyst: AnalystArtifact,
+  director: DirectorArtifact,
 };
 
 interface ArtifactRendererProps {
   agentId: AgentId;
   artifact: unknown;
+  variant?: ArtifactVariant;
 }
 
-export default function ArtifactRenderer({ agentId, artifact }: ArtifactRendererProps): JSX.Element {
+export default function ArtifactRenderer({ agentId, artifact, variant }: ArtifactRendererProps): JSX.Element {
   const Comp = RENDERERS[agentId] ?? RawFallback;
-  return <Comp artifact={artifact} />;
+  return <Comp artifact={artifact} variant={variant} />;
 }

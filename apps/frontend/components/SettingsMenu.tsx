@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Github, Play } from 'lucide-react';
+import { Github, Play, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
 import { PrivacyToggle } from '@/components/PrivacyToggle';
 import { startDemoRun } from '@/lib/api';
+import { useDemoMode } from '@/lib/useDemoMode';
 
 interface UsageData {
   runsInWindow: number;
@@ -34,6 +35,7 @@ export default function SettingsMenu({
   const [demoVisible, setDemoVisible] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
   const [demoError, setDemoError] = useState<string | null>(null);
+  const { demoMode, setDemoMode } = useDemoMode();
 
   // Close on outside click
   useEffect(() => {
@@ -122,6 +124,32 @@ export default function SettingsMenu({
 
       <div className="border-t border-border" />
 
+      {/* Attribution */}
+      <div className="px-3 py-2">
+        <span className="font-mono text-label-sm text-text-faint uppercase tracking-wider">
+          [ ATTRIBUTION ]
+        </span>
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={() => setDemoMode(!demoMode)}
+            className="flex items-center gap-2 font-mono text-label-sm text-text-muted hover:text-text transition-colors"
+            aria-pressed={demoMode}
+          >
+            {demoMode
+              ? <Eye className="h-4 w-4 shrink-0" />
+              : <EyeOff className="h-4 w-4 shrink-0" />
+            }
+            PROVIDER ATTRIBUTION{' '}
+            <span className={demoMode ? 'text-status-done' : 'text-text-faint'}>
+              {demoMode ? 'ON' : 'OFF'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="border-t border-border" />
+
       {/* Status */}
       <div className="px-3 py-2">
         <span className="font-mono text-label-sm text-text-faint uppercase tracking-wider">
@@ -172,7 +200,7 @@ export default function SettingsMenu({
         </a>
       </div>
 
-      {/* Demo mode — only visible when localStorage flag is set */}
+      {/* Demo mode run — only visible when localStorage flag is set */}
       {demoVisible && (
         <>
           <div className="border-t border-border" />

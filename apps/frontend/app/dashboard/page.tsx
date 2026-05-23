@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Card, Label, Mono } from '@studio/ui';
 import type { ListRunsResponse, RunSummary } from '@studio/shared';
+import { RunSparkline } from '@/components/dashboard/RunSparkline';
 
 const REFRESH_MS = 4000;
 
@@ -130,6 +131,9 @@ export default function DashboardPage() {
 
       <main className="flex-1 mx-auto w-full max-w-page px-4 py-6 flex flex-col gap-6">
         <StatsRow stats={stats} />
+
+        {/* Sparkline: last 30 runs color-coded by status */}
+        <RunSparkline runs={runs} />
 
         <FilterBar
           filter={filter}

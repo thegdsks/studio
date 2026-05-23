@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react';
 
 interface Props {
   artifact: unknown;
+  variant?: 'card' | 'detail';
 }
 
 export default function RawFallback({ artifact }: Props): JSX.Element {

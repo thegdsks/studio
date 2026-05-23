@@ -77,6 +77,8 @@ addColIfMissing('agents', 'quality_score',   'INTEGER');
 addColIfMissing('agents', 'quality_critique', 'TEXT');
 addColIfMissing('agents', 'iteration',        'INTEGER NOT NULL DEFAULT 1');
 addColIfMissing('agents', 'refined_with',     'TEXT');
+addColIfMissing('agents', 'auto_refined',     'INTEGER NOT NULL DEFAULT 0');
+addColIfMissing('agents', 'original_score',   'INTEGER');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS media (
@@ -163,6 +165,10 @@ const stmtUpdateAgentIteration = db.prepare(`
   UPDATE agents SET iteration = @iteration, refined_with = @refined_with
   WHERE run_id = @run_id AND agent_id = @agent_id
 `);
+const stmtUpdateAgentAutoRefine = db.prepare(`
+  UPDATE agents SET auto_refined = @auto_refined, original_score = @original_score
+  WHERE run_id = @run_id AND agent_id = @agent_id
+`);
 const stmtResetAgentText = db.prepare(`
   UPDATE agents SET streamed_text = '' WHERE run_id = @run_id AND agent_id = @agent_id
 `);
@@ -214,6 +220,8 @@ interface AgentRow {
   quality_critique: string | null;
   iteration: number;
   refined_with: string | null;
+  auto_refined: number;
+  original_score: number | null;
 }
 
 interface SummaryRow {
@@ -253,6 +261,8 @@ function rowToAgent(r: AgentRow): Agent {
   // iteration defaults to 1 from the DB; only set if explicitly tracked.
   agent.iteration = r.iteration ?? 1;
   if (r.refined_with !== null) agent.refined_with = r.refined_with;
+  if (r.auto_refined === 1) agent.auto_refined = true;
+  if (r.original_score !== null) agent.original_score = r.original_score;
   return agent;
 }
 
@@ -376,6 +386,17 @@ export function dbUpdateAgent(
       agent_id: agentId,
       iteration: patch.iteration ?? cur?.iteration ?? 1,
       refined_with: patch.refined_with ?? cur?.refined_with ?? null,
+    });
+  }
+  if (patch.auto_refined !== undefined || patch.original_score !== undefined) {
+    const cur = db
+      .prepare(`SELECT auto_refined, original_score FROM agents WHERE run_id = ? AND agent_id = ?`)
+      .get(runId, agentId) as { auto_refined: number; original_score: number | null } | undefined;
+    stmtUpdateAgentAutoRefine.run({
+      run_id: runId,
+      agent_id: agentId,
+      auto_refined: patch.auto_refined ? 1 : (cur?.auto_refined ?? 0),
+      original_score: patch.original_score ?? cur?.original_score ?? null,
     });
   }
   // streamedText reset is handled via a dedicated stmt (normal patch would require

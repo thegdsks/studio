@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@studio/shared', '@studio/design-system', '@studio/ui'],
+  transpilePackages: ['@studio/shared', '@studio/design-system', '@studio/ui', '@thesvg/react'],
   webpack: (config) => {
     config.resolve.extensionAlias = {
       '.js': ['.ts', '.tsx', '.js'],

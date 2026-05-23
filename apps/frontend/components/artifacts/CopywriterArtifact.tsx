@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { Label } from '@studio/ui';
 import RawFallback from './RawFallback';
 
 interface Feature {
@@ -55,22 +56,14 @@ function FaqRow({ item }: { item: FaqItem }) {
   );
 }
 
-interface Props {
-  artifact: unknown;
-}
+// ─── Card variant ─────────────────────────────────────────────────────────────
 
-export default function CopywriterArtifact({ artifact }: Props): JSX.Element {
-  if (!isCopywriter(artifact)) {
-    return <RawFallback artifact={artifact} />;
-  }
-
-  const { hero, features, faq, cta } = artifact;
-
+function CardView({ hero, features, faq, cta }: CopywriterShape) {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
         <p className="text-display-md font-display text-text leading-tight">{hero.headline}</p>
-        <p className="text-body-lg text-text-muted">{hero.sub}</p>
+        <p className="text-body-md text-text-muted">{hero.sub}</p>
       </div>
 
       {features.length > 0 && (
@@ -104,4 +97,79 @@ export default function CopywriterArtifact({ artifact }: Props): JSX.Element {
       )}
     </div>
   );
+}
+
+// ─── Detail variant ───────────────────────────────────────────────────────────
+
+function DetailView({ hero, features, faq, cta }: CopywriterShape) {
+  return (
+    <div className="space-y-12">
+      {/* Hero headline lifted to display-lg */}
+      <div className="space-y-4 border-b border-border pb-10">
+        <p className="text-display-lg font-display text-text leading-tight">{hero.headline}</p>
+        <p className="text-headline-md text-text-muted max-w-2xl">{hero.sub}</p>
+        {cta && (
+          <div className="pt-2">
+            <span className="inline-block rounded-full bg-accent px-8 py-3 text-body-md font-semibold text-bg">
+              {cta}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Features as 3-col cards */}
+      {features.length > 0 && (
+        <div className="space-y-4">
+          <Label>Features</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {features.map((f, i) => (
+              <div
+                key={f.title}
+                className="rounded-xl border border-border bg-surface p-5 space-y-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-mono-sm text-accent tabular-nums">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <p className="text-body-md font-semibold text-text">{f.title}</p>
+                </div>
+                <p className="text-body-sm text-text-muted leading-relaxed">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* FAQ as collapsible items */}
+      {faq.length > 0 && (
+        <div className="space-y-3">
+          <Label>Frequently asked questions</Label>
+          <div className="space-y-2">
+            {faq.map((item, i) => (
+              <FaqRow key={i} item={item} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main export ─────────────────────────────────────────────────────────────
+
+interface Props {
+  artifact: unknown;
+  variant?: 'card' | 'detail';
+}
+
+export default function CopywriterArtifact({ artifact, variant = 'card' }: Props): JSX.Element {
+  if (!isCopywriter(artifact)) {
+    return <RawFallback artifact={artifact} />;
+  }
+
+  if (variant === 'detail') {
+    return <DetailView {...artifact} />;
+  }
+
+  return <CardView {...artifact} />;
 }

@@ -78,6 +78,9 @@ importers:
       '@studio/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@thesvg/react':
+        specifier: file:../../../../thesvg/packages/react
+        version: file:../../thesvg/packages/react(react@18.3.1)
       framer-motion:
         specifier: ^11.0.0
         version: 11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -463,6 +466,12 @@ packages:
 
   '@swc/helpers@0.5.5':
     resolution: {integrity: sha512-KGYxvIOXcceOAbEk4bi/dVLEK9z8sZ0uBB3Il5b1rhfClSpcX0yfRO0KmTkqR2cnQDymwLB+25ZyMzICg/cm/A==}
+
+  '@thesvg/react@file:../../thesvg/packages/react':
+    resolution: {directory: ../../thesvg/packages/react, type: directory}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: '>=18'
 
   '@types/better-sqlite3@7.6.13':
     resolution: {integrity: sha512-NMv9ASNARoKksWtsq/SHakpYAYnhBrQgGD8zkLYk/jaK8jUGn08CfEdTRgYhMypUQAfzSP8W6gNLe0q19/t4VA==}
@@ -1631,6 +1640,10 @@ snapshots:
     dependencies:
       '@swc/counter': 0.1.3
       tslib: 2.8.1
+
+  '@thesvg/react@file:../../thesvg/packages/react(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
 
   '@types/better-sqlite3@7.6.13':
     dependencies:

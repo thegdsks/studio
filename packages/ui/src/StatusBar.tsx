@@ -43,11 +43,12 @@ export function StatusBar({
         // Glass surface
         'bg-surface/60 backdrop-blur-glass',
         'border-t border-white/[0.08]',
-        // Positioning
-        'sticky bottom-0 z-40',
+        // Positioning — sticky bottom, offset from sidebar on md+ to align with topbar
+        'sticky bottom-0 z-30',
         'relative',
         className,
       )}
+      style={{ marginLeft: 'var(--sidebar-width)' }}
     >
       {/* Progress line — 2px accent bar at very top of the bar */}
       {hasProgress && (

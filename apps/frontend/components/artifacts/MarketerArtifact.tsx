@@ -9,13 +9,19 @@ interface ProductHunt {
   description: string;
 }
 
+interface HnShow {
+  title: string;
+  body?: string;
+}
+
 interface MarketerShape {
   tweet_thread?: string[];
   x?: string[];
+  x_thread?: string[];
   producthunt?: ProductHunt;
   productHunt?: ProductHunt;
-  hn_show?: string;
-  hackerNews?: string;
+  hn_show?: string | HnShow;
+  hackerNews?: string | HnShow;
   linkedin_post?: string;
 }
 
@@ -25,12 +31,22 @@ function isMarketer(a: unknown): a is MarketerShape {
   return (
     'tweet_thread' in o ||
     'x' in o ||
+    'x_thread' in o ||
     'producthunt' in o ||
     'productHunt' in o ||
     'hn_show' in o ||
     'hackerNews' in o ||
     'linkedin_post' in o
   );
+}
+
+function normalizeHn(hn: string | HnShow | undefined): { title: string; body?: string } | null {
+  if (!hn) return null;
+  if (typeof hn === 'string') return { title: hn };
+  if (typeof hn === 'object' && typeof hn.title === 'string') {
+    return { title: hn.title, body: typeof hn.body === 'string' ? hn.body : undefined };
+  }
+  return null;
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -109,17 +125,21 @@ function ProductHuntPanel({ ph }: { ph: ProductHunt }) {
   );
 }
 
-function HNPanel({ title }: { title: string }) {
+function HNPanel({ title, body }: { title: string; body?: string }) {
+  const copyText = body ? `Show HN: ${title}\n\n${body}` : `Show HN: ${title}`;
   return (
     <div className="rounded-lg border border-border bg-surface p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-label-sm font-mono text-text-faint uppercase tracking-wider">Hacker News</p>
-        <CopyButton text={`Show HN: ${title}`} />
+        <CopyButton text={copyText} />
       </div>
       <div className="bg-surface-raised rounded px-3 py-1.5">
         <span className="text-label-sm font-mono text-accent uppercase tracking-wider">HN</span>
       </div>
       <p className="text-body-md text-text font-medium">Show HN: {title}</p>
+      {body && (
+        <p className="text-body-sm text-text-muted whitespace-pre-wrap">{body}</p>
+      )}
       <p className="font-mono text-mono-sm text-text-faint">0 points by you 0 minutes ago | 0 comments</p>
     </div>
   );
@@ -148,6 +168,7 @@ function LinkedInPanel({ post }: { post: string }) {
 
 interface Props {
   artifact: unknown;
+  variant?: 'card' | 'detail';
 }
 
 export default function MarketerArtifact({ artifact }: Props): JSX.Element {
@@ -155,9 +176,9 @@ export default function MarketerArtifact({ artifact }: Props): JSX.Element {
     return <RawFallback artifact={artifact} />;
   }
 
-  const xPosts = artifact.tweet_thread ?? artifact.x ?? [];
+  const xPosts = artifact.tweet_thread ?? artifact.x ?? artifact.x_thread ?? [];
   const ph = artifact.producthunt ?? artifact.productHunt;
-  const hn = artifact.hn_show ?? artifact.hackerNews;
+  const hn = normalizeHn(artifact.hn_show ?? artifact.hackerNews);
   const li = artifact.linkedin_post;
 
   const hasContent = xPosts.length > 0 || ph || hn || li;
@@ -169,7 +190,7 @@ export default function MarketerArtifact({ artifact }: Props): JSX.Element {
     <div className="space-y-4">
       {xPosts.length > 0 && <XPanel posts={xPosts} />}
       {ph && <ProductHuntPanel ph={ph} />}
-      {hn && <HNPanel title={hn} />}
+      {hn && <HNPanel title={hn.title} body={hn.body} />}
       {li && <LinkedInPanel post={li} />}
     </div>
   );
