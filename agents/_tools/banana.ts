@@ -1,5 +1,6 @@
 import { GoogleGenAI, Modality } from '@google/genai';
 import * as dotenv from 'dotenv';
+import { recordCost, type RunContext } from '../_runtime/costRecorder.js';
 dotenv.config();
 
 const MODEL = 'gemini-2.5-flash-image';
@@ -33,10 +34,11 @@ interface BackdropOpts {
   palette?: { primary: string; secondary?: string };
   aspectRatio?: '1:1' | '3:2' | '16:9' | '4:3';
   apiKey?: string;
+  runContext?: RunContext;
 }
 
 export async function generateBackdrop(opts: BackdropOpts): Promise<BananaResult> {
-  const { brief, palette, aspectRatio = '3:2', apiKey } = opts;
+  const { brief, palette, aspectRatio = '3:2', apiKey, runContext } = opts;
 
   const resolvedKey = apiKey ?? process.env.GEMINI_API_KEY;
   if (!resolvedKey) {
@@ -84,11 +86,22 @@ export async function generateBackdrop(opts: BackdropOpts): Promise<BananaResult
     }
 
     const pngBytes = Buffer.from(imagePart.inlineData.data, 'base64');
+    const durationMs = Date.now() - t0;
+
+    if (runContext) {
+      void recordCost({
+        runContext,
+        model: MODEL,
+        provider: 'banana',
+        images: 1,
+        durationMs,
+      });
+    }
 
     return {
       pngBytes,
       promptUsed,
-      durationMs: Date.now() - t0,
+      durationMs,
     };
   })();
 

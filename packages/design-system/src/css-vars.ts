@@ -1,11 +1,20 @@
 import tokensJson from '../tokens.json' assert { type: 'json' };
 
-type Group = Record<string, string | number | object>;
+/** Token groups that have flat string/number leaves and should be emitted as CSS vars. */
+type EmittableTokens = {
+  color: typeof tokensJson.color;
+  radius: typeof tokensJson.radius;
+  space: typeof tokensJson.space;
+  motion: typeof tokensJson.motion;
+  shadow: typeof tokensJson.shadow;
+  blur: typeof tokensJson.blur;
+  size: typeof tokensJson.size;
+};
 
 function flatten(obj: object, prefix: string, acc: Record<string, string>): void {
   for (const [k, v] of Object.entries(obj)) {
     const key = prefix ? `${prefix}-${k}` : k;
-    if (v && typeof v === 'object' && !Array.isArray(v)) {
+    if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
       flatten(v as object, key, acc);
     } else {
       acc[`--${key}`] = String(v);
@@ -15,21 +24,15 @@ function flatten(obj: object, prefix: string, acc: Record<string, string>): void
 
 /**
  * Emits CSS-variable map for the token groups we surface to the runtime:
- * color, radius, space, motion, shadow, blur, gradient, size.
+ * color, radius, space, motion, shadow, blur, size.
  * Excludes structural groups (status, typography) — those compose other tokens.
  */
 export function cssVars(): Record<string, string> {
   const acc: Record<string, string> = {};
-  const emitGroups: string[] = [
-    'color',
-    'radius',
-    'space',
-    'motion',
-    'shadow',
-    'size',
-  ];
+  const tokens = tokensJson as unknown as EmittableTokens;
+  const emitGroups = ['color', 'radius', 'space', 'motion', 'shadow', 'blur', 'size'] as const;
   for (const group of emitGroups) {
-    const obj = (tokensJson as any)[group];
+    const obj = tokens[group];
     if (obj && typeof obj === 'object') {
       flatten(obj as object, group, acc);
     }

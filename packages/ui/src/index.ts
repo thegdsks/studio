@@ -2,7 +2,12 @@ export { Button } from './Button.js';
 export type { ButtonVariant, ButtonSize } from './Button.js';
 
 export { Card, CardHeader, CardBody, CardFooter } from './Card.js';
-export type { CardTone, CardGlow } from './Card.js';
+export type { CardTone, CardGlow, CardSurface } from './Card.js';
+
+export { PageHeader } from './PageHeader.js';
+
+export { Sidebar } from './Sidebar.js';
+export type { SidebarItem } from './Sidebar.js';
 
 export {
   fadeUp,

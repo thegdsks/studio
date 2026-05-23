@@ -3,6 +3,7 @@ import { updateAgent, emit, stampRunFinished, appendChunk, getRun } from './stor
 import { agentRunners, MOCK_ONLY } from './runners.js';
 import type { RunContext } from './runners.js';
 import { getMockArtifact } from './mockArtifacts.js';
+import { critiqueArtifact } from './critique.js';
 
 // Demo-pacing: stagger agent starts within a wave so the eye can track each one
 // lighting up instead of seeing three pulse simultaneously. 120ms is enough to
@@ -29,7 +30,7 @@ async function staggerRun(
 }
 
 
-async function runAgent(
+export async function runAgent(
   runId: string,
   agentId: AgentId,
   ctx: RunContext,
@@ -41,6 +42,15 @@ async function runAgent(
   // Signal running
   updateAgent(runId, agentId, { status: 'running', startedAt: t0 });
   emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'running' } });
+
+  // When the agent is being refined, pre-emit the feedback so users can see it
+  // in the streaming card without changing the runner internals.
+  if (ctx.refine_feedback) {
+    const preview = ctx.refine_feedback.slice(0, 80);
+    const chunk = `> Refining based on feedback: "${preview}"\n\n`;
+    appendChunk(runId, agentId, chunk);
+    emit(runId, { agent_id: agentId, type: 'chunk', payload: { text: chunk } });
+  }
 
   try {
     if (!runner) throw new Error(`No runner registered for ${agentId}`);
@@ -57,6 +67,7 @@ async function runAgent(
       emit(runId, event);
     });
 
+    // Mark the agent done immediately so the UI flips the card.
     updateAgent(runId, agentId, {
       status: 'done',
       finishedAt: Date.now(),
@@ -67,6 +78,22 @@ async function runAgent(
 
     // eslint-disable-next-line no-console
     console.log(`[orch] ${runId.slice(0, 8)} ${agentId.padEnd(11)} done  ${String(Date.now() - t0).padStart(5)}ms (${mode})`);
+
+    // Run the self-critique asynchronously AFTER the done status is visible.
+    // The UI should show a loading shimmer on the score badge until the meta
+    // event arrives. We intentionally don't await this in staggerRun so it
+    // doesn't delay downstream waves.
+    critiqueArtifact({ agentId, idea: ctx.idea, artifact }).then(({ score, critique }) => {
+      updateAgent(runId, agentId, { quality_score: score, quality_critique: critique });
+      emit(runId, {
+        agent_id: agentId,
+        type: 'meta',
+        payload: { quality_score: score, quality_critique: critique },
+      });
+    }).catch((err: unknown) => {
+      // Critique failures are non-fatal — log only.
+      console.error(`[orch] critique failed for ${agentId}:`, err);
+    });
 
     return artifact;
   } catch (err) {
@@ -81,6 +108,9 @@ async function runAgent(
       finishedAt: Date.now(),
       error: message,
       finalArtifact: fallback,
+      // Fallback artifacts are not worth critiquing — surface a fixed note instead.
+      quality_score: 0,
+      quality_critique: 'Output is a fallback. Re-run for a real result.',
     });
     emit(runId, { agent_id: agentId, type: 'result', payload: { artifact: fallback } });
     emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'error' } });
@@ -125,9 +155,9 @@ export async function startRun(runId: string): Promise<void> {
 
   // ---- WAVE 2: copywriter, designer, legal (need wave 1) ------------------
   await Promise.allSettled([
-    staggerRun(0, runId, 'copywriter', { idea, upstream: wave1Upstream }),
-    staggerRun(1, runId, 'designer',   { idea, upstream: wave1Upstream }),
-    staggerRun(2, runId, 'legal',      { idea, upstream: wave1Upstream, privacy_mode: run.privacy_mode }),
+    staggerRun(0, runId, 'copywriter', { idea, upstream: wave1Upstream, runId }),
+    staggerRun(1, runId, 'designer',   { idea, upstream: wave1Upstream, runId }),
+    staggerRun(2, runId, 'legal',      { idea, upstream: wave1Upstream, runId, privacy_mode: run.privacy_mode }),
   ]);
 
   const copywriterArtifact = getArtifact(runId, 'copywriter');

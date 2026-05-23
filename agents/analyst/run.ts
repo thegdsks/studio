@@ -1,4 +1,5 @@
 import { spawnManagedAgent } from '../_runtime/managedAgent.js';
+import type { RunContext } from '../_runtime/costRecorder.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,6 +14,7 @@ export async function runAnalyst(
     onChunk?: (text: string) => void;
     onToolCall?: (call: { name: string; args: any }) => void;
     onToolResult?: (result: any) => void;
+    runContext?: RunContext;
   }
 ): Promise<AnalystOutput> {
   let promptPath = path.join(__dirname, 'prompt.md');

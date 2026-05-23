@@ -10,6 +10,8 @@
  * Log lines are prefixed with "[gemma]" so they're greppable in demo logs.
  */
 
+import { recordCost, type RunContext } from './costRecorder.js';
+
 const OLLAMA_URL = process.env['OLLAMA_URL'] ?? 'http://localhost:11434';
 const DEFAULT_MODEL = 'gemma4:e4b';
 const DEFAULT_TIMEOUT_MS = 5_000;
@@ -32,6 +34,8 @@ export interface OllamaInferenceOptions {
   onChunk?: (text: string) => void;
   /** Hard cap on the whole call. Default 5s — short, so fallback to Gemini is fast. */
   timeoutMs?: number;
+  /** When provided, a zero-cost event is recorded for parity with cloud calls. */
+  runContext?: RunContext;
 }
 
 export interface OllamaInferenceResult {
@@ -193,10 +197,24 @@ export async function ollamaInference(
     }
   }
 
+  const durationMs = Date.now() - t0;
+
+  // Record a zero-cost event for parity — local Gemma has no API cost.
+  if (opts.runContext) {
+    void recordCost({
+      runContext: opts.runContext,
+      model: opts.model ?? DEFAULT_MODEL,
+      provider: 'gemma',
+      inputTokens: 0,
+      outputTokens: 0,
+      durationMs,
+    });
+  }
+
   return {
     output,
     structured,
-    durationMs: Date.now() - t0,
+    durationMs,
     ranLocally: true,
   };
 }
