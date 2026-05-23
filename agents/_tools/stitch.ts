@@ -29,17 +29,15 @@ export async function stitchGenerate(
 
   const prompt = `You are a frontend developer. Write a single-file landing page HTML code based on this startup brief: "${brief}". Style: ${style}. Use Tailwind CSS via CDN. Output ONLY raw HTML, no markdown wrappers, no backticks.`;
 
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 20000); // 20s timeout
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error("Stitch generation timed out")), 20000);
+  });
 
+  const executionPromise = async (): Promise<StitchResult> => {
     const response = await client.models.generateContent({
       model: 'gemini-3.5-flash',
-      contents: prompt,
-      signal: controller.signal
+      contents: prompt
     });
-
-    clearTimeout(timer);
 
     const rawText = response.text || "";
     let code = rawText.trim();
@@ -63,6 +61,10 @@ export async function stitchGenerate(
       mockupUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
       exportedCode: code
     };
+  };
+
+  try {
+    return await Promise.race([executionPromise(), timeoutPromise]);
   } catch (err) {
     console.warn("[Stitch] generation failed, using fallback:", err);
     return fallbackResult;

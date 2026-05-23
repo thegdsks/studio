@@ -4,6 +4,10 @@ import { getEmitter, getBuffer, getRun } from './store.js';
 
 export function sseHandler(req: Request, res: Response): void {
   const { id } = req.params;
+  if (!id) {
+    res.status(400).json({ error: 'Missing run id' });
+    return;
+  }
 
   const run = getRun(id);
   if (!run) {

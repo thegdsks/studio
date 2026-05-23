@@ -1,5 +1,7 @@
 'use client';
 
+import { Label } from '@studio/ui';
+
 interface ExampleChipsProps {
   onSelect: (example: string) => void;
 }
@@ -13,19 +15,17 @@ const EXAMPLES = [
 export default function ExampleChips({ onSelect }: ExampleChipsProps) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      <span className="text-xs text-slate-500 mr-1">Try:</span>
+      <Label className="mr-1">Try</Label>
       {EXAMPLES.map((example) => (
         <button
           key={example}
           type="button"
           onClick={() => onSelect(example)}
           className="
-            rounded-full border border-slate-800
-            bg-slate-900 px-3 py-1.5
-            text-xs text-slate-400
-            hover:border-sky-400/50 hover:text-sky-300 hover:bg-slate-800
-            transition-colors
-            focus:outline-none focus:ring-2 focus:ring-sky-400/40
+            rounded-full border border-border bg-surface-raised
+            px-3 py-1.5 text-body-sm text-text-muted
+            hover:border-border-primary hover:text-text
+            transition-colors duration-state ease-ease
           "
         >
           {example}

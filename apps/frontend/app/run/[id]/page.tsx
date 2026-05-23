@@ -2,8 +2,10 @@
 
 import { useEffect, useReducer, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import type { Agent, AgentEvent, AgentId } from '@studio/shared';
 import { AGENT_IDS, AGENT_REGISTRY } from '@studio/shared';
+import { Button, Label } from '@studio/ui';
 import { subscribeRun } from '@/lib/sse-client';
 import AgentCard from '@/components/AgentCard';
 import FinalKitModal from '@/components/FinalKitModal';
@@ -162,32 +164,34 @@ export default function RunPage({ params }: RunPageProps) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+      <header className="sticky top-0 z-header border-b border-border bg-surface-glass backdrop-blur-glass">
+        <div className="mx-auto max-w-page px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6">
           <div className="flex-1 min-w-0">
             {idea ? (
-              <p className="text-sm text-slate-300 font-medium truncate">
-                <span className="text-slate-500 mr-2">Idea:</span>
+              <p className="text-body-sm text-text truncate">
+                <Label className="mr-2">Idea</Label>
                 {idea}
               </p>
             ) : (
-              <p className="text-sm text-slate-500 italic">Loading…</p>
+              <p className="text-body-sm text-text-faint italic">Loading…</p>
             )}
           </div>
-          <div className="flex items-center gap-4 flex-shrink-0">
-            <span className="text-xs tabular-nums text-slate-500">
-              ⏱ {elapsed}
+          <div className="flex items-center gap-5 flex-shrink-0 font-mono text-mono-sm tabular-nums">
+            <span className="text-text-faint">
+              <Label className="mr-1.5">elapsed</Label>
+              <span className="text-text">{elapsed}</span>
             </span>
-            <span className="text-xs font-medium text-slate-400">
-              <span className="text-slate-100">{doneCount}</span>
-              <span className="text-slate-500"> / 9 complete</span>
+            <span className="text-text-faint">
+              <Label className="mr-1.5">progress</Label>
+              <span className="text-text">{doneCount}</span>
+              <span className="text-text-faint"> / 9</span>
             </span>
           </div>
         </div>
       </header>
 
       {/* Grid */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-6">
+      <main className="flex-1 mx-auto w-full max-w-page px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {AGENT_IDS.map((id) => {
             const agent = agents[id];
@@ -201,31 +205,20 @@ export default function RunPage({ params }: RunPageProps) {
       <AnimatePresence>
         {runComplete && (
           <motion.div
-            className="fixed bottom-6 left-0 right-0 z-20 flex justify-center pointer-events-none"
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 60, opacity: 0 }}
-            transition={{
-              type: 'spring',
-              stiffness: 300,
-              damping: 22,
-            }}
+            className="fixed bottom-6 left-0 right-0 z-overlay flex justify-center pointer-events-none"
+            initial={{ y: 40, opacity: 0, scale: 0.96 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 40, opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <button
-              type="button"
+            <Button
+              size="lg"
               onClick={() => setModalOpen(true)}
-              className="
-                pointer-events-auto
-                flex items-center gap-2
-                rounded-2xl bg-sky-500 hover:bg-sky-400
-                px-7 py-3.5 text-sm font-bold text-slate-950
-                shadow-lg shadow-sky-500/30
-                transition-colors
-                focus:outline-none focus:ring-2 focus:ring-sky-300
-              "
+              className="pointer-events-auto shadow-glow-iris-lg"
+              trailingIcon={<ArrowRight className="h-4 w-4" />}
             >
-              View full kit →
-            </button>
+              View full kit
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>

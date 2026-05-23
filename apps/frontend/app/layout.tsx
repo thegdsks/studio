@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
+import { ThemeStyle } from '@/components/system/ThemeProvider';
 import './globals.css';
 
 const inter = Inter({
@@ -7,11 +8,21 @@ const inter = Inter({
   variable: '--font-inter',
   display: 'swap',
 });
+const display = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Studio · 9 agents, one launch kit',
+  title: 'Studio — nine specialists, one launch',
   description:
-    'Type one sentence describing your startup idea. Nine specialist AI agents produce a complete launch kit — brand, logo, landing page, copy, legal, prospects, competitors, launch posts, and strategy — in minutes.',
+    'One sentence in. Nine specialist agents in parallel. A complete startup launch kit out — brand, logo, landing page, copy, legal, prospects, competitors, posts, strategy.',
 };
 
 export default function RootLayout({
@@ -20,8 +31,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`dark ${inter.variable}`}>
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={`${inter.variable} ${display.variable} ${mono.variable}`}
+    >
+      <head>
+        <ThemeStyle />
+      </head>
+      <body className="min-h-screen bg-bg text-text antialiased">{children}</body>
     </html>
   );
 }

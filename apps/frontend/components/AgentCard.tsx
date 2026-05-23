@@ -1,143 +1,47 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import {
-  CircleNotch,
-  CheckCircle,
-  WarningCircle,
-  Clock,
-} from '@phosphor-icons/react';
+import { ChevronRight } from 'lucide-react';
 import type { Agent } from '@studio/shared';
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Chip,
+  Label,
+  Mono,
+  StatusBadge,
+  StatusDot,
+  type CardTone,
+} from '@studio/ui';
 
 interface AgentCardProps {
   agent: Agent;
 }
 
-function StatusIcon({ status }: { status: Agent['status'] }) {
-  switch (status) {
-    case 'running':
-      return (
-        <CircleNotch
-          className="h-4 w-4 text-sky-400 animate-spin"
-          weight="bold"
-        />
-      );
-    case 'done':
-      return (
-        <CheckCircle
-          className="h-4 w-4 text-emerald-400"
-          weight="fill"
-        />
-      );
-    case 'error':
-      return (
-        <WarningCircle
-          className="h-4 w-4 text-red-400"
-          weight="fill"
-        />
-      );
-    case 'queued':
-    default:
-      return (
-        <Clock
-          className="h-4 w-4 text-slate-500"
-          weight="regular"
-        />
-      );
-  }
-}
-
-function StatusLabel({ status }: { status: Agent['status'] }) {
-  const labels: Record<Agent['status'], string> = {
-    queued: 'Queued',
-    running: 'Running',
-    done: 'Done',
-    error: 'Error',
-  };
-
-  const colors: Record<Agent['status'], string> = {
-    queued: 'text-slate-500',
-    running: 'text-sky-400',
-    done: 'text-emerald-400',
-    error: 'text-red-400',
-  };
-
-  return (
-    <motion.span
-      className={`text-xs font-medium ${colors[status]}`}
-      animate={
-        status === 'running'
-          ? { scale: [1, 1.02, 1] }
-          : { scale: 1 }
-      }
-      transition={
-        status === 'running'
-          ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }
-          : {}
-      }
-    >
-      {labels[status]}
-    </motion.span>
-  );
-}
-
-function ArtifactPreview({ artifact }: { artifact: unknown }) {
-  const [expanded, setExpanded] = useState(false);
-
-  if (artifact === null || artifact === undefined) return null;
-
-  const summary = (() => {
-    if (typeof artifact === 'string') {
-      return artifact.slice(0, 120) + (artifact.length > 120 ? '…' : '');
-    }
-    if (Array.isArray(artifact)) {
-      return `${artifact.length} item${artifact.length !== 1 ? 's' : ''}`;
-    }
-    if (typeof artifact === 'object') {
-      const keys = Object.keys(artifact as object);
-      return keys.slice(0, 3).join(', ') + (keys.length > 3 ? '…' : '');
-    }
-    return String(artifact);
-  })();
-
-  return (
-    <div className="mt-2 border-t border-slate-800 pt-2">
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="text-xs text-slate-500 hover:text-sky-400 transition-colors flex items-center gap-1"
-      >
-        <span>{expanded ? '▾' : '▸'}</span>
-        <span className="truncate">{summary}</span>
-      </button>
-      {expanded && (
-        <pre className="mt-2 text-xs text-slate-400 bg-slate-950 rounded-lg p-2 overflow-auto max-h-40 whitespace-pre-wrap break-all">
-          {JSON.stringify(artifact, null, 2)}
-        </pre>
-      )}
-    </div>
-  );
-}
+const cardToneByStatus: Record<Agent['status'], CardTone> = {
+  queued: 'resting',
+  running: 'active',
+  done: 'resting',
+  error: 'error',
+};
 
 export default function AgentCard({ agent }: AgentCardProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [flashDone, setFlashDone] = useState(false);
   const prevStatusRef = useRef<Agent['status']>(agent.status);
 
-  // Auto-scroll streaming text to bottom
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
-    }
+    if (el) el.scrollTop = el.scrollHeight;
   }, [agent.streamedText]);
 
-  // Flash green border when status flips to done
   useEffect(() => {
     if (prevStatusRef.current !== 'done' && agent.status === 'done') {
       setFlashDone(true);
-      const timer = setTimeout(() => setFlashDone(false), 1000);
+      const timer = setTimeout(() => setFlashDone(false), 600);
       prevStatusRef.current = agent.status;
       return () => clearTimeout(timer);
     }
@@ -145,92 +49,108 @@ export default function AgentCard({ agent }: AgentCardProps) {
     return undefined;
   }, [agent.status]);
 
-  const borderColor = flashDone
-    ? 'border-emerald-500'
-    : agent.status === 'error'
-    ? 'border-red-900/60'
-    : agent.status === 'running'
-    ? 'border-sky-900/60'
-    : 'border-slate-800';
+  const tone: CardTone = flashDone ? 'success' : cardToneByStatus[agent.status];
 
-  // Fade-in effect: wrap only the last 60 chars of streamedText
-  const text = agent.streamedText;
   const FADE_LEN = 60;
-  const stableText = text.length > FADE_LEN ? text.slice(0, text.length - FADE_LEN) : '';
-  const fadingText = text.length > FADE_LEN ? text.slice(text.length - FADE_LEN) : text;
+  const text = agent.streamedText;
+  const { stable, fading } = useMemo(
+    () => ({
+      stable: text.length > FADE_LEN ? text.slice(0, text.length - FADE_LEN) : '',
+      fading: text.length > FADE_LEN ? text.slice(text.length - FADE_LEN) : text,
+    }),
+    [text],
+  );
 
   return (
-    <div
-      className={`
-        flex flex-col rounded-xl border bg-slate-900 transition-colors duration-300
-        ${borderColor}
-      `}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+    <Card tone={tone} className="h-agent-card">
+      <CardHeader>
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-lg leading-none select-none">{agent.emoji}</span>
-          <span className="text-sm font-semibold text-slate-100 truncate">
-            {agent.name}
-          </span>
+          <span aria-hidden className="text-base leading-none select-none">{agent.emoji}</span>
+          <span className="text-title-md text-text truncate">{agent.name}</span>
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-          <StatusIcon status={agent.status} />
-          <StatusLabel status={agent.status} />
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <StatusDot status={agent.status} />
+          <StatusBadge status={agent.status} />
         </div>
-      </div>
+      </CardHeader>
 
-      {/* Streaming text body */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto max-h-44 px-4 py-3 text-xs text-slate-400 leading-relaxed font-mono"
-      >
+      <CardBody className="streamfade">
         {text === '' && agent.status === 'queued' && (
-          <span className="text-slate-600 italic">Waiting to start…</span>
+          <Mono className="italic">Waiting to start…</Mono>
         )}
         {text === '' && agent.status === 'running' && (
-          <span className="text-slate-600 italic">Thinking…</span>
+          <Mono className="italic">Thinking…</Mono>
         )}
         {text !== '' && (
-          <>
-            <span>{stableText}</span>
+          <div ref={scrollRef} className="font-mono text-mono-md text-text-muted">
+            <span>{stable}</span>
             <motion.span
-              key={fadingText}
+              key={fading}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
             >
-              {fadingText}
+              {fading}
             </motion.span>
-          </>
+          </div>
         )}
         {agent.status === 'error' && agent.error && (
-          <p className="text-red-400 mt-1">{agent.error}</p>
+          <p className="text-body-sm text-error mt-2">{agent.error}</p>
         )}
-      </div>
+      </CardBody>
 
-      {/* Tool trace */}
-      {agent.tools.length > 0 && (
-        <div className="px-4 pb-1">
-          <div className="flex flex-wrap gap-1">
-            {agent.tools.map((tool) => (
-              <span
-                key={tool}
-                className="inline-block rounded px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-500"
-              >
-                {tool}
-              </span>
-            ))}
-          </div>
-        </div>
+      {(agent.tools.length > 0 || agent.finalArtifact !== undefined) && (
+        <CardFooter className="flex flex-col gap-2">
+          {agent.tools.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {agent.tools.map((tool) => (
+                <Chip key={tool}>{tool}</Chip>
+              ))}
+            </div>
+          )}
+          {agent.finalArtifact !== undefined && (
+            <ArtifactPreview artifact={agent.finalArtifact} />
+          )}
+        </CardFooter>
       )}
+    </Card>
+  );
+}
 
-      {/* Artifact footer */}
-      {agent.finalArtifact !== undefined && (
-        <div className="px-4 pb-3">
-          <ArtifactPreview artifact={agent.finalArtifact} />
-        </div>
+function ArtifactPreview({ artifact }: { artifact: unknown }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const summary = summarise(artifact);
+  if (summary === null) return null;
+
+  return (
+    <div className="w-full">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex items-center gap-1.5 text-text-faint hover:text-secondary transition-colors duration-micro w-full text-left"
+      >
+        <ChevronRight
+          className={`h-3 w-3 shrink-0 transition-transform duration-state ${expanded ? 'rotate-90' : ''}`}
+        />
+        <Label className="truncate">{summary}</Label>
+      </button>
+      {expanded && (
+        <pre className="mt-2 text-mono-sm font-mono text-text-muted bg-surface-sunken rounded-md p-2 overflow-auto max-h-40 whitespace-pre-wrap break-all border border-border">
+          {JSON.stringify(artifact, null, 2)}
+        </pre>
       )}
     </div>
   );
+}
+
+function summarise(a: unknown): string | null {
+  if (a === null || a === undefined) return null;
+  if (typeof a === 'string') return a.length > 60 ? a.slice(0, 60) + '…' : a;
+  if (Array.isArray(a)) return `${a.length} item${a.length !== 1 ? 's' : ''}`;
+  if (typeof a === 'object') {
+    const keys = Object.keys(a as object);
+    return keys.slice(0, 3).join(', ') + (keys.length > 3 ? '…' : '');
+  }
+  return String(a);
 }
