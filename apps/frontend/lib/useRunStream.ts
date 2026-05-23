@@ -91,6 +91,10 @@ function agentsReducer(state: AgentsState, action: AgentsAction): AgentsState {
           ranLocally: event.payload.ranLocally ?? prev.ranLocally,
           quality_score: event.payload.quality_score ?? prev.quality_score,
           quality_critique: event.payload.quality_critique ?? prev.quality_critique,
+          deploy_url: event.payload.deploy_url ?? prev.deploy_url,
+          deployment_id: event.payload.deployment_id ?? prev.deployment_id,
+          auto_refined: event.payload.auto_refined ?? prev.auto_refined,
+          original_score: event.payload.original_score ?? prev.original_score,
         },
       };
     case 'error':
