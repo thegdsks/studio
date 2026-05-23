@@ -2,7 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { spawnManagedAgent } from '../../../../../agents/_runtime/managedAgent.js';
-import { DirectorOutput } from './schema.js';
+import type { RunContext } from '../../../../../agents/_runtime/costRecorder.js';
+import { assertDirectorBriefing } from './schema.js';
+import type { DirectorOutput } from './schema.js';
 import type { Run } from '@studio/shared';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,8 +14,9 @@ export async function runDirector(
   runSnapshot: Run,
   callbacks?: {
     onChunk?: (text: string) => void;
-    onToolCall?: (call: { name: string; args: any }) => void;
-    onToolResult?: (result: any) => void;
+    onToolCall?: (call: { name: string; args: unknown }) => void;
+    onToolResult?: (result: unknown) => void;
+    runContext?: RunContext;
   }
 ): Promise<DirectorOutput> {
   let promptPath = path.join(__dirname, 'prompt.md');
@@ -41,25 +44,35 @@ ${JSON.stringify(agent.finalArtifact || agent.streamedText || 'No output.', null
   const result = await spawnManagedAgent({
     agentName: 'director',
     systemPrompt: systemPrompt,
-    userMessage: `Analyze all specialist agent outputs for the idea: "${runSnapshot.idea}" and produce the strategic synthesis report.`,
-    onChunk: callbacks?.onChunk || (() => {}),
-    onToolCall: callbacks?.onToolCall || (() => {}),
-    onToolResult: callbacks?.onToolResult || (() => {})
+    userMessage: `Analyze all specialist agent outputs for the idea: "${runSnapshot.idea}" and produce the strategic synthesis report with executive briefing.`,
+    onChunk: callbacks?.onChunk ?? (() => {}),
+    onToolCall: callbacks?.onToolCall ?? (() => {}),
+    onToolResult: callbacks?.onToolResult ?? (() => {}),
+    runContext: callbacks?.runContext,
   });
 
+  let parsed: unknown;
+
   if (result.structured) {
-    return result.structured as DirectorOutput;
-  }
-
-  // Fallback if parsing failed
-  try {
-    const jsonMatch = result.output.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]) as DirectorOutput;
+    parsed = result.structured;
+  } else {
+    try {
+      const jsonMatch = result.output.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No JSON object found in Director output');
+      }
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch (err) {
+      throw new Error(
+        `[Director] Failed to parse JSON from output: ${err instanceof Error ? err.message : String(err)}\n\nRaw output:\n${result.output.slice(0, 500)}`,
+      );
     }
-  } catch (err) {
-    // handled below
   }
 
-  throw new Error(`Failed to parse output from Director agent: ${result.output}`);
+  const obj = parsed as Record<string, unknown>;
+
+  // Validate the briefing block loudly. No silent fallbacks.
+  assertDirectorBriefing(obj['briefing']);
+
+  return parsed as DirectorOutput;
 }

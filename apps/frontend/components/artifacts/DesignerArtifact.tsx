@@ -1,7 +1,22 @@
 'use client';
 
+/**
+ * DesignerArtifact — grid card renderer for the Designer agent.
+ *
+ * Layout within 220px card height:
+ *   - Top 60 %: composed mockup image (shimmer skeleton while absent)
+ *   - Bottom 40 %: brand name + 3 round palette swatches + font chip + "via Banana" pill
+ *
+ * Fail-loud: non-matching shapes fall through to RawFallback.
+ */
+
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { ImageOff } from 'lucide-react';
+import { Mono, fadeIn, withReducedMotion, usePrefersReducedMotion } from '@studio/ui';
 import RawFallback from './RawFallback';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Palette {
   primary: string;
@@ -11,48 +26,67 @@ interface Palette {
 
 interface BrandKit {
   name?: string;
-  vibe?: string;
+  tagline?: string;
   primary?: string;
-  accent?: string;
+  secondary?: string;
   headlineFont?: string;
   bodyFont?: string;
 }
 
+interface Media {
+  backdropUrl?: string;
+  composedUrl?: string;
+}
+
 interface DesignerShape {
   mockupUrl?: string;
-  exportedCode?: string;
-  logoUrl?: string;
-  logoVariants?: string[];
   palette?: Palette;
   brandKit?: BrandKit;
+  media?: Media;
 }
 
 function isDesigner(a: unknown): a is DesignerShape {
   if (!a || typeof a !== 'object') return false;
   const o = a as Record<string, unknown>;
+  return 'mockupUrl' in o || 'palette' in o || 'brandKit' in o || 'media' in o;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function PaletteSwatch({ hex }: { hex: string }) {
   return (
-    'mockupUrl' in o ||
-    'logoUrl' in o ||
-    'logoVariants' in o ||
-    'palette' in o ||
-    'brandKit' in o ||
-    'exportedCode' in o
+    <span
+      aria-hidden
+      className="inline-block h-5 w-5 rounded-full border border-border shrink-0"
+      style={{ backgroundColor: hex }}
+    />
   );
 }
 
-function Swatch({ hex, label }: { hex: string; label: string }) {
+function ImageSkeleton({ generating }: { generating: boolean }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <div
-        className="h-10 w-10 rounded-md border border-border shadow-sm"
-        style={{ backgroundColor: hex }}
-        title={hex}
+    <div className="relative w-full h-full bg-surface-sunken flex flex-col items-center justify-center gap-2 overflow-hidden">
+      {/* framer-motion shimmer sweep — no CSS keyframes per STYLE.md */}
+      <motion.div
+        className="absolute inset-0 opacity-30"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent 0%, var(--color-surface-raised) 50%, transparent 100%)',
+        }}
+        animate={{ x: ['-100%', '100%'] }}
+        transition={{ duration: 1.6, ease: 'easeInOut', repeat: Infinity }}
       />
-      <span className="font-mono text-mono-sm text-text-faint">{hex}</span>
-      <span className="text-label-sm text-text-muted">{label}</span>
+      <ImageOff className="relative h-4 w-4 text-text-faint" aria-hidden />
+      {generating && (
+        <Mono className="relative text-[10px] text-text-faint">
+          generating brand mockup…
+        </Mono>
+      )}
     </div>
   );
 }
+
+// ─── Main component ──────────────────────────────────────────────────────────
 
 interface Props {
   artifact: unknown;
@@ -60,87 +94,101 @@ interface Props {
 
 export default function DesignerArtifact({ artifact }: Props): JSX.Element {
   const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
 
   if (!isDesigner(artifact)) {
     return <RawFallback artifact={artifact} />;
   }
 
-  const { mockupUrl, logoUrl, logoVariants, palette, brandKit } = artifact;
-  const primaryLogo = logoUrl ?? logoVariants?.[0];
-  const bk = brandKit;
+  const { mockupUrl, palette, brandKit: bk, media } = artifact;
+  const imageUrl = media?.composedUrl ?? mockupUrl;
+  const hasMedia = Boolean(imageUrl);
+  const hasBanana = Boolean(media?.composedUrl);
 
-  const swatches: { hex: string; label: string }[] = [];
+  // Font pairing chip text (e.g. "Space Grotesk · Inter")
+  const fontChip =
+    bk?.headlineFont && bk?.bodyFont
+      ? `${bk.headlineFont} · ${bk.bodyFont}`
+      : bk?.headlineFont ?? null;
+
+  // Build up to 3 swatches from palette (or fall back to brandKit colors)
+  const swatches: string[] = [];
   if (palette) {
-    if (palette.primary) swatches.push({ hex: palette.primary, label: 'Primary' });
-    if (palette.secondary) swatches.push({ hex: palette.secondary, label: 'Secondary' });
-    if (palette.accent) swatches.push({ hex: palette.accent, label: 'Accent' });
-  } else if (bk) {
-    if (bk.primary) swatches.push({ hex: bk.primary, label: 'Primary' });
-    if (bk.accent) swatches.push({ hex: bk.accent, label: 'Accent' });
+    if (palette.primary) swatches.push(palette.primary);
+    if (palette.secondary) swatches.push(palette.secondary);
+    if (palette.accent) swatches.push(palette.accent);
+  } else {
+    if (bk?.primary) swatches.push(bk.primary);
+    if (bk?.secondary) swatches.push(bk.secondary);
   }
 
+  const imageVariants = withReducedMotion(fadeIn, reducedMotion);
+
   return (
-    <div className="space-y-6">
-      {primaryLogo && !imgError && (
-        <div className="flex items-center justify-center bg-surface-raised rounded-lg border border-border p-6">
-          <img
-            src={primaryLogo}
-            alt="Brand logo"
-            className="max-h-24 object-contain"
-            onError={() => setImgError(true)}
-          />
-        </div>
-      )}
-      {(!primaryLogo || imgError) && (
-        <div className="flex items-center justify-center bg-surface-raised rounded-lg border border-border p-6 h-24">
-          <span className="text-body-sm text-text-faint italic">Logo preview unavailable</span>
-        </div>
-      )}
+    <div
+      className="flex flex-col w-full"
+      // pull to card edges — CardBody has horizontal padding
+      style={{ margin: '-4px -16px -12px' }}
+    >
+      {/* ── Top 60 %: mockup image ──────────────────────────────────── */}
+      <div className="relative overflow-hidden" style={{ height: '96px' }}>
+        {hasMedia && !imgError ? (
+          <>
+            {!imgLoaded && <ImageSkeleton generating={false} />}
+            <motion.img
+              src={imageUrl}
+              alt="Brand mockup"
+              className="absolute inset-0 w-full h-full object-cover"
+              variants={imageVariants}
+              initial="hidden"
+              animate={imgLoaded ? 'visible' : 'hidden'}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgError(true)}
+            />
+          </>
+        ) : (
+          <ImageSkeleton generating={!hasMedia} />
+        )}
+      </div>
 
-      {swatches.length > 0 && (
-        <div className="flex flex-wrap gap-4">
-          {swatches.map((s) => (
-            <Swatch key={s.label} hex={s.hex} label={s.label} />
-          ))}
-        </div>
-      )}
-
-      {bk && (bk.headlineFont || bk.bodyFont) && (
-        <div className="space-y-2 border border-border rounded-lg p-4 bg-surface">
-          {bk.headlineFont && (
-            <p
-              className="text-headline-md text-text"
-              style={{ fontFamily: bk.headlineFont }}
+      {/* ── Bottom 40 %: brand info ─────────────────────────────────── */}
+      <div className="flex flex-col justify-between px-4 pb-2 pt-2 gap-1" style={{ minHeight: '64px' }}>
+        {/* Row 1: brand name + round palette swatches */}
+        <div className="flex items-center gap-2 min-w-0">
+          {bk?.name ? (
+            <span
+              className="text-title-md text-text truncate"
+              style={bk.headlineFont ? { fontFamily: bk.headlineFont } : undefined}
             >
-              {bk.name ?? 'Your Brand'} Headline
-            </p>
+              {bk.name}
+            </span>
+          ) : (
+            <span className="text-title-md text-text-faint italic truncate">Brand name</span>
           )}
-          {bk.bodyFont && (
-            <p
-              className="text-body-md text-text-muted"
-              style={{ fontFamily: bk.bodyFont }}
-            >
-              Body copy set in {bk.bodyFont}.
-            </p>
-          )}
-          {bk.vibe && (
-            <p className="text-label-sm font-mono text-text-faint uppercase tracking-wider">
-              Vibe: {bk.vibe}
-            </p>
+          {swatches.length > 0 && (
+            <div className="flex items-center gap-1 shrink-0 ml-auto">
+              {swatches.slice(0, 3).map((hex) => (
+                <PaletteSwatch key={hex} hex={hex} />
+              ))}
+            </div>
           )}
         </div>
-      )}
 
-      {mockupUrl && (
-        <div className="border border-border rounded-lg overflow-hidden">
-          <img
-            src={mockupUrl}
-            alt="Site mockup"
-            className="w-full object-cover"
-            loading="lazy"
-          />
+        {/* Row 2: font pairing chip + via-Banana pill */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {fontChip && (
+            <Mono className="text-[10px] text-text-faint truncate max-w-[140px]">
+              {fontChip}
+            </Mono>
+          )}
+          {hasBanana && (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-accent-soft border border-border-accent font-mono text-[9.5px] text-accent shrink-0 leading-none">
+              via Banana
+            </span>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

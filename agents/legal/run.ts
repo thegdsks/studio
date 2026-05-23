@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import * as dotenv from 'dotenv';
 import { LegalOutput } from './schema.js';
 import { ollamaInference, OllamaUnavailableError } from '../_runtime/ollamaClient.js';
+import { recordCost, type RunContext } from '../_runtime/costRecorder.js';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ export async function runLegal(opts: {
   brandName: string;
   businessType: string;
   privacy_mode?: boolean;
+  runContext?: RunContext;
   callbacks?: RunCallbacks;
 }): Promise<LegalOutput> {
   let promptPath = path.join(__dirname, 'prompt.md');
@@ -41,7 +43,7 @@ export async function runLegal(opts: {
     try {
       const gemmaPrompt =
         promptText.trim() +
-        '\n\nReturn ONLY valid JSON matching: { "terms_of_service": string (markdown), "privacy_policy": string (markdown), "liability_summary": string }. No preamble, no markdown fences.';
+        '\n\nReturn ONLY valid JSON matching: { "terms_md": string (markdown), "privacy_md": string (markdown), "liability_md": string, "cookies_md": string, "risk_checklist": Array<{item:string,severity:"low"|"medium"|"high",mitigation:string}>, "jurisdiction_note": string }. No preamble, no markdown fences.';
 
       const result = await ollamaInference({
         systemPrompt: gemmaPrompt,
@@ -49,6 +51,7 @@ export async function runLegal(opts: {
         responseSchema: 'json',
         onChunk: opts.callbacks?.onChunk,
         timeoutMs: 30_000,
+        runContext: opts.runContext,
       });
 
       if (isLegalOutput(result.structured)) {
@@ -78,6 +81,16 @@ export async function runLegal(opts: {
         responseMimeType: 'application/json',
       },
     });
+
+    if (opts.runContext) {
+      void recordCost({
+        runContext: opts.runContext,
+        model: 'gemini-3.5-flash',
+        provider: 'gemini',
+        inputTokens: (response.usageMetadata as { promptTokenCount?: number } | undefined)?.promptTokenCount ?? 0,
+        outputTokens: (response.usageMetadata as { candidatesTokenCount?: number } | undefined)?.candidatesTokenCount ?? 0,
+      });
+    }
 
     const text = response.text || '';
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -112,8 +125,8 @@ function isLegalOutput(value: unknown): value is LegalOutput {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
-    typeof v.terms_of_service === 'string' &&
-    typeof v.privacy_policy === 'string' &&
-    typeof v.liability_summary === 'string'
+    typeof v.terms_md === 'string' &&
+    typeof v.privacy_md === 'string' &&
+    typeof v.liability_md === 'string'
   );
 }

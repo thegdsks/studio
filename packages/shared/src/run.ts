@@ -28,6 +28,7 @@ export interface RunSummary {
   counts: { queued: number; running: number; done: number; error: number };
   ranLocally: number;
   total: number;
+  cost_usd: number;
 }
 
 export interface ListRunsResponse {

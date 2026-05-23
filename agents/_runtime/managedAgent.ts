@@ -178,13 +178,10 @@ const mockDataMap: Record<string, any> = {
     ]
   },
   designer: {
-    mockupUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
+    mockupUrl: null,
     exportedCode: "<div class=\"min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6\"><h1 class=\"text-5xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent\">Studio</h1><p class=\"mt-4 text-slate-400 max-w-md text-center\">A startup launch kit created in parallel by 9 specialist agents.</p></div>",
-    logoUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
-    logoVariants: [
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
-      "https://images.unsplash.com/photo-1618005198143-e528346d9a59"
-    ],
+    logoUrl: null,
+    logoVariants: [],
     palette: {
       primary: "#0f172a",
       secondary: "#6366f1",

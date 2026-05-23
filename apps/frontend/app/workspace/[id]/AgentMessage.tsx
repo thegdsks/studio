@@ -54,7 +54,7 @@ export function AgentMessage({ agent, runId, pinned, onPin, messageRef }: AgentM
 
   return (
     <motion.div
-      ref={messageRef}
+      ref={messageRef as React.RefObject<HTMLDivElement> | undefined}
       layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}

@@ -1,4 +1,5 @@
 import { spawnManagedAgent } from '../_runtime/managedAgent.js';
+import type { RunContext } from '../_runtime/costRecorder.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,6 +15,7 @@ export async function runDesigner(
     onChunk?: (text: string) => void;
     onToolCall?: (call: { name: string; args: any }) => void;
     onToolResult?: (result: any) => void;
+    runContext?: RunContext;
   }
 ): Promise<DesignerOutput> {
   let promptPath = path.join(__dirname, 'prompt.md');
@@ -62,9 +64,10 @@ export async function runDesigner(
     systemPrompt: systemPrompt,
     userMessage: `Create the visual identity and mockups for the brand: ${brandName}`,
     tools: tools,
-    onChunk: callbacks?.onChunk || (() => {}),
-    onToolCall: callbacks?.onToolCall || (() => {}),
-    onToolResult: callbacks?.onToolResult || (() => {})
+    onChunk: callbacks?.onChunk ?? (() => {}),
+    onToolCall: callbacks?.onToolCall ?? (() => {}),
+    onToolResult: callbacks?.onToolResult ?? (() => {}),
+    runContext: callbacks?.runContext,
   });
 
   if (result.structured) {

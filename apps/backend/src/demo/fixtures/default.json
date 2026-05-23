@@ -1,0 +1,184 @@
+{
+  "runId": "demo-default",
+  "idea": "Coffee subscription for remote workers",
+  "events": [
+    { "t_ms": 200,  "agent_id": "strategist",  "type": "status",  "payload": { "status": "running" } },
+    { "t_ms": 400,  "agent_id": "namer",        "type": "status",  "payload": { "status": "running" } },
+    { "t_ms": 600,  "agent_id": "designer",     "type": "status",  "payload": { "status": "running" } },
+
+    { "t_ms": 1200, "agent_id": "strategist",   "type": "chunk",   "payload": { "text": "Positioning: the only coffee subscription built around deep-work rituals" } },
+    { "t_ms": 2400, "agent_id": "strategist",   "type": "chunk",   "payload": { "text": " — curated by focus scientists, delivered weekly.\nICP: remote knowledge workers, 28-42, $90k+, who treat their home office as a performance environment." } },
+    { "t_ms": 3800, "agent_id": "strategist",   "type": "result",  "payload": { "artifact": {
+      "positioning": "The only coffee subscription built around deep-work rituals, curated by focus scientists and delivered weekly.",
+      "icp": "Remote knowledge workers, 28-42, household income $90k+, who treat their home office as a performance environment.",
+      "jtbd": "Give me a reliable ritual that signals the start of focused work without the distraction of deciding what to brew.",
+      "three_risks": [
+        "Commoditisation risk: Blue Bottle and Trade already occupy premium ground.",
+        "Churn at month 3 when novelty fades and the subscription feels routine.",
+        "Logistics: single-origin freshness windows demand tight roast-to-ship SLAs."
+      ]
+    }}},
+    { "t_ms": 4000, "agent_id": "strategist",   "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 4100, "agent_id": "strategist",   "type": "meta",    "payload": { "quality_score": 88, "quality_critique": "Add a quantified market size estimate to strengthen the positioning section." } },
+
+    { "t_ms": 1800, "agent_id": "namer",         "type": "chunk",   "payload": { "text": "Generating brand names anchored in focus, ritual, and craft..." } },
+    { "t_ms": 3200, "agent_id": "namer",         "type": "chunk",   "payload": { "text": "\n\nTop candidates: Deepbrew, Focused Origin, The Flow Roast, Meridian Coffee Co, Stillground." } },
+    { "t_ms": 4500, "agent_id": "namer",         "type": "result",  "payload": { "artifact": {
+      "names": [
+        { "name": "Deepbrew",            "domain": "deepbrew.com",            "available": true,  "rationale": "Merges deep work with brewing — memorable and direct." },
+        { "name": "Focused Origin",      "domain": "focusedorigin.com",       "available": true,  "rationale": "Premium single-origin signal plus the focus positioning." },
+        { "name": "The Flow Roast",      "domain": "theflowroast.com",        "available": false, "rationale": "Taps flow-state language familiar to the ICP." },
+        { "name": "Meridian Coffee Co",  "domain": "meridiancoffeeco.com",    "available": true,  "rationale": "Meridian connotes peak performance and a geographic craft feel." },
+        { "name": "Stillground",         "domain": "stillground.coffee",      "available": true,  "rationale": "Evokes stillness (focus) and grounds (coffee) in one word." }
+      ]
+    }}},
+    { "t_ms": 4700, "agent_id": "namer",         "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 4800, "agent_id": "namer",         "type": "meta",    "payload": { "quality_score": 82, "quality_critique": "Include trademark clearance notes for the top two candidates." } },
+
+    { "t_ms": 2200, "agent_id": "designer",      "type": "chunk",   "payload": { "text": "Palette direction: deep espresso brown, morning mist slate, a single accent in warm amber..." } },
+    { "t_ms": 4000, "agent_id": "designer",      "type": "chunk",   "payload": { "text": "\nTypography: Space Grotesk for headings (technical yet warm), Lora for body (editorial authority)." } },
+    { "t_ms": 5200, "agent_id": "designer",      "type": "result",  "payload": { "artifact": {
+      "palette": {
+        "primary":    "#2C1810",
+        "accent":     "#C8832A",
+        "background": "#F5F0EB",
+        "surface":    "#FFFFFF",
+        "text":       "#1A1208"
+      },
+      "typography": { "heading": "Space Grotesk", "body": "Lora" },
+      "logoDescription": "Wordmark 'Deepbrew' in Space Grotesk Medium, with a minimal hourglass-and-bean mark to the left rendered in amber on espresso.",
+      "uiNotes": "Cards use 12px radius, 1px warm-grey borders, and a subtle paper-texture CSS noise overlay at 4% opacity."
+    }}},
+    { "t_ms": 5400, "agent_id": "designer",      "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 5500, "agent_id": "designer",      "type": "meta",    "payload": { "quality_score": 91, "quality_critique": "Provide a dark-mode variant palette to round out the design system." } },
+
+    { "t_ms": 5600, "agent_id": "copywriter",    "type": "status",  "payload": { "status": "running" } },
+    { "t_ms": 5800, "agent_id": "marketer",      "type": "status",  "payload": { "status": "running" } },
+    { "t_ms": 6000, "agent_id": "developer",     "type": "status",  "payload": { "status": "running" } },
+
+    { "t_ms": 7000, "agent_id": "copywriter",    "type": "chunk",   "payload": { "text": "Hero: \"Your best work deserves better coffee.\"\nSub: Deepbrew ships weekly micro-lots roasted within 48 hours of dispatch." } },
+    { "t_ms": 9500, "agent_id": "copywriter",    "type": "chunk",   "payload": { "text": "\n\nFeatures: Flow-matched roast profiles / Zero decision fatigue / Freshness guarantee." } },
+    { "t_ms": 11000,"agent_id": "copywriter",    "type": "result",  "payload": { "artifact": {
+      "hero": {
+        "headline":  "Your best work deserves better coffee.",
+        "subheadline":"Deepbrew ships weekly micro-lots roasted within 48 hours of dispatch, calibrated to your focus schedule."
+      },
+      "features": [
+        { "title": "Flow-matched roast profiles",  "body": "Light, medium, or dark — matched to morning ramp-up, midday sprint, or afternoon recovery." },
+        { "title": "Zero decision fatigue",          "body": "Answer three questions once. We handle every subsequent Friday delivery." },
+        { "title": "48-hour freshness guarantee",    "body": "Roasted Tuesday, shipped Wednesday, at your door Thursday. Or your next bag is free." }
+      ],
+      "faq": [
+        { "q": "Can I pause?",  "a": "Yes — skip or pause any week from your dashboard with no penalty." },
+        { "q": "What grind?",   "a": "Whole bean by default. Select your grind on signup." },
+        { "q": "How fresh?",    "a": "Roast date is printed on every bag. Most arrive 2-3 days post-roast." }
+      ]
+    }}},
+    { "t_ms": 11200,"agent_id": "copywriter",    "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 11300,"agent_id": "copywriter",    "type": "meta",    "payload": { "quality_score": 89, "quality_critique": "Add a social-proof line — a real customer quote would convert 12-15% better than the current anonymous benefits list." } },
+
+    { "t_ms": 6800, "agent_id": "marketer",      "type": "chunk",   "payload": { "text": "Drafting launch posts for X, Product Hunt, and Hacker News..." } },
+    { "t_ms": 10200,"agent_id": "marketer",      "type": "chunk",   "payload": { "text": "\n\nX thread hook: \"We built a coffee subscription for people who are serious about deep work. Here's the science behind the roast profiles.\"" } },
+    { "t_ms": 12500,"agent_id": "marketer",      "type": "result",  "payload": { "artifact": {
+      "twitter": {
+        "hook": "We built a coffee subscription for people who are serious about deep work.",
+        "thread": ["Roast profiles mapped to cognitive load phases.", "Freshness as a feature, not a footnote.", "Try Deepbrew — first bag ships Friday."]
+      },
+      "product_hunt": {
+        "tagline": "Weekly micro-lot coffee calibrated to your focus schedule.",
+        "description": "Deepbrew matches roast profiles to morning ramp-up, midday sprint, and afternoon recovery. No decisions — three questions, then we handle every Friday delivery."
+      },
+      "hacker_news": {
+        "title": "Show HN: Deepbrew - coffee subscription with roast profiles tied to cognitive performance research",
+        "comment": "Built this after realising I was making 4 different coffee choices per day. ICP is remote workers who already optimise sleep, diet, and light — but never thought about caffeine timing."
+      }
+    }}},
+    { "t_ms": 12700,"agent_id": "marketer",      "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 12800,"agent_id": "marketer",      "type": "meta",    "payload": { "quality_score": 85, "quality_critique": "The HN title is borderline too long; trim to under 80 characters for better click-through." } },
+
+    { "t_ms": 7200, "agent_id": "developer",     "type": "chunk",   "payload": { "text": "Scaffolding Next.js landing page with Tailwind, Stripe Checkout integration..." } },
+    { "t_ms": 10800,"agent_id": "developer",     "type": "chunk",   "payload": { "text": "\n\nDeploying to Vercel. Build completed in 23s. Preview URL incoming." } },
+    { "t_ms": 13500,"agent_id": "developer",     "type": "result",  "payload": { "artifact": {
+      "deployUrl":    "https://deepbrew-demo.vercel.app",
+      "repoUrl":      "https://github.com/studio-demo/deepbrew",
+      "techStack":    ["Next.js 14", "Tailwind CSS", "Stripe Checkout", "Vercel"],
+      "buildTimeMs":  23400,
+      "pageSpeedScore": 97
+    }}},
+    { "t_ms": 13700,"agent_id": "developer",     "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 13800,"agent_id": "developer",     "type": "meta",    "payload": { "quality_score": 92, "quality_critique": "Add a robots.txt and sitemap.xml to the deploy — missing for SEO baseline." } },
+
+    { "t_ms": 14000,"agent_id": "growth",        "type": "status",  "payload": { "status": "running" } },
+    { "t_ms": 14200,"agent_id": "legal",         "type": "status",  "payload": { "status": "running" } },
+    { "t_ms": 14400,"agent_id": "analyst",       "type": "status",  "payload": { "status": "running" } },
+
+    { "t_ms": 15200,"agent_id": "growth",        "type": "chunk",   "payload": { "text": "Identifying 10 warm prospects from public-record sources: Twitter/X bios, LinkedIn headlines, Product Hunt comments..." } },
+    { "t_ms": 18500,"agent_id": "growth",        "type": "chunk",   "payload": { "text": "\n\nPrioritised by: stated remote work + posted about focus/productivity + active in last 30 days." } },
+    { "t_ms": 21000,"agent_id": "growth",        "type": "result",  "payload": { "artifact": {
+      "prospects": [
+        { "handle": "@amywrites",        "platform": "twitter", "signal": "Posts 3x/week about deep work, mentions Chemex in bio.",          "outreachAngle": "Mention her recent thread on morning routines." },
+        { "handle": "@devmartin_io",     "platform": "twitter", "signal": "Remote developer, pinned tweet is a 4-hour Pomodoro log.",         "outreachAngle": "Lead with the roast-profile-by-cognitive-phase angle." },
+        { "handle": "@sara_ux",          "platform": "linkedin","signal": "UX lead at fully-remote SaaS, follows James Clear.",              "outreachAngle": "Connect over habit-stacking; coffee as an anchor habit." },
+        { "handle": "@tomasz_builds",    "platform": "twitter", "signal": "Indie hacker, Product Hunt top hunter, espresso photo weekly.",   "outreachAngle": "Offer early-backer pricing in exchange for a PH vote." },
+        { "handle": "@rachel_nomad",     "platform": "twitter", "signal": "Digital nomad, posts co-working setups, complaints about local coffee.", "outreachAngle": "Position as the one constant in a nomadic setup." },
+        { "handle": "@marcospinto_dev",  "platform": "linkedin","signal": "Senior engineer at distributed team, advocates async culture.",   "outreachAngle": "Async-work identity — coffee that respects your calendar." },
+        { "handle": "@kelsey.focus",     "platform": "twitter", "signal": "Productivity coach, runs 'Deep Work Fridays' newsletter.",        "outreachAngle": "Affiliate partnership pitch — aligns with her brand." },
+        { "handle": "@nishida_remo",     "platform": "twitter", "signal": "Remote-first advocate, quotes Cal Newport weekly.",               "outreachAngle": "Newport's 'ritual' framing maps perfectly to the brand." },
+        { "handle": "@fionadev",         "platform": "linkedin","signal": "Staff engineer, works from home office she designed herself.",    "outreachAngle": "Home office as performance environment — she already believes it." },
+        { "handle": "@ben_async",        "platform": "twitter", "signal": "Async manifesto author, 22k followers, mentions V60 in bio.",     "outreachAngle": "Collab on a 'async-morning-ritual' piece — mutual reach." }
+      ]
+    }}},
+    { "t_ms": 21200,"agent_id": "growth",        "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 21300,"agent_id": "growth",        "type": "meta",    "payload": { "quality_score": 79, "quality_critique": "Add follower counts and engagement rates to let the founder prioritise outreach order." } },
+
+    { "t_ms": 15500,"agent_id": "legal",         "type": "chunk",   "payload": { "text": "Drafting Terms of Service and Privacy Policy for subscription e-commerce, US-based entity..." } },
+    { "t_ms": 19800,"agent_id": "legal",         "type": "chunk",   "payload": { "text": "\nKey clauses: automatic renewal disclosure (ROSCA-compliant), easy cancellation, CCPA data rights." } },
+    { "t_ms": 22500,"agent_id": "legal",         "type": "result",  "payload": { "artifact": {
+      "terms_summary": "Standard e-commerce terms with ROSCA-compliant auto-renewal disclosure, 30-day refund window, and limitation of liability capped at 12 months of subscription fees.",
+      "privacy_summary": "CCPA and GDPR-aligned. Data collected: email, shipping address, payment token (Stripe-held). No sale of personal data. Right to delete honored within 30 days.",
+      "flags": [
+        "Subscription auto-renewal must be disclosed at checkout in bold, above the CTA — Stripe Checkout handles this natively.",
+        "California requires a dedicated 'Do Not Sell My Personal Information' link in the footer.",
+        "If shipping to EU: add a GDPR-compliant cookie banner and data processing addendum for Stripe."
+      ]
+    }}},
+    { "t_ms": 22700,"agent_id": "legal",         "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 22800,"agent_id": "legal",         "type": "meta",    "payload": { "quality_score": 83, "quality_critique": "The flags section should cite specific statute sections (e.g. Cal. Civ. Code 1750) for credibility with legal reviewers." } },
+
+    { "t_ms": 15800,"agent_id": "analyst",       "type": "chunk",   "payload": { "text": "Running competitor teardown: Trade Coffee, Atlas Coffee Club, Blue Bottle, Mistobox..." } },
+    { "t_ms": 20500,"agent_id": "analyst",       "type": "chunk",   "payload": { "text": "\nNo competitor explicitly targets the focus/productivity angle. White space confirmed." } },
+    { "t_ms": 23500,"agent_id": "analyst",       "type": "result",  "payload": { "artifact": {
+      "competitors": [
+        { "name": "Trade Coffee",      "positioning": "Personalised variety — best match algorithm", "price_mo": 18, "weakness": "No focus/productivity angle; broad lifestyle positioning." },
+        { "name": "Atlas Coffee Club", "positioning": "Explore world coffees monthly",               "price_mo": 15, "weakness": "Novelty over ritual; churn likely at month 4-6." },
+        { "name": "Blue Bottle",       "positioning": "Premium craft, direct-to-consumer",          "price_mo": 22, "weakness": "Brand, not outcomes; no behavioural science hook." },
+        { "name": "Mistobox",          "positioning": "Concierge matching with 600+ roasters",      "price_mo": 16, "weakness": "Overwhelming choice; anti-ritual." }
+      ],
+      "whitespace": "No competitor owns the 'deep work ritual' frame. Science-backed roast profiles + zero-decision UX is unoccupied.",
+      "recommended_price": 24,
+      "price_rationale": "Premium to Blue Bottle ($22) is justified by the performance positioning; target $24/mo at 250g."
+    }}},
+    { "t_ms": 23700,"agent_id": "analyst",       "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 23800,"agent_id": "analyst",       "type": "meta",    "payload": { "quality_score": 87, "quality_critique": "Include market size TAM/SAM/SOM figures to complete the investment narrative." } },
+
+    { "t_ms": 24200,"agent_id": "director",      "type": "status",  "payload": { "status": "running" } },
+    { "t_ms": 25000,"agent_id": "director",      "type": "chunk",   "payload": { "text": "Synthesising outputs from all nine specialists into a coherent brand narrative..." } },
+    { "t_ms": 27500,"agent_id": "director",      "type": "chunk",   "payload": { "text": "\n\nCoherence assessment: strong alignment between strategist positioning, copywriter hero, and analyst white space. Minor voice inconsistency between marketer's X thread and copywriter's landing copy — resolved below." } },
+    { "t_ms": 29500,"agent_id": "director",      "type": "result",  "payload": { "artifact": {
+      "coherence_score": 88,
+      "one_line_pitch":  "Deepbrew is a weekly micro-lot coffee subscription that matches roast profiles to deep-work phases, so remote workers never waste a focus window on the wrong brew.",
+      "brand_voice":     "Precise, calm, evidence-led. Never aspirational fluff — always a specific mechanism or outcome.",
+      "hot_take":        "The market is full of 'discover new coffees' subscriptions. Deepbrew wins by being the opposite: the last coffee decision you ever make.",
+      "next_actions": [
+        "Register deepbrew.com (available — buy today).",
+        "Spin up Stripe billing and point the Vercel deploy to a real Stripe product.",
+        "DM @ben_async — highest-leverage outreach given his audience and V60 identity.",
+        "Record a 90-second Loom of the ordering flow for the Product Hunt launch."
+      ]
+    }}},
+    { "t_ms": 29700,"agent_id": "director",      "type": "status",  "payload": { "status": "done" } },
+    { "t_ms": 29800,"agent_id": "director",      "type": "meta",    "payload": { "quality_score": 91, "quality_critique": "The hot take is strong, but add a risk acknowledgment sentence to pre-empt the obvious skeptic question about commoditisation." } },
+
+    { "t_ms": 30000,"agent_id": "__run",         "type": "complete","payload": { "run_id": "demo-default" } }
+  ]
+}

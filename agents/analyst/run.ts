@@ -28,10 +28,11 @@ export async function runAnalyst(
     agentName: 'analyst',
     systemPrompt: systemPrompt,
     userMessage: `Perform a competitive analysis for this startup idea: "${idea}"`,
-    tools: [{ googleSearch: {} }], // Enable Google Search grounding
-    onChunk: callbacks?.onChunk || (() => {}),
-    onToolCall: callbacks?.onToolCall || (() => {}),
-    onToolResult: callbacks?.onToolResult || (() => {})
+    tools: [{ googleSearch: {} }],
+    onChunk: callbacks?.onChunk ?? (() => {}),
+    onToolCall: callbacks?.onToolCall ?? (() => {}),
+    onToolResult: callbacks?.onToolResult ?? (() => {}),
+    runContext: callbacks?.runContext,
   });
 
   if (result.structured) {

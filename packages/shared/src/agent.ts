@@ -61,6 +61,14 @@ export interface Agent {
   iteration?: number;
   /** User feedback that triggered the most recent refine. */
   refined_with?: string;
+  /** Live deployment URL produced by the developer agent. */
+  deploy_url?: string;
+  /** Cloudflare Pages deployment ID or "mock_..." in stub mode. */
+  deployment_id?: string;
+  /** True when the orchestrator automatically refined this agent due to a low quality score. */
+  auto_refined?: boolean;
+  /** Quality score from the initial run, before auto-refine improved it. */
+  original_score?: number;
 }
 
 // SSE event union. The frontend switches on `type` and routes by `agent_id`.
@@ -70,5 +78,5 @@ export type AgentEvent =
   | { agent_id: AgentId; type: 'chunk';  payload: { text: string } }
   | { agent_id: AgentId; type: 'result'; payload: { artifact: unknown } }
   | { agent_id: AgentId; type: 'error';  payload: { message: string } }
-  | { agent_id: AgentId; type: 'meta';   payload: { ranLocally?: boolean; quality_score?: number; quality_critique?: string } }
+  | { agent_id: AgentId; type: 'meta';   payload: { ranLocally?: boolean; quality_score?: number; quality_critique?: string; deploy_url?: string; deployment_id?: string; auto_refined?: boolean; original_score?: number } }
   | { agent_id: '__run'; type: 'complete'; payload: { run_id: string } };

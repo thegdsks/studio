@@ -139,6 +139,7 @@ export function listRunSummaries(): RunSummary[] {
       },
       ranLocally: r.ran_locally,
       total: r.total,
+      cost_usd: r.cost_usd,
     };
     if (r.finished_at !== null) summary.finishedAt = r.finished_at;
     return summary;

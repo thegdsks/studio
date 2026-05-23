@@ -19,6 +19,8 @@ interface CommandPaletteProps {
   textareaRef: RefObject<HTMLTextAreaElement | null>;
   privacyMode: boolean;
   onTogglePrivacy: () => void;
+  /** Latest run id — enables the GO TO WORKSPACE command. */
+  latestRunId?: string;
 }
 
 export default function CommandPalette({
@@ -27,6 +29,7 @@ export default function CommandPalette({
   textareaRef,
   privacyMode,
   onTogglePrivacy,
+  latestRunId,
 }: CommandPaletteProps) {
   const { theme, toggle: toggleTheme } = useTheme();
   const router = useRouter();
@@ -102,6 +105,17 @@ export default function CommandPalette({
       action: () => {
         window.open('https://github.com/thegdsks/studio#readme', '_blank');
         onClose();
+      },
+    },
+    {
+      id: 'workspace',
+      label: 'GO TO WORKSPACE',
+      hint: latestRunId ? latestRunId.slice(0, 8) : 'no active run',
+      icon: <MessageSquare className="h-4 w-4 shrink-0" />,
+      action: () => {
+        if (!latestRunId) return;
+        onClose();
+        router.push(`/workspace/${latestRunId}`);
       },
     },
   ];

@@ -73,7 +73,10 @@ const strategistRunner: AgentRunner = async (ctx, emit) => {
       onToolResult: (res) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
       onLocalRun: () => emit({ agent_id: 'strategist', type: 'meta', payload: { ranLocally: true } }),
     },
-    { privacy_mode: ctx.privacy_mode },
+    {
+      privacy_mode: ctx.privacy_mode,
+      runContext: ctx.runId ? { runId: ctx.runId, agentId: 'strategist' } : undefined,
+    },
   );
   return result;
 };
@@ -90,7 +93,12 @@ const copywriterRunner: AgentRunner = async (ctx, emit) => {
 
   emit({ agent_id: 'copywriter', type: 'chunk', payload: { text: `Crafting copy for ${brandName}…\n` } });
 
-  const result = await runCopywriter({ brandName, positioning, icp });
+  const result = await runCopywriter({
+    brandName,
+    positioning,
+    icp,
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'copywriter' } : undefined,
+  });
 
   const text = JSON.stringify(result, null, 2);
   await streamAsTokens(text, 'copywriter', emit);
@@ -110,7 +118,12 @@ const marketerRunner: AgentRunner = async (ctx, emit) => {
 
   emit({ agent_id: 'marketer', type: 'chunk', payload: { text: `Drafting launch posts for ${brandName}…\n` } });
 
-  const result = await runMarketer({ brandName, positioning, copywriterOutput: copywriterOut ?? {} });
+  const result = await runMarketer({
+    brandName,
+    positioning,
+    copywriterOutput: copywriterOut ?? {},
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'marketer' } : undefined,
+  });
 
   const text = JSON.stringify(result, null, 2);
   await streamAsTokens(text, 'marketer', emit);
@@ -130,6 +143,7 @@ const legalRunner: AgentRunner = async (ctx, emit) => {
     brandName,
     businessType: 'AI SaaS startup platform',
     privacy_mode: ctx.privacy_mode,
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'legal' } : undefined,
     callbacks: {
       onLocalRun: () => emit({ agent_id: 'legal', type: 'meta', payload: { ranLocally: true } }),
     },
@@ -144,7 +158,11 @@ const legalRunner: AgentRunner = async (ctx, emit) => {
 const namerRunner: AgentRunner = async (ctx, emit) => {
   const { runNamer } = await import('../../../agents/namer/run.js');
   emit({ agent_id: 'namer', type: 'chunk', payload: { text: `Searching for creative brand names…\n` } });
-  const result = await runNamer({ idea: ctx.idea, vibe: 'modern, clean, premium tech' });
+  const result = await runNamer({
+    idea: ctx.idea,
+    vibe: 'modern, clean, premium tech',
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'namer' } : undefined,
+  });
   const text = JSON.stringify(result, null, 2);
   await streamAsTokens(text, 'namer', emit);
   return result;
@@ -161,6 +179,7 @@ const designerRunner: AgentRunner = async (ctx, emit) => {
     onChunk: (text) => emit({ agent_id: 'designer', type: 'chunk', payload: { text } }),
     onToolCall: (call) => emit({ agent_id: 'designer', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
     onToolResult: (res) => emit({ agent_id: 'designer', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'designer' } : undefined,
   });
 
   // Banana post-processing: turn the palette into a real branding mockup that
@@ -180,6 +199,7 @@ const designerRunner: AgentRunner = async (ctx, emit) => {
         brief: `Hero backdrop for "${brandName}", a startup whose positioning is: ${positioning.slice(0, 200)}. Premium, calm, abstract. Color story uses ${primary} and ${secondary}.`,
         palette: { primary, secondary },
         aspectRatio: '3:2',
+        runContext: ctx.runId ? { runId: ctx.runId, agentId: 'designer' } : undefined,
       });
 
       const saved = saveMedia({
@@ -254,15 +274,51 @@ const designerRunner: AgentRunner = async (ctx, emit) => {
 
 const developerRunner: AgentRunner = async (ctx, emit) => {
   const { runDeveloper } = await import('../../../agents/developer/run.js');
+  const { deployLandingPage } = await import('./deploy/cloudflare.js');
+
   const designerOut = ctx.upstream['designer'];
   const copywriterOut = ctx.upstream['copywriter'];
+  const namerOut = ctx.upstream['namer'] as { names?: Array<{ name: string }> } | undefined;
+  const brandSlug = namerOut?.names?.[0]?.name ?? 'studio';
 
   const result = await runDeveloper(designerOut ?? {}, copywriterOut ?? {}, {
     onChunk: (text) => emit({ agent_id: 'developer', type: 'chunk', payload: { text } }),
-    onToolCall: (call) => emit({ agent_id: 'developer', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
-    onToolResult: (res) => emit({ agent_id: 'developer', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
+    onToolCall: (call) => emit({ agent_id: 'developer', type: 'chunk', payload: { text: `\n[tool] ${call.name}(…)\n` } }),
+    onToolResult: (res) => emit({ agent_id: 'developer', type: 'chunk', payload: { text: `[result] ${truncate(JSON.stringify(res), 120)}\n` } }),
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'developer' } : undefined,
   });
-  return result;
+
+  // Deploy the generated landing page (real or stubbed via DEPLOY_ENABLED).
+  emit({ agent_id: 'developer', type: 'chunk', payload: { text: '\nDeploying landing page...\n' } });
+
+  const { url: deployUrl, deployment_id: deploymentId } = await deployLandingPage({
+    brandSlug,
+    htmlPayload: { html: result.html },
+  });
+
+  // Broadcast deploy fields via meta so the SSE client can update the card
+  // before finalArtifact lands.
+  emit({
+    agent_id: 'developer',
+    type: 'meta',
+    payload: { deploy_url: deployUrl, deployment_id: deploymentId },
+  });
+
+  emit({
+    agent_id: 'developer',
+    type: 'chunk',
+    payload: { text: `\nLive site: ${deployUrl}\n` },
+  });
+
+  // Merge deploy_url into the artifact. The orchestrator persists this via
+  // updateAgent(finalArtifact), so deploy_url is available to late-joining
+  // clients via agent.finalArtifact.liveUrl / agent.finalArtifact.deploy_url.
+  return {
+    ...result,
+    liveUrl: result.liveUrl ?? deployUrl,
+    deploy_url: deployUrl,
+    deployment_id: deploymentId,
+  };
 };
 
 const growthRunner: AgentRunner = async (ctx, emit) => {
@@ -276,6 +332,7 @@ const growthRunner: AgentRunner = async (ctx, emit) => {
     brandName,
     positioning,
     idea: ctx.idea,
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'growth' } : undefined,
     callbacks: {
       onChunk: (text) => emit({ agent_id: 'growth', type: 'chunk', payload: { text } }),
       onToolCall: (call) => emit({ agent_id: 'growth', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
@@ -292,6 +349,7 @@ const analystRunner: AgentRunner = async (ctx, emit) => {
     onChunk: (text) => emit({ agent_id: 'analyst', type: 'chunk', payload: { text } }),
     onToolCall: (call) => emit({ agent_id: 'analyst', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
     onToolResult: (res) => emit({ agent_id: 'analyst', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'analyst' } : undefined,
   });
   return result;
 };
@@ -309,6 +367,7 @@ const directorRunner: AgentRunner = async (ctx, emit) => {
     onChunk: (text) => emit({ agent_id: 'director', type: 'chunk', payload: { text } }),
     onToolCall: (call) => emit({ agent_id: 'director', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
     onToolResult: (res) => emit({ agent_id: 'director', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
+    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'director' } : undefined,
   });
   return result;
 };

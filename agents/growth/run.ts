@@ -1,4 +1,5 @@
 import { spawnManagedAgent } from '../_runtime/managedAgent.js';
+import type { RunContext } from '../_runtime/costRecorder.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -11,10 +12,11 @@ export async function runGrowth(opts: {
   brandName: string;
   positioning: string;
   idea: string;
+  runContext?: RunContext;
   callbacks?: {
     onChunk?: (text: string) => void;
-    onToolCall?: (call: { name: string; args: any }) => void;
-    onToolResult?: (result: any) => void;
+    onToolCall?: (call: { name: string; args: unknown }) => void;
+    onToolResult?: (result: unknown) => void;
   }
 }): Promise<GrowthOutput> {
   let promptPath = path.join(__dirname, 'prompt.md');
@@ -60,9 +62,10 @@ export async function runGrowth(opts: {
     systemPrompt: systemPrompt,
     userMessage: `Find growth leads and compile prospects for ${opts.brandName}`,
     tools: tools,
-    onChunk: opts.callbacks?.onChunk || (() => {}),
-    onToolCall: opts.callbacks?.onToolCall || (() => {}),
-    onToolResult: opts.callbacks?.onToolResult || (() => {})
+    onChunk: opts.callbacks?.onChunk ?? (() => {}),
+    onToolCall: opts.callbacks?.onToolCall ?? (() => {}),
+    onToolResult: opts.callbacks?.onToolResult ?? (() => {}),
+    runContext: opts.runContext,
   });
 
   if (result.structured) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ExternalLink, Copy, Download } from 'lucide-react';
+import { ExternalLink, Copy, Download, Check } from 'lucide-react';
 import DeveloperArtifact from '@/components/artifacts/DeveloperArtifact';
 import ActionPanel from './ActionPanel';
 import type { ActionButton, MetadataItem } from './ActionPanel';
@@ -30,11 +30,20 @@ interface Props {
 
 export default function DeveloperDetail({ agent, metadata }: Props) {
   const [tab, setTab] = useState<ViewTab>('preview');
+  const [copied, setCopied] = useState(false);
 
   const art = agent.finalArtifact;
   const data = isDeveloper(art) ? art : null;
-  const liveUrl = data?.liveUrl ?? data?.deployedUrl;
+  // Prefer agent.deploy_url (from SSE meta event) over artifact.liveUrl
+  const liveUrl = agent.deploy_url ?? data?.liveUrl ?? data?.deployedUrl;
   const html = data?.html;
+
+  async function handleCopyUrl() {
+    if (!liveUrl) return;
+    await copyToClipboard(liveUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const buttons: ActionButton[] = [
     ...(liveUrl
@@ -69,7 +78,7 @@ export default function DeveloperDetail({ agent, metadata }: Props) {
   ];
 
   const nextSteps = [
-    'Point your custom domain at this Vercel URL.',
+    'Point your custom domain at this Cloudflare Pages URL.',
     'Add Google Analytics.',
     'Set up a 404 page.',
   ];
@@ -82,6 +91,30 @@ export default function DeveloperDetail({ agent, metadata }: Props) {
   return (
     <>
       <div className="flex-1 min-w-0 space-y-8">
+        {liveUrl && (
+          <section className="rounded-lg border border-border-accent bg-surface-raised p-4 flex items-center gap-3">
+            <ExternalLink className="h-5 w-5 text-accent shrink-0" aria-hidden />
+            <a
+              href={liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 min-w-0 font-mono text-mono-sm text-accent truncate hover:underline"
+            >
+              {liveUrl}
+            </a>
+            <button
+              type="button"
+              onClick={() => void handleCopyUrl()}
+              aria-label="Copy deployment URL"
+              className="shrink-0 p-1.5 rounded text-text-muted hover:text-text hover:bg-surface-sunken transition-colors"
+            >
+              {copied
+                ? <Check className="h-4 w-4 text-success" aria-hidden />
+                : <Copy className="h-4 w-4" aria-hidden />}
+            </button>
+          </section>
+        )}
+
         <DeveloperArtifact artifact={art} />
 
         {(liveUrl || html) && (

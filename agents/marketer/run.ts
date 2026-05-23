@@ -4,6 +4,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import * as dotenv from 'dotenv';
 import { MarketerOutput } from './schema.js';
+import { recordCost, type RunContext } from '../_runtime/costRecorder.js';
 
 dotenv.config();
 
@@ -14,7 +15,8 @@ const client = new GoogleGenAI({});
 export async function runMarketer(opts: {
   brandName: string;
   positioning: string;
-  copywriterOutput: any;
+  copywriterOutput: unknown;
+  runContext?: RunContext;
 }): Promise<MarketerOutput> {
   let promptPath = path.join(__dirname, 'prompt.md');
   if (!fs.existsSync(promptPath) && promptPath.includes('/dist/')) {
@@ -38,6 +40,16 @@ export async function runMarketer(opts: {
         responseMimeType: 'application/json',
       }
     });
+
+    if (opts.runContext) {
+      void recordCost({
+        runContext: opts.runContext,
+        model: 'gemini-3.5-flash',
+        provider: 'gemini',
+        inputTokens: (response.usageMetadata as { promptTokenCount?: number } | undefined)?.promptTokenCount ?? 0,
+        outputTokens: (response.usageMetadata as { candidatesTokenCount?: number } | undefined)?.candidatesTokenCount ?? 0,
+      });
+    }
 
     const text = response.text || "";
     const jsonMatch = text.match(/\{[\s\S]*\}/);
