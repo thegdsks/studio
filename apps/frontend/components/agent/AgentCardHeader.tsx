@@ -5,8 +5,10 @@ import type { Agent } from '@studio/shared';
 import { AGENT_REGISTRY } from '@studio/shared';
 import { StatusDot, Mono } from '@studio/ui';
 import { iconFor } from '@/lib/agentIcons';
+import { useDemoMode } from '@/lib/useDemoMode';
+import { providerFor } from '@/lib/providers';
 import QualityBadge from '../QualityBadge';
-import { ViaGemmaPill } from './ViaGemmaPill';
+import { ProviderBadge } from '../ProviderBadge';
 
 interface AgentCardHeaderProps {
   agent: Agent;
@@ -40,6 +42,11 @@ function RefinedChip({ originalScore, refinedScore }: RefinedChipProps) {
 export function AgentCardHeader({ agent, index, interactive }: AgentCardHeaderProps) {
   const AgentIcon = iconFor(agent.id);
   const meta = AGENT_REGISTRY[agent.id];
+  const { demoMode } = useDemoMode();
+  const provider = providerFor(agent.id, agent.ranLocally);
+
+  // Show badge always when ranLocally or in demo mode.
+  const showBadge = agent.ranLocally === true || demoMode;
 
   return (
     <div className="flex items-start justify-between gap-3 px-4 pt-3 pb-2 border-b border-white/[0.04]">
@@ -61,6 +68,15 @@ export function AgentCardHeader({ agent, index, interactive }: AgentCardHeaderPr
               V{agent.iteration}
             </Mono>
           )}
+          {demoMode && (
+            <Mono className="text-micro text-text-faint shrink-0 truncate">
+              {provider.parent === 'google'
+                ? `Google · ${provider.name}`
+                : provider.parent === 'cloudflare'
+                ? `Cloudflare · ${provider.name}`
+                : provider.name}
+            </Mono>
+          )}
         </div>
       </div>
 
@@ -78,7 +94,14 @@ export function AgentCardHeader({ agent, index, interactive }: AgentCardHeaderPr
             refinedScore={agent.quality_score}
           />
         )}
-        {agent.ranLocally && <ViaGemmaPill />}
+        {showBadge && (
+          <ProviderBadge
+            agentId={agent.id}
+            ranLocally={agent.ranLocally}
+            size="sm"
+            variant="chip"
+          />
+        )}
         <StatusDot status={agent.status} />
         {interactive && (
           <ChevronRight

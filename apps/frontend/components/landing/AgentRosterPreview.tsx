@@ -12,6 +12,7 @@ import {
   cardEnter,
   withReducedMotion,
   usePrefersReducedMotion,
+  type CardAccentDomain,
 } from '@studio/ui';
 import { AGENT_IDS, AGENT_REGISTRY, type AgentId } from '@studio/shared';
 import { AGENT_ICON } from '@/lib/agentIcons';
@@ -24,6 +25,22 @@ const ROSTER_IDS = AGENT_IDS.filter((id) => id !== 'director');
 // Zero-padded bracket badge e.g. [01]
 function ordinalBadge(n: number): string {
   return `[${String(n + 1).padStart(2, '0')}]`;
+}
+
+const AGENT_DOMAIN: Partial<Record<AgentId, CardAccentDomain>> = {
+  strategist: 'warm',
+  namer:      'warm',
+  designer:   'violet',
+  copywriter: 'rose',
+  developer:  'cool',
+  marketer:   'primary',
+  growth:     'primary',
+  legal:      'primary',
+  analyst:    'primary',
+};
+
+function getDomain(id: AgentId): CardAccentDomain {
+  return AGENT_DOMAIN[id] ?? 'primary';
 }
 
 // ─── Agent tile ───────────────────────────────────────────────────────────────
@@ -45,8 +62,10 @@ function AgentTile({ id, ordinal }: AgentTileProps) {
       <Card
         as="button"
         surface="glass"
+        curve="panel"
         lift
         interactive
+        accentDomain={getDomain(id)}
         affordance={expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}

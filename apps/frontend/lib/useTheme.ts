@@ -58,7 +58,8 @@ function getInitialTheme(): Theme {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === 'light' || saved === 'dark') return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // Black is the product identity — dark is always the default, no system fallback.
+    return 'dark';
   } catch {
     return 'dark';
   }

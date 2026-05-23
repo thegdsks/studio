@@ -1,46 +1,19 @@
 'use client';
 
 import { useState, useRef, useEffect, Suspense } from 'react';
-import { Play, Settings } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  TopBar,
-  Breadcrumbs,
   PageHeader,
   Button,
   ErrorBoundary,
 } from '@studio/ui';
-import { IdeaInput } from '@/components/landing/IdeaInput';
+import { IdeaInput, CHIP_EXAMPLES } from '@/components/landing/IdeaInput';
 import { AgentRosterPreview } from '@/components/landing/AgentRosterPreview';
 import { LandingStatusBar } from '@/components/landing/LandingStatusBar';
-import SettingsMenu from '@/components/SettingsMenu';
+import { LandingTopBar } from '@/components/landing/LandingTopBar';
+import { LastRunCard } from '@/components/landing/LastRunCard';
 import { startDemoRun } from '@/lib/api';
-
-// ─── Brand slot ───────────────────────────────────────────────────────────────
-
-function Brand() {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="font-mono text-mono-sm text-text uppercase tracking-[0.375em]">STUDIO</span>
-      <span className="font-mono text-label-sm text-text-faint border border-border rounded-sm px-1.5 py-0.5">
-        [v0.1]
-      </span>
-    </div>
-  );
-}
-
-// ─── Meta row slot ────────────────────────────────────────────────────────────
-
-function ReadyMeta() {
-  return (
-    <div className="flex items-center gap-2">
-      <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-status-done" />
-      <span className="font-mono text-label-sm text-text-faint uppercase tracking-[0.3em]">
-        9 specialists ready
-      </span>
-    </div>
-  );
-}
 
 // ─── Demo launcher — needs Suspense because it calls useSearchParams ──────────
 
@@ -76,7 +49,6 @@ export default function LandingPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [idea, setIdea] = useState('');
   const [privacyMode, setPrivacyMode] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [demoError, setDemoError] = useState<string | null>(null);
   const [demoLoading, setDemoLoading] = useState(false);
 
@@ -98,31 +70,6 @@ export default function LandingPage() {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const topBarActions = (
-    <div className="flex items-center gap-1 relative">
-      <span
-        className="font-mono text-label-sm text-text-faint border border-border rounded-sm px-2 min-h-[40px] flex items-center select-none"
-        aria-label="Press Cmd K to open command palette"
-      >
-        Cmd K
-      </span>
-      <button
-        type="button"
-        aria-label="Settings"
-        onClick={() => setSettingsOpen((v) => !v)}
-        className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-sm text-text-muted hover:text-text hover:bg-surface-raised transition-colors duration-micro"
-      >
-        <Settings size={16} aria-hidden="true" />
-      </button>
-      <SettingsMenu
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        privacyMode={privacyMode}
-        onTogglePrivacy={setPrivacyMode}
-      />
-    </div>
-  );
-
   return (
     <ErrorBoundary label="landing">
       {/* Suspense wrapper required for useSearchParams in Next.js 14 app router */}
@@ -131,41 +78,33 @@ export default function LandingPage() {
       </Suspense>
 
       <div className="min-h-screen flex flex-col bg-bg text-text">
-        <TopBar
-          brand={<Brand />}
-          center={
-            <Breadcrumbs
-              items={[
-                { label: 'STUDIO', href: '/' },
-                { label: 'LAUNCH' },
-              ]}
-            />
-          }
-          actions={topBarActions}
-          meta={<ReadyMeta />}
+        <LandingTopBar
+          privacyMode={privacyMode}
+          onTogglePrivacy={setPrivacyMode}
         />
 
-        <main className="flex-1 flex flex-col items-center justify-center gap-10 pt-20 pb-16 px-4">
-          {/* Page hero */}
-          <div className="w-full max-w-2xl">
+        <main className="flex-1 flex flex-col items-center justify-center gap-8 pt-20 pb-16 px-4">
+          {/* Page hero — actions=null, button lives below subtitle */}
+          <div className="w-full max-w-2xl flex flex-col gap-4">
             <PageHeader
               eyebrow="MISSION CONTROL FOR NINE SPECIALISTS"
               title="Pitch an idea. Watch nine specialists ship a real product."
               subtitle="Live agents. Real artifacts. Five minutes."
               divider={false}
-              actions={
-                <Button
-                  variant="secondary"
-                  size="md"
-                  iconLeft={<Play size={16} />}
-                  disabled={demoLoading}
-                  loading={demoLoading}
-                  onClick={() => router.push('/?demo=1')}
-                >
-                  Watch demo run
-                </Button>
-              }
+              actions={null}
             />
+            <div>
+              <Button
+                variant="secondary"
+                size="md"
+                iconLeft={<Play size={16} />}
+                disabled={demoLoading}
+                loading={demoLoading}
+                onClick={() => router.push('/?demo=1')}
+              >
+                Watch demo run
+              </Button>
+            </div>
           </div>
 
           {/* Demo error — visible, never silently swallowed */}
@@ -175,7 +114,7 @@ export default function LandingPage() {
             </p>
           )}
 
-          {/* Hero: the input */}
+          {/* Hero: the input card */}
           <IdeaInput
             idea={idea}
             onIdeaChange={setIdea}
@@ -184,8 +123,25 @@ export default function LandingPage() {
             textareaRef={textareaRef}
           />
 
+          {/* Example chips — horizontal scroll row below input */}
+          <div className="w-full max-w-2xl flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {CHIP_EXAMPLES.map((ex) => (
+              <button
+                key={ex}
+                type="button"
+                onClick={() => { setIdea(ex); textareaRef.current?.focus(); }}
+                className="shrink-0 h-8 px-3 rounded-full border border-border font-mono text-label-sm uppercase tracking-[0.4px] text-text-faint hover:text-text-muted hover:border-border-strong transition-colors duration-[80ms] ease-linear whitespace-nowrap"
+              >
+                {ex}
+              </button>
+            ))}
+          </div>
+
           {/* Ghost agent grid */}
           <AgentRosterPreview />
+
+          {/* Last run mini-card — shows most recent run if any exist */}
+          <LastRunCard />
         </main>
 
         <LandingStatusBar />

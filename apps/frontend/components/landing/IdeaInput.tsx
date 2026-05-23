@@ -19,7 +19,7 @@ const SUGGESTIONS = [
   'coding interview prep coach with real-time hints',
 ] as const;
 
-const CHIP_EXAMPLES = SUGGESTIONS.slice(0, 5);
+export const CHIP_EXAMPLES = SUGGESTIONS.slice(0, 5);
 
 const CYCLING_PLACEHOLDERS = [
   'describe an idea, a frustration, or a feature to ship',
@@ -89,25 +89,27 @@ function IdeaInputInner({ idea, onIdeaChange, textareaRef }: Pick<IdeaInputProps
   }
 
   return (
-    <div className="w-full max-w-2xl flex flex-col gap-4">
+    <div className="w-full max-w-2xl flex flex-col gap-3">
       <div className="relative">
         {/* Ambient glow — runtime-computed radial, cannot be Tailwind */}
         <div
           aria-hidden="true"
           className="absolute pointer-events-none -z-10"
-          style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '640px', height: '420px', background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.06) 0%, transparent 70%)' }}
+          style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '420px', height: '280px', background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.04) 0%, transparent 70%)' }}
         />
 
         <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(); }}>
           <Card
             surface="glass"
+            curve="hero"
+            pattern="dots"
             lift
-            className={['min-h-[176px] relative overflow-hidden transition-[border-color] duration-[80ms] ease-linear', focused ? 'border-accent/40' : ''].join(' ')}
+            className={['relative overflow-hidden transition-[border-color] duration-[80ms] ease-linear', focused ? 'border-accent/40' : ''].join(' ')}
           >
             {/* Ghost-text overlay (aria-hidden mirror of textarea + suffix) */}
             <div
               aria-hidden="true"
-              className="absolute top-0 inset-x-0 pointer-events-none select-none font-mono text-mono-md leading-relaxed px-5 pt-5 pb-16 whitespace-pre-wrap break-words"
+              className="absolute top-0 inset-x-0 pointer-events-none select-none font-mono text-mono-md leading-relaxed px-5 pt-5 pb-5 whitespace-pre-wrap break-words"
             >
               <span className="invisible">{idea}</span>
               {ghost && <span className="text-text-faint opacity-50">{ghost}</span>}
@@ -121,24 +123,15 @@ function IdeaInputInner({ idea, onIdeaChange, textareaRef }: Pick<IdeaInputProps
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
               placeholder={placeholder}
-              rows={4}
+              rows={5}
               autoFocus
               disabled={isLoading}
               aria-label="Describe your idea"
-              className="relative z-10 w-full resize-none bg-transparent font-mono text-mono-md leading-relaxed text-text placeholder:text-text-faint px-5 pt-5 pb-16 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+              className="relative z-10 w-full resize-none bg-transparent font-mono text-mono-md leading-relaxed text-text placeholder:text-text-faint px-5 pt-5 pb-5 min-h-[160px] focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
             />
 
-            <div className="absolute bottom-0 inset-x-0 px-4 pb-3.5 flex items-end justify-between gap-3 z-10">
-              <div className="flex flex-wrap gap-1.5">
-                {CHIP_EXAMPLES.map((ex) => (
-                  <Button key={ex} type="button" variant="ghost" size="sm"
-                    onClick={() => { onIdeaChange(ex); textareaRef.current?.focus(); }}
-                    className="font-mono text-label-sm uppercase tracking-[0.4px] h-7 px-2"
-                  >
-                    {ex}
-                  </Button>
-                ))}
-              </div>
+            {/* Launch row — pinned to bottom of card, right-aligned */}
+            <div className="px-4 pb-4 pt-2 flex items-center justify-end gap-3 z-10">
               <Button
                 type="submit" variant="primary" size="xl"
                 disabled={!hasText || isLoading} loading={isLoading} glow={hasText}

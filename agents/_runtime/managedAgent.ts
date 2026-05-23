@@ -352,12 +352,115 @@ export async function spawnManagedAgent(opts: {
     }, timeoutMs);
   });
 
-  const executionPromise = async () => {
+  // ─── REAL GEMINI PATH ────────────────────────────────────────────────────
+  // The Antigravity preview API requires an `environment` field that returns
+  // 400 in the open-tier API. For the hackathon demo we route every call
+  // through Gemini 3.5 Flash directly via `generateContentStream`, which gives
+  // us real streamed text, real tokens, and real per-call cost. Tools are
+  // executed locally and fed back as additional context for a follow-up call
+  // (single-round tool loop, sufficient for the agents we have).
+  const realGeminiPath = async () => {
+    const model = 'gemini-3.5-flash';
+    let finalOutput = '';
+    const allToolCalls: Array<{ name: string; args: unknown }> = [];
+
+    // Compose system + user + (optional tool catalog hint) into a single prompt.
+    const toolHint = opts.tools && opts.tools.length > 0
+      ? `\n\nYou may call tools. Available tools: ${JSON.stringify(opts.tools, null, 2)}. If you need a tool, respond with a JSON block: {"tool":"<name>","args":{...}}. Otherwise respond with the structured JSON the system prompt requested.`
+      : '';
+    const composedPrompt = `${opts.systemPrompt.trim()}${toolHint}\n\nUser: ${opts.userMessage}\n\nAssistant:`;
+
+    const stream = await client.models.generateContentStream({
+      model,
+      contents: composedPrompt,
+    });
+
+    for await (const chunk of stream as any) {
+      const text: string | undefined = chunk?.text;
+      if (typeof text === 'string' && text.length > 0) {
+        finalOutput += text;
+        opts.onChunk(text);
+      }
+    }
+
+    // Record cost (one Gemini call so far).
+    if (opts.runContext) {
+      try {
+        // Token counts are not returned from generateContentStream; estimate
+        // conservatively from char counts (~4 chars/token).
+        const inputTokens = Math.ceil(composedPrompt.length / 4);
+        const outputTokens = Math.ceil(finalOutput.length / 4);
+        void recordCost({
+          runContext: opts.runContext,
+          model,
+          provider: 'gemini',
+          inputTokens,
+          outputTokens,
+        });
+      } catch {
+        /* never crash on cost */
+      }
+    }
+
+    // Best-effort tool detection: did the model emit a {"tool":...} block?
+    const toolMatch = finalOutput.match(/\{\s*"tool"\s*:\s*"([^"]+)"\s*,\s*"args"\s*:\s*(\{[\s\S]*?\})\s*\}/);
+    if (toolMatch) {
+      const toolName = toolMatch[1] ?? '';
+      let toolArgs: Record<string, unknown> = {};
+      try { toolArgs = JSON.parse(toolMatch[2] ?? '{}'); } catch { /* malformed */ }
+      const call = { name: toolName, args: toolArgs };
+      allToolCalls.push(call);
+      opts.onToolCall(call);
+
+      let toolResult: unknown;
+      try {
+        toolResult = await executeTool(toolName, toolArgs);
+      } catch (err) {
+        toolResult = { error: err instanceof Error ? err.message : String(err) };
+      }
+      opts.onToolResult(toolResult);
+
+      // Follow-up call with the tool result included.
+      const followUp = await client.models.generateContent({
+        model,
+        contents: `${composedPrompt}\n\nTool response (${toolName}): ${JSON.stringify(toolResult)}\n\nNow produce the final JSON output.`,
+      });
+      const followUpText = followUp.text ?? '';
+      finalOutput += `\n\n${followUpText}`;
+      opts.onChunk(`\n${followUpText}`);
+
+      if (opts.runContext) {
+        try {
+          const inputTokens = Math.ceil((composedPrompt.length + JSON.stringify(toolResult).length) / 4);
+          const outputTokens = Math.ceil(followUpText.length / 4);
+          void recordCost({
+            runContext: opts.runContext,
+            model,
+            provider: 'gemini',
+            inputTokens,
+            outputTokens,
+          });
+        } catch { /* never crash on cost */ }
+      }
+    }
+
+    // Parse JSON out of the assistant text.
+    let structured: unknown;
+    const jsonMatch = finalOutput.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try { structured = JSON.parse(jsonMatch[0]); } catch { /* not valid JSON — leave undefined */ }
+    }
+
+    return { output: finalOutput, structured, toolCalls: allToolCalls };
+  };
+
+  const _legacyAntigravityPath = async () => {
+    // RETAINED FOR REFERENCE — produced 400 in open-tier. See realGeminiPath above.
     let previousInteractionId: string | undefined = undefined;
     let currentEnvironmentId: string | undefined = "remote";
     let finalOutput = "";
     const allToolCalls: any[] = [];
-    
+
     let currentInput: any = opts.userMessage;
     let active = true;
 

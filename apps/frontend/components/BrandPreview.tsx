@@ -32,6 +32,7 @@ import {
 import type { BrandKit } from '@studio/ui';
 import { useBrandKitPersistence } from '@/lib/useBrandKitPersistence';
 import { BrandFontPicker } from './BrandFontPicker';
+import { ProviderBadge } from './ProviderBadge';
 import {
   extractBrandKit,
   extractMockupUrl,
@@ -125,9 +126,7 @@ export function BrandPreview({ artifact, runId }: BrandPreviewProps) {
           />
           {withBanana && (
             <div className="absolute top-3 right-3">
-              <span className="inline-flex items-center px-2 py-1 rounded bg-accent-soft border border-border-accent font-mono text-[10px] text-accent leading-none">
-                via Banana
-              </span>
+              <ProviderBadge agentId="designer" size="sm" variant="chip" />
             </div>
           )}
         </motion.div>
