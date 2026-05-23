@@ -25,6 +25,10 @@ const toolRegistry: Record<string, Function> = {
   deploy: async (html: string, projectPath: string) => {
     const { deploy } = await import('../_tools/vercelDeploy.js');
     return await deploy(html, projectPath);
+  },
+  apolloSearch: async (titles: string[], keywords: string[]) => {
+    const { apolloSearch } = await import('../_tools/apollo.js');
+    return await apolloSearch(titles, keywords);
   }
 };
 
