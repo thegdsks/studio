@@ -34,6 +34,7 @@ function initials(name: string): string {
 
 interface Props {
   artifact: unknown;
+  variant?: 'card' | 'detail';
 }
 
 export default function GrowthArtifact({ artifact }: Props): JSX.Element {

@@ -22,6 +22,7 @@ function isNamer(a: unknown): a is NamerShape {
 
 interface Props {
   artifact: unknown;
+  variant?: 'card' | 'detail';
 }
 
 export default function NamerArtifact({ artifact }: Props): JSX.Element {

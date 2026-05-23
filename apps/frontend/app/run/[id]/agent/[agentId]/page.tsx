@@ -19,7 +19,7 @@ import { AgentDetailFooter } from '@/components/detail/AgentDetailFooter';
 
 const DETAIL_AGENT_IDS = new Set<AgentId>([
   'strategist', 'namer', 'designer', 'copywriter', 'developer',
-  'marketer', 'growth', 'legal', 'analyst',
+  'marketer', 'growth', 'legal', 'analyst', 'director',
 ]);
 
 function isDetailAgentId(id: string): id is AgentId {
@@ -65,12 +65,27 @@ export default function AgentDetailPage() {
   }, [runId]);
 
   // Resolve agent from live stream
-  const agent: Agent | null =
-    isDetailAgentId(agentIdParam) ? (agents[agentIdParam as AgentId] ?? null) : null;
+  const agentFromStream = agents[agentIdParam as AgentId] ?? null;
 
-  // ── Loading / error states ───────────────────────────────────────────────────
+  // Guards
 
-  if (!agent) {
+  if (!isDetailAgentId(agentIdParam)) {
+    if (!agentFromStream) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-bg">
+          <p className="font-mono text-mono-sm text-status-error">Unknown agent: {agentIdParam}</p>
+        </div>
+      );
+    }
+    return (
+      <div className="min-h-screen p-8 space-y-4 bg-bg">
+        <p className="font-mono text-mono-sm text-text-faint">{agentIdParam}</p>
+        <RawFallback artifact={agentFromStream.finalArtifact} />
+      </div>
+    );
+  }
+
+  if (!agentFromStream) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg">
         {streamError ? (
@@ -84,14 +99,8 @@ export default function AgentDetailPage() {
     );
   }
 
-  if (!isDetailAgentId(agentIdParam)) {
-    return (
-      <div className="min-h-screen p-8 space-y-4 bg-bg">
-        <p className="font-mono text-mono-sm text-text-faint">{agentIdParam}</p>
-        <RawFallback artifact={agent.finalArtifact} />
-      </div>
-    );
-  }
+  // agentIdParam is a valid AgentId after the isDetailAgentId guard
+  const agent: Agent = agentFromStream;
 
   const meta = AGENT_REGISTRY[agentIdParam];
   const AgentIcon = iconFor(agentIdParam);
@@ -147,7 +156,7 @@ export default function AgentDetailPage() {
           {/* Artifact column */}
           <div className="flex-1 min-w-0">
             {agent.finalArtifact !== undefined ? (
-              <ArtifactRenderer agentId={agentIdParam} artifact={agent.finalArtifact} />
+              <ArtifactRenderer agentId={agentIdParam} artifact={agent.finalArtifact} variant="detail" />
             ) : (
               <div className="font-mono text-mono-sm text-text-muted whitespace-pre-wrap break-all bg-surface-sunken rounded-sm p-4">
                 {agent.streamedText || (

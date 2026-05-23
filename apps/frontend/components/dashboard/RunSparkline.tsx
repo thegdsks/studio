@@ -72,7 +72,7 @@ interface TooltipProps {
 function SparkTooltip({ run, x, y }: TooltipProps) {
   return (
     <div
-      className="pointer-events-none fixed z-tooltip -translate-x-1/2 -translate-y-full mb-2 px-2 py-1.5 rounded-sm border border-border bg-surface shadow-md max-w-[240px]"
+      className="pointer-events-none fixed z-[60] -translate-x-1/2 -translate-y-full mb-2 px-2 py-1.5 rounded-sm border border-border bg-surface shadow-md max-w-[240px]"
       style={{ left: x, top: y - 6 }}
     >
       <p className="font-mono text-[10px] text-text-muted leading-snug line-clamp-2">

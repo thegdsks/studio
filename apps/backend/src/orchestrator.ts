@@ -45,18 +45,10 @@ export async function runAgent(
   const mode = MOCK_ONLY ? 'mock' : 'real';
   const t0 = Date.now();
 
-  // Signal running
-  updateAgent(runId, agentId, { status: 'running', startedAt: t0 });
+  // startedAt is only set on the very first run (iteration 1).
+  // Auto-refine passes preserve the original startedAt and only update finishedAt.
+  updateAgent(runId, agentId, { status: 'running', startedAt: t0, iteration: 1 });
   emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'running' } });
-
-  // When the agent is being refined, pre-emit the feedback so users can see it
-  // in the streaming card without changing the runner internals.
-  if (ctx.refine_feedback) {
-    const preview = ctx.refine_feedback.slice(0, 80);
-    const chunk = `> Refining based on feedback: "${preview}"\n\n`;
-    appendChunk(runId, agentId, chunk);
-    emit(runId, { agent_id: agentId, type: 'chunk', payload: { text: chunk } });
-  }
 
   try {
     if (!runner) throw new Error(`No runner registered for ${agentId}`);
@@ -73,17 +65,25 @@ export async function runAgent(
       emit(runId, event);
     });
 
+    const finishedAt = Date.now();
+    // Defensive: finishedAt must be after startedAt.
+    if (finishedAt < t0) {
+      throw new Error(
+        `[orch] clock inversion for ${agentId}: finishedAt (${finishedAt}) < startedAt (${t0})`,
+      );
+    }
+
     // Mark the agent done immediately so the UI flips the card.
     updateAgent(runId, agentId, {
       status: 'done',
-      finishedAt: Date.now(),
+      finishedAt,
       finalArtifact: artifact,
     });
     emit(runId, { agent_id: agentId, type: 'result', payload: { artifact } });
     emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'done' } });
 
     // eslint-disable-next-line no-console
-    console.log(`[orch] ${runId.slice(0, 8)} ${agentId.padEnd(11)} done  ${String(Date.now() - t0).padStart(5)}ms (${mode})`);
+    console.log(`[orch] ${runId.slice(0, 8)} ${agentId.padEnd(11)} done  ${String(finishedAt - t0).padStart(5)}ms (${mode})`);
 
     // Run the self-critique asynchronously AFTER the done status is visible.
     // The UI should show a loading shimmer on the score badge until the meta
@@ -98,21 +98,30 @@ export async function runAgent(
       });
 
       // Auto-refine: one pass if score is below threshold and this is the first run.
-      // ctx.refine_feedback being set means we are already in a refine pass — skip.
-      const isFirstIteration = !ctx.refine_feedback;
       if (
         !AUTO_REFINE_DISABLED &&
-        isFirstIteration &&
         score < AUTO_REFINE_THRESHOLD
       ) {
         try {
-          const { refinedScore, refinedCritique } = await runAutoRefine(
+          const { refinedArtifact, refinedScore, refinedCritique } = await runAutoRefine(
             runId,
             agentId,
             ctx,
             score,
             critique,
           );
+          // Replace finalArtifact with the refined output and bump iteration.
+          // startedAt is deliberately NOT touched here (preserve original start time).
+          updateAgent(runId, agentId, {
+            finalArtifact: refinedArtifact,
+            finishedAt: Date.now(),
+            iteration: 2,
+            auto_refined: true,
+            original_score: score,
+            quality_score: refinedScore,
+            quality_critique: refinedCritique,
+          });
+          emit(runId, { agent_id: agentId, type: 'result', payload: { artifact: refinedArtifact } });
           emit(runId, {
             agent_id: agentId,
             type: 'meta',
@@ -128,8 +137,8 @@ export async function runAgent(
             `[orch] ${runId.slice(0, 8)} ${agentId.padEnd(11)} auto-refined ${score} -> ${refinedScore}`,
           );
         } catch (refineErr: unknown) {
-          // Refine failed: log, emit error meta so the frontend knows, but do NOT
-          // change agent status or overwrite the original artifact. Demo-safe.
+          // Refine failed: log and emit error meta so the frontend knows, but do NOT
+          // change agent status or overwrite the original artifact.
           const msg = refineErr instanceof Error ? refineErr.message : 'Unknown refine error';
           // eslint-disable-next-line no-console
           console.error(`[orch] auto-refine failed for ${agentId}:`, refineErr);
@@ -180,7 +189,9 @@ function getArtifact(runId: string, agentId: AgentId): unknown {
 
 /**
  * Attempt one automatic refine pass for an agent that scored below threshold.
- * Resolves with the refined score and critique, or throws on runner error.
+ * Calls the runner directly — does NOT go through runAgent — so that startedAt
+ * is never overwritten. Resolves with the refined artifact, score, and critique.
+ * Throws on runner error (caller is responsible for emitting error meta).
  * Never loops: one pass only, regardless of the refined score.
  */
 async function runAutoRefine(
@@ -189,31 +200,45 @@ async function runAutoRefine(
   ctx: RunContext,
   originalScore: number,
   critiqueFeedback: string,
-): Promise<{ refinedScore: number; refinedCritique: string }> {
+): Promise<{ refinedArtifact: unknown; refinedScore: number; refinedCritique: string }> {
+  const runner = agentRunners[agentId];
+  if (!runner) {
+    throw new Error(`No runner registered for ${agentId} — cannot auto-refine`);
+  }
+
   const refineCtx: RunContext = {
     ...ctx,
     refine_feedback: critiqueFeedback,
   };
 
-  // Re-run the agent with feedback. This resets streamed text, bumps iteration, etc.
-  const artifact = await runAgent(runId, agentId, refineCtx);
+  // Pre-emit the feedback chunk so the streaming card shows the iteration is live.
+  const preview = critiqueFeedback.slice(0, 80);
+  const feedbackChunk = `> Refining based on feedback: "${preview}"\n\n`;
+  appendChunk(runId, agentId, feedbackChunk);
+  emit(runId, { agent_id: agentId, type: 'chunk', payload: { text: feedbackChunk } });
+
+  // Call the runner directly. startedAt is NOT touched — preserve original.
+  const refinedArtifact = await runner(refineCtx, (event) => {
+    if (event.type === 'chunk' && event.agent_id === agentId) {
+      appendChunk(runId, agentId, event.payload.text);
+    }
+    emit(runId, event);
+  });
 
   // Re-critique the refined output (one pass, no recursion).
   const { score: refinedScore, critique: refinedCritique } = await critiqueArtifact({
     agentId,
     idea: ctx.idea,
-    artifact,
+    artifact: refinedArtifact,
   });
 
-  // Persist auto_refined + original_score + new quality fields on the agent record.
-  updateAgent(runId, agentId, {
-    auto_refined: true,
-    original_score: originalScore,
-    quality_score: refinedScore,
-    quality_critique: refinedCritique,
-  });
+  // Log score delta (informational — OK if refine made it worse, caller persists).
+  // eslint-disable-next-line no-console
+  console.log(
+    `[orch] ${runId.slice(0, 8)} ${agentId.padEnd(11)} re-critique ${originalScore} -> ${refinedScore}`,
+  );
 
-  return { refinedScore, refinedCritique };
+  return { refinedArtifact, refinedScore, refinedCritique };
 }
 
 export async function startRun(runId: string): Promise<void> {
@@ -224,9 +249,9 @@ export async function startRun(runId: string): Promise<void> {
 
   // ---- WAVE 1: strategist, namer, analyst (depends only on idea) ----------
   await Promise.allSettled([
-    staggerRun(0, runId, 'strategist', { idea, upstream: {}, privacy_mode: run.privacy_mode }),
-    staggerRun(1, runId, 'namer',      { idea, upstream: {} }),
-    staggerRun(2, runId, 'analyst',    { idea, upstream: {} }),
+    staggerRun(0, runId, 'strategist', { idea, upstream: {}, runId, privacy_mode: run.privacy_mode }),
+    staggerRun(1, runId, 'namer',      { idea, upstream: {}, runId }),
+    staggerRun(2, runId, 'analyst',    { idea, upstream: {}, runId }),
   ]);
 
   const strategistArtifact = getArtifact(runId, 'strategist');
@@ -266,8 +291,8 @@ export async function startRun(runId: string): Promise<void> {
   // ---- WAVE 3: developer, marketer, growth (need waves 1+2) ---------------
   await Promise.allSettled([
     staggerRun(0, runId, 'developer', { idea, upstream: wave2Upstream, runId }),
-    staggerRun(1, runId, 'marketer',  { idea, upstream: wave2Upstream }),
-    staggerRun(2, runId, 'growth',    { idea, upstream: wave2Upstream }),
+    staggerRun(1, runId, 'marketer',  { idea, upstream: wave2Upstream, runId }),
+    staggerRun(2, runId, 'growth',    { idea, upstream: wave2Upstream, runId }),
   ]);
 
   const developerArtifact = getArtifact(runId, 'developer');

@@ -42,6 +42,40 @@ async function executeTool(name: string, args: any): Promise<any> {
   return await impl(...(Object.values(args)));
 }
 
+/**
+ * Pull the structured JSON object out of a model's raw text.
+ *  1. Strip ```json fences if present.
+ *  2. Find the LARGEST balanced {...} substring (matches braces, not greedy).
+ *  3. JSON.parse — return the parsed value or undefined on failure.
+ */
+function extractStructuredJson(raw: string): unknown {
+  let text = raw;
+  // Drop ```json ... ``` fences if any.
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence && fence[1]) text = fence[1];
+
+  // Find the largest balanced {...} block.
+  let best: string | undefined;
+  let depth = 0;
+  let start = -1;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '{') {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0 && start !== -1) {
+        const candidate = text.slice(start, i + 1);
+        if (!best || candidate.length > best.length) best = candidate;
+        start = -1;
+      }
+    }
+  }
+  if (!best) return undefined;
+  try { return JSON.parse(best); } catch { return undefined; }
+}
+
 // Fallback mock data by agentName in case of timeouts or API failures
 const mockDataMap: Record<string, any> = {
   strategist: {
@@ -364,11 +398,14 @@ export async function spawnManagedAgent(opts: {
     let finalOutput = '';
     const allToolCalls: Array<{ name: string; args: unknown }> = [];
 
-    // Compose system + user + (optional tool catalog hint) into a single prompt.
-    const toolHint = opts.tools && opts.tools.length > 0
-      ? `\n\nYou may call tools. Available tools: ${JSON.stringify(opts.tools, null, 2)}. If you need a tool, respond with a JSON block: {"tool":"<name>","args":{...}}. Otherwise respond with the structured JSON the system prompt requested.`
-      : '';
-    const composedPrompt = `${opts.systemPrompt.trim()}${toolHint}\n\nUser: ${opts.userMessage}\n\nAssistant:`;
+    // Tool hint is intentionally OMITTED here. The agent prompts already
+    // specify the structured JSON output shape they want. Adding a "you may
+    // emit {tool:...}" instruction caused the model to wrap its output in
+    // a tool-call envelope that didn't match the agent's expected schema.
+    // For agents that genuinely need tools (search, deploy, domain check),
+    // the call sites in /agents/<id>/run.ts perform the tool call inline
+    // and feed the result back to the model via prompt substitution.
+    const composedPrompt = `${opts.systemPrompt.trim()}\n\nUser: ${opts.userMessage}\n\nReturn ONLY the JSON object described above. No preamble, no markdown fences, no commentary.\n\nAssistant:`;
 
     const stream = await client.models.generateContentStream({
       model,
@@ -403,7 +440,9 @@ export async function spawnManagedAgent(opts: {
     }
 
     // Best-effort tool detection: did the model emit a {"tool":...} block?
-    const toolMatch = finalOutput.match(/\{\s*"tool"\s*:\s*"([^"]+)"\s*,\s*"args"\s*:\s*(\{[\s\S]*?\})\s*\}/);
+    // (left in place but the prompt no longer encourages this — should not fire
+    // for the current set of agents).
+    const toolMatch = finalOutput.match(/^\s*\{\s*"tool"\s*:\s*"([^"]+)"\s*,\s*"args"\s*:\s*(\{[\s\S]*?\})\s*\}\s*$/);
     if (toolMatch) {
       const toolName = toolMatch[1] ?? '';
       let toolArgs: Record<string, unknown> = {};
@@ -444,12 +483,10 @@ export async function spawnManagedAgent(opts: {
       }
     }
 
-    // Parse JSON out of the assistant text.
-    let structured: unknown;
-    const jsonMatch = finalOutput.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try { structured = JSON.parse(jsonMatch[0]); } catch { /* not valid JSON — leave undefined */ }
-    }
+    // Parse JSON out of the assistant text. Prefer the largest balanced block
+    // (handles cases where the model wraps its JSON in ```json fences or
+    // emits prose-then-JSON-then-prose). Falls back to greedy match.
+    const structured: unknown = extractStructuredJson(finalOutput);
 
     return { output: finalOutput, structured, toolCalls: allToolCalls };
   };
@@ -599,7 +636,7 @@ export async function spawnManagedAgent(opts: {
   };
 
   try {
-    return await Promise.race([executionPromise(), timeoutPromise]);
+    return await Promise.race([realGeminiPath(), timeoutPromise]);
   } catch (err) {
     process.stderr.write(`[managedAgent] execution error or timeout for ${opts.agentName}: ${err instanceof Error ? err.message : String(err)}\n`);
     // Record zero-cost mock event for parity
