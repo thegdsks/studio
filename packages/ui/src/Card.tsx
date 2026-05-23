@@ -10,9 +10,9 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 const tones: Record<CardTone, string> = {
   resting: 'border-border',
-  active:  'border-border-primary shadow-glow-iris',
+  active:  'border-border-accent shadow-glow-accent',
   success: 'border-border',
-  error:   'border-error border',
+  error:   'border-status-error',
 };
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
@@ -26,7 +26,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
         'flex flex-col rounded-lg border bg-surface-raised',
         'transition-[border-color,box-shadow] duration-state ease-ease',
         tones[tone],
-        glow && 'shadow-glow-iris',
+        glow && 'shadow-glow-accent',
         className,
       )}
       {...rest}

@@ -40,17 +40,19 @@ app.get('/api/usage', (_req, res) => {
 
 // Create a new run
 app.post('/api/runs', (req, res) => {
-  const body = req.body as { idea?: string };
+  const body = req.body as { idea?: string; privacy_mode?: boolean };
   const idea = typeof body.idea === 'string' ? body.idea.trim() : '';
+  const privacy_mode = body.privacy_mode === true;
 
   if (!idea) {
     res.status(400).json({ error: 'idea is required' });
     return;
   }
 
-  // Idempotency: same idea within 5min returns the existing run_id (no cost)
+  // Idempotency: same idea within 5min returns the existing run_id (no cost).
+  // Privacy-mode swap creates a fresh run so the local-vs-cloud trace is honest.
   const cached = findCachedRun(idea);
-  if (cached) {
+  if (cached && cached.privacy_mode === privacy_mode) {
     res.status(200).json({ run_id: cached.run_id, cached: true });
     return;
   }
@@ -69,7 +71,7 @@ app.post('/api/runs', (req, res) => {
   }
   runTimestamps.push(now);
 
-  const run = createRun(idea);
+  const run = createRun(idea, { privacy_mode });
 
   // Kick off orchestrator without awaiting — fire and forget
   startRun(run.run_id).catch((err: unknown) => {

@@ -3,28 +3,44 @@
 /**
  * Renders a themed brand preview from the Designer agent's artifact.
  *
- * Contract (best-effort, but strict on shape):
+ * Contract (strict on shape):
  *   { brandKit: { name, primary, secondary?, headlineFont, bodyFont, logoSvg?, logoUrl? } }
  *
  * If the artifact lacks a brandKit, render nothing — never invent placeholder
  * colors or fonts (per CLAUDE.md "no fallbacks").
+ *
+ * If `runId` is provided, font overrides are persisted to localStorage and the
+ * font-swap picker is rendered below the preview.
  */
 
 import { useMemo } from 'react';
 import { BrandThemeScope, Chip, Heading, Label, assertValidBrandKit, contrastRatio } from '@studio/ui';
 import type { BrandKit } from '@studio/ui';
+import { useBrandKitPersistence } from '@/lib/useBrandKitPersistence';
+import { BrandFontPicker } from './BrandFontPicker';
 
 interface BrandPreviewProps {
   artifact: unknown;
+  runId?: string;
 }
 
-export function BrandPreview({ artifact }: BrandPreviewProps) {
-  const kit = useMemo(() => extractBrandKit(artifact), [artifact]);
+export function BrandPreview({ artifact, runId }: BrandPreviewProps) {
+  const baseKit = useMemo(() => extractBrandKit(artifact), [artifact]);
+  const baseKitValue = baseKit.ok ? baseKit.value : null;
 
-  if (!kit.ok) return null;
+  const [overrides, setOverrides] = useBrandKitPersistence(runId, baseKitValue);
 
-  const surface = kit.value.surface ?? '#0B0D14';
-  const contrast = contrastRatio(kit.value.primary, surface);
+  if (!baseKit.ok || !baseKitValue) return null;
+
+  // Merge persisted font overrides onto the artifact's kit
+  const kit: BrandKit = {
+    ...baseKitValue,
+    ...(overrides.headlineFont ? { headlineFont: overrides.headlineFont } : {}),
+    ...(overrides.bodyFont ? { bodyFont: overrides.bodyFont } : {}),
+  };
+
+  const surface = kit.surface ?? '#0B0D14';
+  const contrast = contrastRatio(kit.primary, surface);
   const lowContrast = contrast < 3.5;
 
   return (
@@ -32,14 +48,14 @@ export function BrandPreview({ artifact }: BrandPreviewProps) {
       <div className="flex items-center gap-3">
         <Label>Brand kit</Label>
         <Heading level="headline-md" as="h3">
-          {kit.value.name}
+          {kit.name}
         </Heading>
         {lowContrast && (
           <Chip tone="error">low contrast {contrast.toFixed(1)}:1</Chip>
         )}
       </div>
 
-      <BrandThemeScope brand={kit.value} className="rounded-xl border border-border overflow-hidden">
+      <BrandThemeScope brand={kit} className="rounded-xl border border-border overflow-hidden">
         <div
           className="p-8 flex flex-col gap-5"
           style={{
@@ -48,15 +64,14 @@ export function BrandPreview({ artifact }: BrandPreviewProps) {
           }}
         >
           <div className="flex items-center gap-3">
-            {kit.value.logoSvg ? (
+            {kit.logoSvg ? (
               <span
                 aria-label="logo"
                 className="inline-block"
-                // SVG comes from a trusted Designer agent output. Still — sanitised upstream.
-                dangerouslySetInnerHTML={{ __html: kit.value.logoSvg }}
+                dangerouslySetInnerHTML={{ __html: kit.logoSvg }}
               />
-            ) : kit.value.logoUrl ? (
-              <img src={kit.value.logoUrl} alt="" className="h-10 w-auto" />
+            ) : kit.logoUrl ? (
+              <img src={kit.logoUrl} alt="" className="h-10 w-auto" />
             ) : null}
             <h2
               style={{
@@ -67,11 +82,11 @@ export function BrandPreview({ artifact }: BrandPreviewProps) {
                 lineHeight: 1.1,
               }}
             >
-              {kit.value.name}
+              {kit.name}
             </h2>
           </div>
 
-          {kit.value.tagline && (
+          {kit.tagline && (
             <p
               style={{
                 fontFamily: 'var(--brand-font-body)',
@@ -80,13 +95,13 @@ export function BrandPreview({ artifact }: BrandPreviewProps) {
                 opacity: 0.85,
               }}
             >
-              {kit.value.tagline}
+              {kit.tagline}
             </p>
           )}
 
           <div className="flex flex-wrap gap-2">
-            <Swatch color={kit.value.primary} label="primary" />
-            <Swatch color={kit.value.secondary ?? kit.value.primary} label="secondary" />
+            <Swatch color={kit.primary} label="primary" />
+            <Swatch color={kit.secondary ?? kit.primary} label="secondary" />
             <Swatch color={surface} label="surface" />
           </div>
 
@@ -121,6 +136,15 @@ export function BrandPreview({ artifact }: BrandPreviewProps) {
           </div>
         </div>
       </BrandThemeScope>
+
+      {runId && (
+        <BrandFontPicker
+          headlineFont={baseKitValue.headlineFont}
+          bodyFont={baseKitValue.bodyFont}
+          overrides={overrides}
+          onChange={setOverrides}
+        />
+      )}
     </section>
   );
 }

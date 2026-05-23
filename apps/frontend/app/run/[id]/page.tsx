@@ -5,7 +5,7 @@ import { ArrowRight, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Agent, AgentEvent, AgentId } from '@studio/shared';
 import { AGENT_IDS, AGENT_REGISTRY } from '@studio/shared';
-import { Button, Label, Card, CardBody, CardHeader, Mono } from '@studio/ui';
+import { Button, Card, CardBody, CardHeader, Chip, Label, Mono } from '@studio/ui';
 import { subscribeRun } from '@/lib/sse-client';
 import AgentCard from '@/components/AgentCard';
 import FinalKitModal from '@/components/FinalKitModal';
@@ -86,6 +86,15 @@ function agentsReducer(state: AgentsState, { event }: AgentsAction): AgentsState
         [id]: {
           ...prev,
           finalArtifact: event.payload.artifact,
+        },
+      };
+    }
+    case 'meta': {
+      return {
+        ...state,
+        [id]: {
+          ...prev,
+          ranLocally: event.payload.ranLocally ?? prev.ranLocally,
         },
       };
     }
@@ -236,55 +245,54 @@ function DirectorPanel({ agent }: { agent: Agent }) {
   if (!data) return null;
 
   return (
-    <Card className="w-full shadow-glow-accent-sm transition-all duration-state hover:border-border-primary">
+    <Card tone="active" className="w-full">
       <CardBody className="p-6 md:p-8 flex flex-col gap-6">
         {/* Header & Hero */}
-        <div className="relative border-b border-border/40 pb-6 flex flex-col md:flex-row gap-6 justify-between items-start w-full">
+        <div className="relative border-b border-border pb-6 flex flex-col md:flex-row gap-6 justify-between items-start w-full">
           <div className="flex-1 pr-4">
-            <span className="text-[10px] uppercase tracking-widest text-text-faint font-bold font-mono">🎬 Executive Summary</span>
-            <blockquote className="mt-3 text-headline-md font-display font-medium text-text leading-tight max-w-prose">
-              "{data.one_line_pitch}"
+            <Label>🎬 Director · executive summary</Label>
+            <blockquote className="mt-3 text-headline-lg font-display text-text leading-tight max-w-prose">
+              “{data.one_line_pitch}”
             </blockquote>
           </div>
-          
+
           {/* Coherence Score */}
-          <div className="flex flex-col items-center justify-center bg-surface-sunken rounded-xl p-4 border border-border/60 min-w-[100px] aspect-square select-none md:self-center">
-            <span className="text-display-sm font-mono font-bold bg-gradient-to-r from-accent-primary to-indigo-400 bg-clip-text text-transparent">
+          <div className="flex flex-col items-center justify-center bg-surface-sunken rounded-lg p-4 border border-border min-w-[100px] aspect-square select-none md:self-center">
+            <span className="text-display-md font-mono text-accent">
               {data.coherence_score}
             </span>
-            <span className="text-[9px] uppercase tracking-wider text-text-faint font-bold mt-1">Coherence</span>
+            <Label className="mt-1">Coherence</Label>
           </div>
         </div>
 
         {/* Hot Take Callout */}
-        <div className="rounded-lg border-2 border-border-primary/20 bg-surface-raised p-4 md:p-5 flex flex-col gap-1.5 transition-colors hover:bg-surface-raised/80">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-text-muted font-bold">🔥 Director's Hot Take</span>
-          <p className="text-body-sm italic text-text leading-relaxed font-medium">
+        <div className="rounded-lg border border-border-accent bg-surface-raised p-4 md:p-5 flex flex-col gap-1.5 shadow-glow-accent">
+          <Label className="text-accent">🔥 Director’s hot take</Label>
+          <p className="text-body-md italic text-text leading-relaxed">
             {data.hot_take}
           </p>
         </div>
 
         {/* Unified Narrative */}
         <div className="flex flex-col gap-2">
-          <Label className="text-label-md font-semibold text-text">Strategic Roadmap</Label>
-          <div className="text-body-sm text-text-muted leading-relaxed space-y-4 whitespace-pre-line">
+          <Label>Strategic roadmap</Label>
+          <div className="text-body-md text-text-muted leading-relaxed space-y-4 whitespace-pre-line">
             {data.unified_narrative}
           </div>
         </div>
 
         {/* Next 7 Days Timeline */}
-        <div className="flex flex-col gap-3 border-t border-border/40 pt-6">
-          <Label className="text-label-md font-semibold text-text">Execution Plan: Next 7 Days</Label>
+        <div className="flex flex-col gap-3 border-t border-border pt-6">
+          <Label>Execution plan · next 7 days</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mt-1">
             {data.next_7_days.map((item, idx) => {
-              const dayNum = idx + 1;
               const parts = item.split(/:\s*(.*)/);
-              const title = parts[0] || `Day ${dayNum}`;
+              const title = parts[0] || `Day ${idx + 1}`;
               const desc = parts[1] || item;
               return (
-                <div key={idx} className="bg-surface-sunken border border-border/40 rounded-lg p-3 flex flex-col gap-1">
-                  <span className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wide">{title}</span>
-                  <p className="text-[11px] text-text-muted leading-snug">{desc}</p>
+                <div key={idx} className="bg-surface-sunken border border-border rounded-md p-3 flex flex-col gap-1">
+                  <Label className="truncate">{title}</Label>
+                  <p className="text-body-sm text-text-muted leading-snug">{desc}</p>
                 </div>
               );
             })}
@@ -293,57 +301,65 @@ function DirectorPanel({ agent }: { agent: Agent }) {
 
         {/* Inconsistencies */}
         {data.inconsistencies && data.inconsistencies.length > 0 && (
-          <div className="border-t border-border/40 pt-4">
+          <div className="border-t border-border pt-4">
             <button
               type="button"
               onClick={() => setInconsistenciesExpanded(!inconsistenciesExpanded)}
-              className="w-full flex items-center justify-between py-2 text-text hover:text-text-muted transition-colors text-left"
+              className="w-full flex items-center justify-between py-2 text-text hover:text-text-muted transition-colors duration-micro text-left"
             >
               <div className="flex items-center gap-2">
-                <Label className="text-label-md font-semibold cursor-pointer">🔍 Misalignments & Remediation</Label>
-                <span className="bg-surface-sunken text-[10px] text-text-muted px-2 py-0.5 rounded-full border border-border/55">
-                  {data.inconsistencies.length} found
-                </span>
+                <Label>🔍 Misalignments &amp; remediation</Label>
+                <Chip>{data.inconsistencies.length} found</Chip>
               </div>
               {inconsistenciesExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
 
-            {inconsistenciesExpanded && (
-              <div className="mt-3 flex flex-col gap-3 animate-fade-in">
-                {data.inconsistencies.map((inc, idx) => (
-                  <div key={idx} className="bg-surface-sunken border border-border/40 rounded-lg p-4 flex flex-col sm:flex-row gap-3 items-start">
-                    <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded ${
-                      inc.severity === 'high' ? 'bg-status-error/15 text-status-error border border-status-error/30' :
-                      inc.severity === 'medium' ? 'bg-status-running/15 text-status-running border border-status-running/30' :
-                      'bg-surface-raised text-text-muted border border-border/55'
-                    }`}>
-                      {inc.severity}
-                    </span>
-                    <div className="flex-1 flex flex-col gap-1">
-                      <p className="text-body-sm font-semibold text-text leading-tight">{inc.issue}</p>
-                      <p className="text-body-xs text-text-muted leading-relaxed mt-1">
-                        <span className="font-bold text-text">Fix:</span> {inc.resolution}
-                      </p>
-                    </div>
+            <AnimatePresence initial={false}>
+              {inconsistenciesExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-3 flex flex-col gap-3">
+                    {data.inconsistencies.map((inc, idx) => {
+                      const tone: 'error' | 'accent' | 'neutral' =
+                        inc.severity === 'high' ? 'error'
+                        : inc.severity === 'medium' ? 'accent'
+                        : 'neutral';
+                      return (
+                        <div key={idx} className="bg-surface-sunken border border-border rounded-md p-4 flex flex-col sm:flex-row gap-3 items-start">
+                          <Chip tone={tone}>{inc.severity}</Chip>
+                          <div className="flex-1 flex flex-col gap-1">
+                            <p className="text-body-md text-text leading-tight">{inc.issue}</p>
+                            <p className="text-body-sm text-text-muted leading-relaxed mt-1">
+                              <span className="text-text">Fix: </span>{inc.resolution}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
         {/* Confidence by Agent Grid */}
         {data.confidence_by_agent && (
-          <div className="border-t border-border/40 pt-6 flex flex-col gap-3">
-            <Label className="text-label-md font-semibold text-text">Specialist Confidence Levels</Label>
+          <div className="border-t border-border pt-6 flex flex-col gap-3">
+            <Label>Specialist confidence</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2">
               {Object.entries(data.confidence_by_agent).map(([id, confidence]) => {
-                const meta = AGENT_REGISTRY[id as AgentId] || { name: id, emoji: '🤖' };
+                const meta = AGENT_REGISTRY[id as AgentId] ?? { name: id, emoji: '·' };
                 return (
-                  <div key={id} className="bg-surface-sunken/80 border border-border/40 rounded-lg p-2 flex flex-col items-center justify-center text-center">
+                  <div key={id} className="bg-surface-sunken border border-border rounded-md p-2 flex flex-col items-center justify-center text-center">
                     <span className="text-sm" title={meta.name}>{meta.emoji}</span>
-                    <span className="text-[10px] text-text-muted truncate max-w-full font-medium mt-1">{meta.name}</span>
-                    <span className="text-xs font-mono font-bold text-text mt-1">{confidence}%</span>
+                    <span className="text-body-sm text-text-muted truncate max-w-full mt-1">{meta.name}</span>
+                    <span className="text-mono-md font-mono text-text mt-1">{confidence}%</span>
                   </div>
                 );
               })}
@@ -367,6 +383,7 @@ export default function RunPage({ params }: RunPageProps) {
 
   const [agents, dispatch] = useReducer(agentsReducer, undefined, buildInitialAgents);
   const [idea, setIdea] = useState<string>('');
+  const [privacyMode, setPrivacyMode] = useState(false);
   const [runComplete, setRunComplete] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -390,8 +407,9 @@ export default function RunPage({ params }: RunPageProps) {
       try {
         const res = await fetch(`/api/runs/${runId}`);
         if (res.ok) {
-          const data = (await res.json()) as { idea?: string };
+          const data = (await res.json()) as { idea?: string; privacy_mode?: boolean };
           if (data.idea) setIdea(data.idea);
+          if (data.privacy_mode) setPrivacyMode(true);
         }
       } catch {
         // Non-critical; ignore

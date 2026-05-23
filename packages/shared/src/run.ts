@@ -6,10 +6,13 @@ export interface Run {
   startedAt: number;
   finishedAt?: number;
   agents: Record<AgentId, Agent>;
+  /** When true, privacy-eligible agents (Strategist, Legal) try local Gemma first. */
+  privacy_mode?: boolean;
 }
 
 export interface CreateRunRequest {
   idea: string;
+  privacy_mode?: boolean;
 }
 
 export interface CreateRunResponse {

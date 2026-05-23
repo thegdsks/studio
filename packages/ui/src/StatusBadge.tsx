@@ -10,10 +10,10 @@ const labels: Record<StatusKind, string> = {
 };
 
 const colors: Record<StatusKind, string> = {
-  queued: 'text-text-faint',
-  running: 'text-primary',
-  done: 'text-success',
-  error: 'text-error',
+  queued: 'text-status-queued',
+  running: 'text-status-running',
+  done: 'text-status-done',
+  error: 'text-status-error',
 };
 
 interface StatusBadgeProps {

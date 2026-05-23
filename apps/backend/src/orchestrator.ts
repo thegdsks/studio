@@ -53,6 +53,10 @@ async function runAgent(
           run.agents[agentId].streamedText += event.payload.text;
         }
       }
+      // Persist ranLocally onto the agent so /api/runs/:id reflects it for late-joiners.
+      if (event.type === 'meta' && event.agent_id === agentId && event.payload.ranLocally) {
+        updateAgent(runId, agentId, { ranLocally: true });
+      }
       emit(runId, event);
     });
 
@@ -104,7 +108,7 @@ export async function startRun(runId: string): Promise<void> {
 
   // ---- WAVE 1: strategist, namer, analyst (depends only on idea) ----------
   await Promise.allSettled([
-    staggerRun(0, runId, 'strategist', { idea, upstream: {} }),
+    staggerRun(0, runId, 'strategist', { idea, upstream: {}, privacy_mode: run.privacy_mode }),
     staggerRun(1, runId, 'namer',      { idea, upstream: {} }),
     staggerRun(2, runId, 'analyst',    { idea, upstream: {} }),
   ]);
@@ -126,7 +130,7 @@ export async function startRun(runId: string): Promise<void> {
   await Promise.allSettled([
     staggerRun(0, runId, 'copywriter', { idea, upstream: wave1Upstream }),
     staggerRun(1, runId, 'designer',   { idea, upstream: wave1Upstream }),
-    staggerRun(2, runId, 'legal',      { idea, upstream: wave1Upstream }),
+    staggerRun(2, runId, 'legal',      { idea, upstream: wave1Upstream, privacy_mode: run.privacy_mode }),
   ]);
 
   const copywriterArtifact = getArtifact(runId, 'copywriter');

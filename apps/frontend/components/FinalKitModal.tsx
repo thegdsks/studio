@@ -181,7 +181,7 @@ function AgentSection({
       <div className="flex items-baseline gap-3 flex-wrap">
         <span aria-hidden className="text-xl">{emoji}</span>
         <Heading level="headline-md" as="h3">{title}</Heading>
-        <span className="text-body-sm text-text-faint">— {description}</span>
+        <span className="text-body-sm text-text-faint">· {description}</span>
         {hasFallback && <Chip tone="error">fallback</Chip>}
       </div>
       {errored && agent.error && (
@@ -218,7 +218,7 @@ function renderArtifact(artifact: unknown): ReactNode {
       <ul className="space-y-1">
         {artifact.map((item, i) => (
           <li key={i} className="text-body-md text-text flex gap-2">
-            <span className="text-text-faint flex-shrink-0">—</span>
+            <span className="text-text-faint flex-shrink-0">·</span>
             <span>{typeof item === 'string' ? item : JSON.stringify(item, null, 2)}</span>
           </li>
         ))}

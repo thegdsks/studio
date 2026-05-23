@@ -9,10 +9,10 @@ interface StatusDotProps {
 }
 
 const fg: Record<StatusKind, string> = {
-  queued:  'bg-transparent border border-text-faint',
-  running: 'bg-primary animate-pulse-dot',
-  done:    'bg-success',
-  error:   'bg-error',
+  queued:  'bg-transparent border border-status-queued',
+  running: 'bg-status-running animate-pulse-dot',
+  done:    'bg-status-done',
+  error:   'bg-status-error',
 };
 
 export function StatusDot({ status, size = 8, className }: StatusDotProps) {

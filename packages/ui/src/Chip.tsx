@@ -1,7 +1,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from './cn.js';
 
-export type ChipTone = 'neutral' | 'primary' | 'secondary' | 'success' | 'error';
+export type ChipTone = 'neutral' | 'accent' | 'success' | 'error';
 
 interface ChipProps extends HTMLAttributes<HTMLSpanElement> {
   tone?: ChipTone;
@@ -9,11 +9,10 @@ interface ChipProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const tones: Record<ChipTone, string> = {
-  neutral:   'bg-surface-sunken text-text-muted border-border',
-  primary:   'bg-primary-soft text-primary border-border-primary',
-  secondary: 'bg-surface-sunken text-secondary border-border',
-  success:   'bg-success-soft text-success border-border',
-  error:     'bg-error-soft text-error border-border',
+  neutral: 'bg-surface-sunken text-text-muted border-border',
+  accent:  'bg-accent-soft text-accent border-border-accent',
+  success: 'bg-status-done-soft text-status-done border-border',
+  error:   'bg-status-error-soft text-status-error border-border',
 };
 
 export function Chip({ tone = 'neutral', leading, className, children, ...rest }: ChipProps) {

@@ -8,6 +8,26 @@ const runs = new Map<string, Run>();
 const emitters = new Map<string, EventEmitter>();
 const buffers = new Map<string, AgentEvent[]>();
 
+// Idempotency cache: same idea string within TTL returns the existing run_id
+// instead of starting a new (billable) run.
+const IDEA_CACHE_TTL_MS = 5 * 60 * 1000;
+const ideaCache = new Map<string, { run_id: string; ts: number }>();
+
+function normaliseIdea(idea: string): string {
+  return idea.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+export function findCachedRun(idea: string): Run | undefined {
+  const key = normaliseIdea(idea);
+  const cached = ideaCache.get(key);
+  if (!cached) return undefined;
+  if (Date.now() - cached.ts > IDEA_CACHE_TTL_MS) {
+    ideaCache.delete(key);
+    return undefined;
+  }
+  return runs.get(cached.run_id);
+}
+
 function makeInitialAgent(id: AgentId): Agent {
   const meta = AGENT_REGISTRY[id];
   return {
@@ -20,7 +40,7 @@ function makeInitialAgent(id: AgentId): Agent {
   };
 }
 
-export function createRun(idea: string): Run {
+export function createRun(idea: string, opts?: { privacy_mode?: boolean }): Run {
   const run_id = nanoid();
   const agents = {} as Record<AgentId, Agent>;
   for (const id of AGENT_IDS) {
@@ -31,10 +51,12 @@ export function createRun(idea: string): Run {
     idea,
     startedAt: Date.now(),
     agents,
+    privacy_mode: opts?.privacy_mode ?? false,
   };
   runs.set(run_id, run);
   emitters.set(run_id, new EventEmitter());
   buffers.set(run_id, []);
+  ideaCache.set(normaliseIdea(idea), { run_id, ts: Date.now() });
   return run;
 }
 

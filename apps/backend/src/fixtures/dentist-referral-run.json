@@ -1,0 +1,332 @@
+{
+  "run_id": "fixture-dentist",
+  "idea": "a tool for dentists to manage referrals",
+  "startedAt": 1779571011762,
+  "finishedAt": 1779571046762,
+  "agents": {
+    "strategist": {
+      "id": "strategist",
+      "name": "Strategist",
+      "emoji": "🎯",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"positioning\": \"The mission-control dashboard that orchestrates nine specialist AI agents into one coherent launch kit.\",\n  \"icp\": \"Early-stage startup teams (1–3 people) who want a professional first impression without a designer on payroll.\",\n  \"jtbd\": \"Produce positioning, branding, a live landing page, and competitor analysis in a single sitting.\",\n  \"three_risks\": [\n    \"LLM hallucinations in legal copy requiring mandatory human review.\",\n    \"Demo fatigue if agents emit near-identical outputs across runs.\",\n    \"Network latency on venue WiFi degrading perceived streaming speed.\"\n  ]\n}",
+      "finalArtifact": {
+        "positioning": "The mission-control dashboard that orchestrates nine specialist AI agents into one coherent launch kit.",
+        "icp": "Early-stage startup teams (1–3 people) who want a professional first impression without a designer on payroll.",
+        "jtbd": "Produce positioning, branding, a live landing page, and competitor analysis in a single sitting.",
+        "three_risks": [
+          "LLM hallucinations in legal copy requiring mandatory human review.",
+          "Demo fatigue if agents emit near-identical outputs across runs.",
+          "Network latency on venue WiFi degrading perceived streaming speed."
+        ]
+      },
+      "tools": [
+        "googleSearch"
+      ]
+    },
+    "namer": {
+      "id": "namer",
+      "name": "Namer",
+      "emoji": "🪪",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"names\": [\n    {\n      \"name\": \"launchkit\",\n      \"domain\": \"launchkit.ai\",\n      \"available\": true\n    },\n    {\n      \"name\": \"orbitlaunch\",\n      \"domain\": \"orbitlaunch.io\",\n      \"available\": true\n    },\n    {\n      \"name\": \"shipstack\",\n      \"domain\": \"shipstack.com\",\n      \"available\": false,\n      \"alternative_tld\": \"shipstack.io\"\n    },\n    {\n      \"name\": \"foundryai\",\n      \"domain\": \"foundryai.co\",\n      \"available\": true\n    },\n    {\n      \"name\": \"blastoff\",\n      \"domain\": \"blastoff.app\",\n      \"available\": false,\n      \"alternative_tld\": \"blastoff.dev\"\n    }\n  ]\n}",
+      "finalArtifact": {
+        "names": [
+          {
+            "name": "launchkit",
+            "domain": "launchkit.ai",
+            "available": true
+          },
+          {
+            "name": "orbitlaunch",
+            "domain": "orbitlaunch.io",
+            "available": true
+          },
+          {
+            "name": "shipstack",
+            "domain": "shipstack.com",
+            "available": false,
+            "alternative_tld": "shipstack.io"
+          },
+          {
+            "name": "foundryai",
+            "domain": "foundryai.co",
+            "available": true
+          },
+          {
+            "name": "blastoff",
+            "domain": "blastoff.app",
+            "available": false,
+            "alternative_tld": "blastoff.dev"
+          }
+        ]
+      },
+      "tools": []
+    },
+    "designer": {
+      "id": "designer",
+      "name": "Designer",
+      "emoji": "🎨",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"mockupUrl\": \"https://images.unsplash.com/photo-1555949963-ff9fe0c870eb\",\n  \"exportedCode\": \"<div class=\\\"min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6\\\"><h1 class=\\\"text-5xl font-bold tracking-tight\\\">LaunchKit</h1><p class=\\\"mt-3 text-gray-400\\\">From idea to live in minutes.</p></div>\",\n  \"logoUrl\": \"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe\",\n  \"logoVariants\": [],\n  \"palette\": {\n    \"primary\": \"#10b981\",\n    \"secondary\": \"#064e3b\",\n    \"accent\": \"#34d399\"\n  },\n  \"brandKit\": {\n    \"name\": \"LaunchKit\",\n    \"tagline\": \"From idea to live in minutes.\",\n    \"primary\": \"#10b981\",\n    \"secondary\": \"#064e3b\",\n    \"headlineFont\": \"Sora\",\n    \"bodyFont\": \"DM Sans\",\n    \"logoSvg\": \"<svg xmlns=\\\"http://www.w3.org/2000/svg\\\" width=\\\"64\\\" height=\\\"64\\\" viewBox=\\\"0 0 64 64\\\" fill=\\\"none\\\"><rect width=\\\"64\\\" height=\\\"64\\\" rx=\\\"14\\\" fill=\\\"#10b981\\\"/><path d=\\\"M32 12 L52 52 L32 42 L12 52 Z\\\" stroke=\\\"#ffffff\\\" stroke-width=\\\"3\\\" fill=\\\"none\\\" stroke-linejoin=\\\"round\\\"/></svg>\"\n  }\n}",
+      "finalArtifact": {
+        "mockupUrl": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb",
+        "exportedCode": "<div class=\"min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6\"><h1 class=\"text-5xl font-bold tracking-tight\">LaunchKit</h1><p class=\"mt-3 text-gray-400\">From idea to live in minutes.</p></div>",
+        "logoUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
+        "logoVariants": [],
+        "palette": {
+          "primary": "#10b981",
+          "secondary": "#064e3b",
+          "accent": "#34d399"
+        },
+        "brandKit": {
+          "name": "LaunchKit",
+          "tagline": "From idea to live in minutes.",
+          "primary": "#10b981",
+          "secondary": "#064e3b",
+          "headlineFont": "Sora",
+          "bodyFont": "DM Sans",
+          "logoSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"64\" height=\"64\" viewBox=\"0 0 64 64\" fill=\"none\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#10b981\"/><path d=\"M32 12 L52 52 L32 42 L12 52 Z\" stroke=\"#ffffff\" stroke-width=\"3\" fill=\"none\" stroke-linejoin=\"round\"/></svg>"
+        }
+      },
+      "tools": []
+    },
+    "copywriter": {
+      "id": "copywriter",
+      "name": "Copywriter",
+      "emoji": "✍️",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"hero\": {\n    \"headline\": \"Nine Minds, One Mission: Ship Your Startup\",\n    \"sub\": \"Stop juggling tools. Studio deploys your brand, copy, and landing page before the pitch deck is done.\"\n  },\n  \"features\": [\n    {\n      \"title\": \"Brand in Seconds\",\n      \"body\": \"Fonts, colors, logo, and tagline generated and ready for your launch page.\"\n    },\n    {\n      \"title\": \"Legal Docs Included\",\n      \"body\": \"Terms of service and privacy policy drafted and ready for counsel review.\"\n    },\n    {\n      \"title\": \"Prospect Pipeline\",\n      \"body\": \"Growth agent surfaces three warm prospects based on your positioning.\"\n    }\n  ],\n  \"faq\": [\n    {\n      \"q\": \"What is Studio?\",\n      \"a\": \"A parallel-agent orchestrator that converts a one-line idea into a deployable startup kit.\"\n    },\n    {\n      \"q\": \"Do I need API keys?\",\n      \"a\": \"For the live demo, the mock orchestrator runs without external keys.\"\n    },\n    {\n      \"q\": \"How long does a run take?\",\n      \"a\": \"Typically under 5 minutes end-to-end with all nine agents.\"\n    },\n    {\n      \"q\": \"Is the landing page editable?\",\n      \"a\": \"The Developer agent outputs raw HTML you can host anywhere.\"\n    },\n    {\n      \"q\": \"What makes this different?\",\n      \"a\": \"Everything runs in parallel and the outputs share a coherent brand identity.\"\n    }\n  ],\n  \"cta\": \"Build My Kit\"\n}",
+      "finalArtifact": {
+        "hero": {
+          "headline": "Nine Minds, One Mission: Ship Your Startup",
+          "sub": "Stop juggling tools. Studio deploys your brand, copy, and landing page before the pitch deck is done."
+        },
+        "features": [
+          {
+            "title": "Brand in Seconds",
+            "body": "Fonts, colors, logo, and tagline generated and ready for your launch page."
+          },
+          {
+            "title": "Legal Docs Included",
+            "body": "Terms of service and privacy policy drafted and ready for counsel review."
+          },
+          {
+            "title": "Prospect Pipeline",
+            "body": "Growth agent surfaces three warm prospects based on your positioning."
+          }
+        ],
+        "faq": [
+          {
+            "q": "What is Studio?",
+            "a": "A parallel-agent orchestrator that converts a one-line idea into a deployable startup kit."
+          },
+          {
+            "q": "Do I need API keys?",
+            "a": "For the live demo, the mock orchestrator runs without external keys."
+          },
+          {
+            "q": "How long does a run take?",
+            "a": "Typically under 5 minutes end-to-end with all nine agents."
+          },
+          {
+            "q": "Is the landing page editable?",
+            "a": "The Developer agent outputs raw HTML you can host anywhere."
+          },
+          {
+            "q": "What makes this different?",
+            "a": "Everything runs in parallel and the outputs share a coherent brand identity."
+          }
+        ],
+        "cta": "Build My Kit"
+      },
+      "tools": []
+    },
+    "developer": {
+      "id": "developer",
+      "name": "Developer",
+      "emoji": "💻",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"liveUrl\": \"https://launchkit-demo.example.com\",\n  \"html\": \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n  <meta charset=\\\"UTF-8\\\" />\\n  <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0\\\" />\\n  <title>LaunchKit — From idea to live in minutes.</title>\\n  <style>\\n    * { margin: 0; padding: 0; box-sizing: border-box; }\\n    body { background: #030712; color: #f9fafb; font-family: 'Sora', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }\\n    h1 { font-size: clamp(2rem, 6vw, 5rem); font-weight: 700; }\\n    p { margin-top: 1rem; color: #9ca3af; font-size: 1.125rem; max-width: 40ch; }\\n    a { display: inline-block; margin-top: 2rem; padding: 0.75rem 2rem; background: #10b981; color: #fff; border-radius: 0.5rem; text-decoration: none; font-weight: 600; }\\n    a:hover { opacity: 0.85; }\\n  </style>\\n</head>\\n<body>\\n  <h1>LaunchKit</h1>\\n  <p>From idea to live in minutes. Powered by nine AI specialists.</p>\\n  <a href=\\\"#\\\">Build My Kit</a>\\n</body>\\n</html>\",\n  \"deployedAt\": \"2026-05-23T17:00:00.000Z\"\n}",
+      "finalArtifact": {
+        "liveUrl": "https://launchkit-demo.example.com",
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>LaunchKit — From idea to live in minutes.</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { background: #030712; color: #f9fafb; font-family: 'Sora', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }\n    h1 { font-size: clamp(2rem, 6vw, 5rem); font-weight: 700; }\n    p { margin-top: 1rem; color: #9ca3af; font-size: 1.125rem; max-width: 40ch; }\n    a { display: inline-block; margin-top: 2rem; padding: 0.75rem 2rem; background: #10b981; color: #fff; border-radius: 0.5rem; text-decoration: none; font-weight: 600; }\n    a:hover { opacity: 0.85; }\n  </style>\n</head>\n<body>\n  <h1>LaunchKit</h1>\n  <p>From idea to live in minutes. Powered by nine AI specialists.</p>\n  <a href=\"#\">Build My Kit</a>\n</body>\n</html>",
+        "deployedAt": "2026-05-23T17:00:00.000Z"
+      },
+      "tools": []
+    },
+    "marketer": {
+      "id": "marketer",
+      "name": "Marketer",
+      "emoji": "📣",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"tweet_thread\": [\n    \"1/ We just shipped Studio at the Google I/O Hackathon.\",\n    \"2/ One idea in. Nine agents spin up: Strategist, Namer, Designer, Copywriter, Developer, Marketer, Growth, Legal, Analyst.\",\n    \"3/ In under 5 minutes you have a live URL, a brand kit, legal docs, and a prospect list.\",\n    \"4/ This is what building with Gemini Managed Agents looks like.\",\n    \"5/ Open the demo and try your own idea.\"\n  ],\n  \"producthunt\": {\n    \"tagline\": \"From one-line idea to live startup in under five minutes\",\n    \"description\": \"Studio runs nine AI agents in parallel — each a specialist — and converges on a deployed landing page, brand identity, competitor teardown, and legal drafts.\"\n  },\n  \"hn_show\": \"Show HN: Studio – parallel AI agents that ship a startup kit from one idea\",\n  \"linkedin_post\": \"Most hackathon demos are slides. Ours is a live URL. Studio orchestrates 9 AI agents to go from idea to deployed product in minutes.\"\n}",
+      "finalArtifact": {
+        "tweet_thread": [
+          "1/ We just shipped Studio at the Google I/O Hackathon.",
+          "2/ One idea in. Nine agents spin up: Strategist, Namer, Designer, Copywriter, Developer, Marketer, Growth, Legal, Analyst.",
+          "3/ In under 5 minutes you have a live URL, a brand kit, legal docs, and a prospect list.",
+          "4/ This is what building with Gemini Managed Agents looks like.",
+          "5/ Open the demo and try your own idea."
+        ],
+        "producthunt": {
+          "tagline": "From one-line idea to live startup in under five minutes",
+          "description": "Studio runs nine AI agents in parallel — each a specialist — and converges on a deployed landing page, brand identity, competitor teardown, and legal drafts."
+        },
+        "hn_show": "Show HN: Studio – parallel AI agents that ship a startup kit from one idea",
+        "linkedin_post": "Most hackathon demos are slides. Ours is a live URL. Studio orchestrates 9 AI agents to go from idea to deployed product in minutes."
+      },
+      "tools": []
+    },
+    "growth": {
+      "id": "growth",
+      "name": "Growth",
+      "emoji": "🌱",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"prospects\": [\n    {\n      \"name\": \"Marcus Tran\",\n      \"role\": \"Head of Platform\",\n      \"company\": \"YC Continuity\",\n      \"linkedin\": \"https://linkedin.com/in/marcustran-yc\",\n      \"why_fit\": \"Runs YC's platform programs for fast-moving early-stage companies.\",\n      \"email_draft\": \"Hi Marcus, Studio ships a full startup kit — branding, landing page, legal, and prospects — in minutes. Thought it might be relevant to YC founders in the current batch.\"\n    },\n    {\n      \"name\": \"Aisha Okonkwo\",\n      \"role\": \"CTO\",\n      \"company\": \"DevSprint\",\n      \"linkedin\": \"https://linkedin.com/in/aishaokonkwo\",\n      \"why_fit\": \"Builds internal tooling for engineering teams who need to move fast.\",\n      \"email_draft\": \"Hi Aisha, Studio's orchestrated agent pipeline mirrors patterns DevSprint uses internally. Would love to show you how we coordinate nine specialists in parallel.\"\n    },\n    {\n      \"name\": \"Tom Eriksen\",\n      \"role\": \"Founder\",\n      \"company\": \"ShipDeck\",\n      \"linkedin\": \"https://linkedin.com/in/tomeriksen-shipdeck\",\n      \"why_fit\": \"Building adjacent tooling for no-code startup launchers.\",\n      \"email_draft\": \"Hi Tom, big fan of ShipDeck. We built Studio to tackle the AI-native side of startup scaffolding — nine agents, parallel execution. Could be worth a quick sync.\"\n    }\n  ]\n}",
+      "finalArtifact": {
+        "prospects": [
+          {
+            "name": "Marcus Tran",
+            "role": "Head of Platform",
+            "company": "YC Continuity",
+            "linkedin": "https://linkedin.com/in/marcustran-yc",
+            "why_fit": "Runs YC's platform programs for fast-moving early-stage companies.",
+            "email_draft": "Hi Marcus, Studio ships a full startup kit — branding, landing page, legal, and prospects — in minutes. Thought it might be relevant to YC founders in the current batch."
+          },
+          {
+            "name": "Aisha Okonkwo",
+            "role": "CTO",
+            "company": "DevSprint",
+            "linkedin": "https://linkedin.com/in/aishaokonkwo",
+            "why_fit": "Builds internal tooling for engineering teams who need to move fast.",
+            "email_draft": "Hi Aisha, Studio's orchestrated agent pipeline mirrors patterns DevSprint uses internally. Would love to show you how we coordinate nine specialists in parallel."
+          },
+          {
+            "name": "Tom Eriksen",
+            "role": "Founder",
+            "company": "ShipDeck",
+            "linkedin": "https://linkedin.com/in/tomeriksen-shipdeck",
+            "why_fit": "Building adjacent tooling for no-code startup launchers.",
+            "email_draft": "Hi Tom, big fan of ShipDeck. We built Studio to tackle the AI-native side of startup scaffolding — nine agents, parallel execution. Could be worth a quick sync."
+          }
+        ]
+      },
+      "tools": []
+    },
+    "legal": {
+      "id": "legal",
+      "name": "Legal",
+      "emoji": "⚖️",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"terms_of_service\": \"# Terms of Service\\n\\n*AI-generated draft — review with qualified counsel before use.*\\n\\n**Effective date:** 2026-05-23\\n\\nStudio is a hackathon demonstration. Use of this service is at your own risk. Generated content including brand names, legal documents, and HTML may require revision before commercial use.\\n\\n## Intellectual property\\nYou retain ownership of the idea you input. Generated outputs are provided to you royalty-free for any purpose subject to these terms.\\n\\n## Indemnity\\nYou agree to indemnify Studio's contributors against any claim arising from your use of generated content.\",\n  \"privacy_policy\": \"# Privacy Policy\\n\\n*AI-generated draft — review with qualified counsel before use.*\\n\\n**Effective date:** 2026-05-23\\n\\nData collected: your startup idea (session-only). We do not use cookies, analytics, or tracking scripts. No user accounts are created. Session data is discarded when the browser tab closes.\",\n  \"liability_summary\": \"Generated legal documents are illustrative drafts only. Engage a qualified attorney before publishing terms or a privacy policy.\"\n}",
+      "finalArtifact": {
+        "terms_of_service": "# Terms of Service\n\n*AI-generated draft — review with qualified counsel before use.*\n\n**Effective date:** 2026-05-23\n\nStudio is a hackathon demonstration. Use of this service is at your own risk. Generated content including brand names, legal documents, and HTML may require revision before commercial use.\n\n## Intellectual property\nYou retain ownership of the idea you input. Generated outputs are provided to you royalty-free for any purpose subject to these terms.\n\n## Indemnity\nYou agree to indemnify Studio's contributors against any claim arising from your use of generated content.",
+        "privacy_policy": "# Privacy Policy\n\n*AI-generated draft — review with qualified counsel before use.*\n\n**Effective date:** 2026-05-23\n\nData collected: your startup idea (session-only). We do not use cookies, analytics, or tracking scripts. No user accounts are created. Session data is discarded when the browser tab closes.",
+        "liability_summary": "Generated legal documents are illustrative drafts only. Engage a qualified attorney before publishing terms or a privacy policy."
+      },
+      "tools": []
+    },
+    "analyst": {
+      "id": "analyst",
+      "name": "Analyst",
+      "emoji": "📊",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"competitors\": [\n    {\n      \"name\": \"Lovable\",\n      \"url\": \"https://lovable.dev\",\n      \"positioning\": \"AI full-stack app builder\",\n      \"pricing\": \"$20/mo starter\",\n      \"strength\": \"Iterative UI with Supabase integration\",\n      \"weakness\": \"No brand strategy, no legal, no marketing copy\"\n    },\n    {\n      \"name\": \"Durable\",\n      \"url\": \"https://durable.co\",\n      \"positioning\": \"AI website builder for small businesses\",\n      \"pricing\": \"$12/mo\",\n      \"strength\": \"Quick website generation with SEO\",\n      \"weakness\": \"Template-driven, no positioning or competitor analysis\"\n    },\n    {\n      \"name\": \"Mixo\",\n      \"url\": \"https://mixo.io\",\n      \"positioning\": \"AI landing page generator\",\n      \"pricing\": \"$9/mo\",\n      \"strength\": \"Fast single-page site generation\",\n      \"weakness\": \"No branding depth, no agents, no legal output\"\n    }\n  ],\n  \"market_gap\": \"All competitors focus on one output (code or website). None coordinate across brand, legal, growth, and deployment simultaneously.\",\n  \"recommendation\": \"Lead with the five-minute end-to-end demo. The deployed URL is the proof point no competitor can match in real-time.\"\n}",
+      "finalArtifact": {
+        "competitors": [
+          {
+            "name": "Lovable",
+            "url": "https://lovable.dev",
+            "positioning": "AI full-stack app builder",
+            "pricing": "$20/mo starter",
+            "strength": "Iterative UI with Supabase integration",
+            "weakness": "No brand strategy, no legal, no marketing copy"
+          },
+          {
+            "name": "Durable",
+            "url": "https://durable.co",
+            "positioning": "AI website builder for small businesses",
+            "pricing": "$12/mo",
+            "strength": "Quick website generation with SEO",
+            "weakness": "Template-driven, no positioning or competitor analysis"
+          },
+          {
+            "name": "Mixo",
+            "url": "https://mixo.io",
+            "positioning": "AI landing page generator",
+            "pricing": "$9/mo",
+            "strength": "Fast single-page site generation",
+            "weakness": "No branding depth, no agents, no legal output"
+          }
+        ],
+        "market_gap": "All competitors focus on one output (code or website). None coordinate across brand, legal, growth, and deployment simultaneously.",
+        "recommendation": "Lead with the five-minute end-to-end demo. The deployed URL is the proof point no competitor can match in real-time."
+      },
+      "tools": [
+        "googleSearch"
+      ]
+    },
+    "director": {
+      "id": "director",
+      "name": "Director",
+      "emoji": "🎬",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"one_line_pitch\": \"ReferralDentist is an automated B2B referral management network that simplifies patient transfers and tracking between general practitioners and dental specialists.\",\n  \"coherence_score\": 88,\n  \"hot_take\": \"General dentists hate sending patients into a black box. Specialists hate missing referral papers. The market opportunity is real, but success hinges entirely on getting low-tech clinics to adopt yet another portal. Focus on making referral submission dead simple, ideally via email-to-dashboard ingestion.\",\n  \"unified_narrative\": \"ReferralDentist bridges the communication gap in oral healthcare by replacing fax machines and paper slips with a secure HIPAA-compliant portal. When a GP dentist identifies a patient needing specialized care, they can instantly send digital X-rays, clinical notes, and tracking updates. This keeps the patient in the loop and ensures high-confidence transitions.\\n\\nOur specialists have structured a coherent launch system: the brand focuses on trust and security; the copywriter highlights time-savings for office admins; the legal framework covers critical HIPAA patient-privacy requirements; and the marketer addresses local outreach to build the referral network.\",\n  \"next_7_days\": [\n    \"Day 1: Deploy the landing page with the 'ReferralDentist' brand and primary CTA for general practitioners.\",\n    \"Day 2: Finalize HIPAA-compliant terms of service drafts and security outlines.\",\n    \"Day 3: Reach out to 5 local GP dentists to interview them about their current fax referral patterns.\",\n    \"Day 4: Reach out to 5 local orthodontists/oral surgeons to test their appetite for a receiving portal.\",\n    \"Day 5: Run a mock referral through the developer-built landing page to check user flow friction.\",\n    \"Day 6: Set up the growth prospect database with the initial 10 dentist profiles retrieved by the Growth Agent.\",\n    \"Day 7: Launch the first marketing campaign targeting dental practice managers via LinkedIn/email.\"\n  ],\n  \"inconsistencies\": [\n    {\n      \"severity\": \"medium\",\n      \"issue\": \"The namer suggested consumer-facing names like 'DentistSpace' but the copywriter targeted enterprise clinics. The positioning is B2B but some brand names sound B2C.\",\n      \"resolution\": \"Standardize the brand name to 'ReferralDentist' or 'DentiRefer' to emphasize B2B referral utility.\"\n    }\n  ],\n  \"confidence_by_agent\": {\n    \"strategist\": 90,\n    \"namer\": 80,\n    \"designer\": 85,\n    \"copywriter\": 90,\n    \"developer\": 80,\n    \"marketer\": 85,\n    \"growth\": 80,\n    \"legal\": 95,\n    \"analyst\": 90\n  }\n}",
+      "finalArtifact": {
+        "one_line_pitch": "ReferralDentist is an automated B2B referral management network that simplifies patient transfers and tracking between general practitioners and dental specialists.",
+        "coherence_score": 88,
+        "hot_take": "General dentists hate sending patients into a black box. Specialists hate missing referral papers. The market opportunity is real, but success hinges entirely on getting low-tech clinics to adopt yet another portal. Focus on making referral submission dead simple, ideally via email-to-dashboard ingestion.",
+        "unified_narrative": "ReferralDentist bridges the communication gap in oral healthcare by replacing fax machines and paper slips with a secure HIPAA-compliant portal. When a GP dentist identifies a patient needing specialized care, they can instantly send digital X-rays, clinical notes, and tracking updates. This keeps the patient in the loop and ensures high-confidence transitions.\n\nOur specialists have structured a coherent launch system: the brand focuses on trust and security; the copywriter highlights time-savings for office admins; the legal framework covers critical HIPAA patient-privacy requirements; and the marketer addresses local outreach to build the referral network.",
+        "next_7_days": [
+          "Day 1: Deploy the landing page with the 'ReferralDentist' brand and primary CTA for general practitioners.",
+          "Day 2: Finalize HIPAA-compliant terms of service drafts and security outlines.",
+          "Day 3: Reach out to 5 local GP dentists to interview them about their current fax referral patterns.",
+          "Day 4: Reach out to 5 local orthodontists/oral surgeons to test their appetite for a receiving portal.",
+          "Day 5: Run a mock referral through the developer-built landing page to check user flow friction.",
+          "Day 6: Set up the growth prospect database with the initial 10 dentist profiles retrieved by the Growth Agent.",
+          "Day 7: Launch the first marketing campaign targeting dental practice managers via LinkedIn/email."
+        ],
+        "inconsistencies": [
+          {
+            "severity": "medium",
+            "issue": "The namer suggested consumer-facing names like 'DentistSpace' but the copywriter targeted enterprise clinics. The positioning is B2B but some brand names sound B2C.",
+            "resolution": "Standardize the brand name to 'ReferralDentist' or 'DentiRefer' to emphasize B2B referral utility."
+          }
+        ],
+        "confidence_by_agent": {
+          "strategist": 90,
+          "namer": 80,
+          "designer": 85,
+          "copywriter": 90,
+          "developer": 80,
+          "marketer": 85,
+          "growth": 80,
+          "legal": 95,
+          "analyst": 90
+        }
+      },
+      "tools": []
+    }
+  }
+}

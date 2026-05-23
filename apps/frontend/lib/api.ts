@@ -1,7 +1,11 @@
 import type { CreateRunRequest, CreateRunResponse } from '@studio/shared';
 
-export async function createRun(idea: string): Promise<CreateRunResponse> {
+export async function createRun(
+  idea: string,
+  opts: { privacy_mode?: boolean } = {},
+): Promise<CreateRunResponse> {
   const body: CreateRunRequest = { idea };
+  if (opts.privacy_mode) body.privacy_mode = true;
 
   const res = await fetch('/api/runs', {
     method: 'POST',

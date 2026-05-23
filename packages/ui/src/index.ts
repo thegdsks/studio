@@ -7,8 +7,6 @@ export type { CardTone } from './Card.js';
 export { Chip } from './Chip.js';
 export type { ChipTone } from './Chip.js';
 
-export { GlassPanel } from './GlassPanel.js';
-
 export { Heading } from './Heading.js';
 export type { HeadingLevel } from './Heading.js';
 

@@ -51,6 +51,8 @@ export interface Agent {
   finalArtifact?: unknown;
   tools: string[];
   error?: string;
+  /** True when this agent's run executed locally via Gemma (Ollama) instead of cloud Gemini. */
+  ranLocally?: boolean;
 }
 
 // SSE event union. The frontend switches on `type` and routes by `agent_id`.
@@ -60,4 +62,5 @@ export type AgentEvent =
   | { agent_id: AgentId; type: 'chunk';  payload: { text: string } }
   | { agent_id: AgentId; type: 'result'; payload: { artifact: unknown } }
   | { agent_id: AgentId; type: 'error';  payload: { message: string } }
+  | { agent_id: AgentId; type: 'meta';   payload: { ranLocally?: boolean } }
   | { agent_id: '__run'; type: 'complete'; payload: { run_id: string } };

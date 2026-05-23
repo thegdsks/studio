@@ -16,7 +16,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-text-on-primary hover:shadow-glow-iris focus-visible:shadow-glow-iris',
+    'bg-accent text-text-on-accent hover:shadow-glow-accent focus-visible:shadow-glow-accent',
   secondary:
     'bg-surface-raised text-text border border-border hover:border-border-strong',
   ghost:
@@ -49,7 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || isLoading}
       className={cn(
         'inline-flex items-center justify-center font-medium',
-        'transition-[background-color,box-shadow,border-color,color] duration-state ease-ease',
+        'transition-[background-color,box-shadow,border-color,color] duration-state',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         variants[variant],
         sizes[size],

@@ -1,0 +1,331 @@
+{
+  "run_id": "fixture-ceramic",
+  "idea": "marketplace for ceramic studio rentals",
+  "startedAt": 1779571011763,
+  "finishedAt": 1779571046763,
+  "agents": {
+    "strategist": {
+      "id": "strategist",
+      "name": "Strategist",
+      "emoji": "🎯",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"positioning\": \"AI-native product scaffolding that runs nine specialists in parallel and ships the result as a live site.\",\n  \"icp\": \"Non-technical founders attending pitch competitions who need a deployable MVP story for judges.\",\n  \"jtbd\": \"Skip the weeks of design-developer-lawyer back-and-forth and walk into the room with a working product.\",\n  \"three_risks\": [\n    \"Over-reliance on Gemini API availability on demo day.\",\n    \"Inconsistent voice between copywriter and marketer outputs.\",\n    \"Prospect data freshness — LinkedIn profiles may be out-of-date.\"\n  ]\n}",
+      "finalArtifact": {
+        "positioning": "AI-native product scaffolding that runs nine specialists in parallel and ships the result as a live site.",
+        "icp": "Non-technical founders attending pitch competitions who need a deployable MVP story for judges.",
+        "jtbd": "Skip the weeks of design-developer-lawyer back-and-forth and walk into the room with a working product.",
+        "three_risks": [
+          "Over-reliance on Gemini API availability on demo day.",
+          "Inconsistent voice between copywriter and marketer outputs.",
+          "Prospect data freshness — LinkedIn profiles may be out-of-date."
+        ]
+      },
+      "tools": [
+        "googleSearch"
+      ]
+    },
+    "namer": {
+      "id": "namer",
+      "name": "Namer",
+      "emoji": "🪪",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"names\": [\n    {\n      \"name\": \"vaultlaunch\",\n      \"domain\": \"vaultlaunch.com\",\n      \"available\": true\n    },\n    {\n      \"name\": \"nineagents\",\n      \"domain\": \"nineagents.io\",\n      \"available\": true\n    },\n    {\n      \"name\": \"swiftkit\",\n      \"domain\": \"swiftkit.ai\",\n      \"available\": false,\n      \"alternative_tld\": \"swiftkit.dev\"\n    },\n    {\n      \"name\": \"pilotai\",\n      \"domain\": \"pilotai.co\",\n      \"available\": true\n    },\n    {\n      \"name\": \"deployfast\",\n      \"domain\": \"deployfast.app\",\n      \"available\": true\n    }\n  ]\n}",
+      "finalArtifact": {
+        "names": [
+          {
+            "name": "vaultlaunch",
+            "domain": "vaultlaunch.com",
+            "available": true
+          },
+          {
+            "name": "nineagents",
+            "domain": "nineagents.io",
+            "available": true
+          },
+          {
+            "name": "swiftkit",
+            "domain": "swiftkit.ai",
+            "available": false,
+            "alternative_tld": "swiftkit.dev"
+          },
+          {
+            "name": "pilotai",
+            "domain": "pilotai.co",
+            "available": true
+          },
+          {
+            "name": "deployfast",
+            "domain": "deployfast.app",
+            "available": true
+          }
+        ]
+      },
+      "tools": []
+    },
+    "designer": {
+      "id": "designer",
+      "name": "Designer",
+      "emoji": "🎨",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"mockupUrl\": \"https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3\",\n  \"exportedCode\": \"<div class=\\\"min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center p-6\\\"><h1 class=\\\"text-5xl font-bold\\\">VaultLaunch</h1><p class=\\\"mt-3 text-zinc-400\\\">Your startup, deployed.</p></div>\",\n  \"logoUrl\": \"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe\",\n  \"logoVariants\": [],\n  \"palette\": {\n    \"primary\": \"#f59e0b\",\n    \"secondary\": \"#1c1917\",\n    \"accent\": \"#fbbf24\"\n  },\n  \"brandKit\": {\n    \"name\": \"VaultLaunch\",\n    \"tagline\": \"Your startup, deployed.\",\n    \"primary\": \"#f59e0b\",\n    \"secondary\": \"#1c1917\",\n    \"headlineFont\": \"Bricolage Grotesque\",\n    \"bodyFont\": \"Work Sans\",\n    \"logoSvg\": \"<svg xmlns=\\\"http://www.w3.org/2000/svg\\\" width=\\\"64\\\" height=\\\"64\\\" viewBox=\\\"0 0 64 64\\\" fill=\\\"none\\\"><rect width=\\\"64\\\" height=\\\"64\\\" rx=\\\"14\\\" fill=\\\"#f59e0b\\\"/><rect x=\\\"16\\\" y=\\\"20\\\" width=\\\"32\\\" height=\\\"28\\\" rx=\\\"4\\\" stroke=\\\"#ffffff\\\" stroke-width=\\\"3\\\" fill=\\\"none\\\"/><path d=\\\"M24 20 L24 16 Q24 12 32 12 Q40 12 40 16 L40 20\\\" stroke=\\\"#ffffff\\\" stroke-width=\\\"3\\\" fill=\\\"none\\\"/><circle cx=\\\"32\\\" cy=\\\"34\\\" r=\\\"4\\\" fill=\\\"#ffffff\\\"/></svg>\"\n  }\n}",
+      "finalArtifact": {
+        "mockupUrl": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3",
+        "exportedCode": "<div class=\"min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center p-6\"><h1 class=\"text-5xl font-bold\">VaultLaunch</h1><p class=\"mt-3 text-zinc-400\">Your startup, deployed.</p></div>",
+        "logoUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
+        "logoVariants": [],
+        "palette": {
+          "primary": "#f59e0b",
+          "secondary": "#1c1917",
+          "accent": "#fbbf24"
+        },
+        "brandKit": {
+          "name": "VaultLaunch",
+          "tagline": "Your startup, deployed.",
+          "primary": "#f59e0b",
+          "secondary": "#1c1917",
+          "headlineFont": "Bricolage Grotesque",
+          "bodyFont": "Work Sans",
+          "logoSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"64\" height=\"64\" viewBox=\"0 0 64 64\" fill=\"none\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#f59e0b\"/><rect x=\"16\" y=\"20\" width=\"32\" height=\"28\" rx=\"4\" stroke=\"#ffffff\" stroke-width=\"3\" fill=\"none\"/><path d=\"M24 20 L24 16 Q24 12 32 12 Q40 12 40 16 L40 20\" stroke=\"#ffffff\" stroke-width=\"3\" fill=\"none\"/><circle cx=\"32\" cy=\"34\" r=\"4\" fill=\"#ffffff\"/></svg>"
+        }
+      },
+      "tools": []
+    },
+    "copywriter": {
+      "id": "copywriter",
+      "name": "Copywriter",
+      "emoji": "✍️",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"hero\": {\n    \"headline\": \"From Idea to Live Site in Under Five Minutes\",\n    \"sub\": \"Studio's nine-agent mission control builds everything a startup needs to launch — simultaneously.\"\n  },\n  \"features\": [\n    {\n      \"title\": \"Competitor Teardown\",\n      \"body\": \"Analyst agent benchmarks your idea against three real competitors before you write a line of copy.\"\n    },\n    {\n      \"title\": \"Positioning First\",\n      \"body\": \"Strategist defines your ICP and JTBD so every other agent writes to the same audience.\"\n    },\n    {\n      \"title\": \"Real Domain Checks\",\n      \"body\": \"Namer queries live availability — no more falling in love with a taken .com.\"\n    }\n  ],\n  \"faq\": [\n    {\n      \"q\": \"Who built Studio?\",\n      \"a\": \"Built at Shack15 for the Google I/O Hackathon using Gemini Managed Agents.\"\n    },\n    {\n      \"q\": \"Which agents run first?\",\n      \"a\": \"Strategist, Namer, and Analyst run in Wave 1 — all others depend on their output.\"\n    },\n    {\n      \"q\": \"What is the tech stack?\",\n      \"a\": \"Node.js + Express SSE backend, Next.js 14 frontend, Gemini Managed Agents.\"\n    },\n    {\n      \"q\": \"Can I re-run a single agent?\",\n      \"a\": \"Per-agent rerun is on the roadmap; full re-run is available today.\"\n    },\n    {\n      \"q\": \"Is there a free tier?\",\n      \"a\": \"Studio is a hackathon demo — no pricing, no accounts, just ship.\"\n    }\n  ],\n  \"cta\": \"Launch Now\"\n}",
+      "finalArtifact": {
+        "hero": {
+          "headline": "From Idea to Live Site in Under Five Minutes",
+          "sub": "Studio's nine-agent mission control builds everything a startup needs to launch — simultaneously."
+        },
+        "features": [
+          {
+            "title": "Competitor Teardown",
+            "body": "Analyst agent benchmarks your idea against three real competitors before you write a line of copy."
+          },
+          {
+            "title": "Positioning First",
+            "body": "Strategist defines your ICP and JTBD so every other agent writes to the same audience."
+          },
+          {
+            "title": "Real Domain Checks",
+            "body": "Namer queries live availability — no more falling in love with a taken .com."
+          }
+        ],
+        "faq": [
+          {
+            "q": "Who built Studio?",
+            "a": "Built at Shack15 for the Google I/O Hackathon using Gemini Managed Agents."
+          },
+          {
+            "q": "Which agents run first?",
+            "a": "Strategist, Namer, and Analyst run in Wave 1 — all others depend on their output."
+          },
+          {
+            "q": "What is the tech stack?",
+            "a": "Node.js + Express SSE backend, Next.js 14 frontend, Gemini Managed Agents."
+          },
+          {
+            "q": "Can I re-run a single agent?",
+            "a": "Per-agent rerun is on the roadmap; full re-run is available today."
+          },
+          {
+            "q": "Is there a free tier?",
+            "a": "Studio is a hackathon demo — no pricing, no accounts, just ship."
+          }
+        ],
+        "cta": "Launch Now"
+      },
+      "tools": []
+    },
+    "developer": {
+      "id": "developer",
+      "name": "Developer",
+      "emoji": "💻",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"liveUrl\": \"https://vaultlaunch-demo.example.com\",\n  \"html\": \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n  <meta charset=\\\"UTF-8\\\" />\\n  <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0\\\" />\\n  <title>VaultLaunch — Your startup, deployed.</title>\\n  <style>\\n    * { margin: 0; padding: 0; box-sizing: border-box; }\\n    body { background: #0c0a09; color: #fafaf9; font-family: 'Bricolage Grotesque', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }\\n    h1 { font-size: clamp(2rem, 6vw, 5rem); font-weight: 800; }\\n    p { margin-top: 1rem; color: #a8a29e; font-size: 1.125rem; max-width: 40ch; }\\n    a { display: inline-block; margin-top: 2rem; padding: 0.75rem 2rem; background: #f59e0b; color: #0c0a09; border-radius: 0.5rem; text-decoration: none; font-weight: 700; }\\n    a:hover { opacity: 0.85; }\\n  </style>\\n</head>\\n<body>\\n  <h1>VaultLaunch</h1>\\n  <p>Your startup, deployed. Built in one session by nine AI agents.</p>\\n  <a href=\\\"#\\\">Launch Now</a>\\n</body>\\n</html>\",\n  \"deployedAt\": \"2026-05-23T17:00:00.000Z\"\n}",
+      "finalArtifact": {
+        "liveUrl": "https://vaultlaunch-demo.example.com",
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>VaultLaunch — Your startup, deployed.</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { background: #0c0a09; color: #fafaf9; font-family: 'Bricolage Grotesque', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }\n    h1 { font-size: clamp(2rem, 6vw, 5rem); font-weight: 800; }\n    p { margin-top: 1rem; color: #a8a29e; font-size: 1.125rem; max-width: 40ch; }\n    a { display: inline-block; margin-top: 2rem; padding: 0.75rem 2rem; background: #f59e0b; color: #0c0a09; border-radius: 0.5rem; text-decoration: none; font-weight: 700; }\n    a:hover { opacity: 0.85; }\n  </style>\n</head>\n<body>\n  <h1>VaultLaunch</h1>\n  <p>Your startup, deployed. Built in one session by nine AI agents.</p>\n  <a href=\"#\">Launch Now</a>\n</body>\n</html>",
+        "deployedAt": "2026-05-23T17:00:00.000Z"
+      },
+      "tools": []
+    },
+    "marketer": {
+      "id": "marketer",
+      "name": "Marketer",
+      "emoji": "📣",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"tweet_thread\": [\n    \"1/ Nine agents. One idea. Zero waiting.\",\n    \"2/ Studio runs Strategist + Namer + Analyst in Wave 1 — all parallel.\",\n    \"3/ Wave 2: Designer + Copywriter + Legal build on Wave 1 output.\",\n    \"4/ Wave 3: Developer deploys, Marketer drafts posts, Growth finds prospects.\",\n    \"5/ Built for Google I/O Hackathon. Try it yourself.\"\n  ],\n  \"producthunt\": {\n    \"tagline\": \"Ship a startup in minutes with nine parallel AI specialists\",\n    \"description\": \"Studio is a mission-control dashboard that orchestrates nine AI agents to produce a complete, branded, deployed product from a single line of text.\"\n  },\n  \"hn_show\": \"Show HN: Studio – mission control for nine AI agents that ship your startup\",\n  \"linkedin_post\": \"What if nine specialists could work on your startup simultaneously? Studio does exactly that — nine AI agents, parallel execution, one launch kit.\"\n}",
+      "finalArtifact": {
+        "tweet_thread": [
+          "1/ Nine agents. One idea. Zero waiting.",
+          "2/ Studio runs Strategist + Namer + Analyst in Wave 1 — all parallel.",
+          "3/ Wave 2: Designer + Copywriter + Legal build on Wave 1 output.",
+          "4/ Wave 3: Developer deploys, Marketer drafts posts, Growth finds prospects.",
+          "5/ Built for Google I/O Hackathon. Try it yourself."
+        ],
+        "producthunt": {
+          "tagline": "Ship a startup in minutes with nine parallel AI specialists",
+          "description": "Studio is a mission-control dashboard that orchestrates nine AI agents to produce a complete, branded, deployed product from a single line of text."
+        },
+        "hn_show": "Show HN: Studio – mission control for nine AI agents that ship your startup",
+        "linkedin_post": "What if nine specialists could work on your startup simultaneously? Studio does exactly that — nine AI agents, parallel execution, one launch kit."
+      },
+      "tools": []
+    },
+    "growth": {
+      "id": "growth",
+      "name": "Growth",
+      "emoji": "🌱",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"prospects\": [\n    {\n      \"name\": \"Lin Wei\",\n      \"role\": \"Principal\",\n      \"company\": \"Index Ventures\",\n      \"linkedin\": \"https://linkedin.com/in/linwei-index\",\n      \"why_fit\": \"Backs developer-productivity and AI-first infrastructure companies.\",\n      \"email_draft\": \"Hi Lin, Studio is an AI-native product launcher that ships a complete startup kit in minutes. Given Index's developer-tools thesis, I'd love to show you a live demo.\"\n    },\n    {\n      \"name\": \"Jasmine Osei\",\n      \"role\": \"Director of Growth\",\n      \"company\": \"ProductHunt\",\n      \"linkedin\": \"https://linkedin.com/in/jasmineosei-ph\",\n      \"why_fit\": \"Curates top-of-funnel launches on ProductHunt — Studio's marketer agent produces PH copy automatically.\",\n      \"email_draft\": \"Hi Jasmine, Studio's Marketer agent auto-generates a ProductHunt listing from your idea. Thought you'd appreciate seeing it from the launch side.\"\n    },\n    {\n      \"name\": \"Carlos Ramos\",\n      \"role\": \"Engineer\",\n      \"company\": \"Vercel\",\n      \"linkedin\": \"https://linkedin.com/in/carlosramos-vercel\",\n      \"why_fit\": \"Works on Vercel's deployment tooling — Studio's Developer agent targets Vercel as the deploy target.\",\n      \"email_draft\": \"Hi Carlos, Studio's Developer agent produces and deploys an HTML site via the Vercel API. Would love your engineering perspective on the integration.\"\n    }\n  ]\n}",
+      "finalArtifact": {
+        "prospects": [
+          {
+            "name": "Lin Wei",
+            "role": "Principal",
+            "company": "Index Ventures",
+            "linkedin": "https://linkedin.com/in/linwei-index",
+            "why_fit": "Backs developer-productivity and AI-first infrastructure companies.",
+            "email_draft": "Hi Lin, Studio is an AI-native product launcher that ships a complete startup kit in minutes. Given Index's developer-tools thesis, I'd love to show you a live demo."
+          },
+          {
+            "name": "Jasmine Osei",
+            "role": "Director of Growth",
+            "company": "ProductHunt",
+            "linkedin": "https://linkedin.com/in/jasmineosei-ph",
+            "why_fit": "Curates top-of-funnel launches on ProductHunt — Studio's marketer agent produces PH copy automatically.",
+            "email_draft": "Hi Jasmine, Studio's Marketer agent auto-generates a ProductHunt listing from your idea. Thought you'd appreciate seeing it from the launch side."
+          },
+          {
+            "name": "Carlos Ramos",
+            "role": "Engineer",
+            "company": "Vercel",
+            "linkedin": "https://linkedin.com/in/carlosramos-vercel",
+            "why_fit": "Works on Vercel's deployment tooling — Studio's Developer agent targets Vercel as the deploy target.",
+            "email_draft": "Hi Carlos, Studio's Developer agent produces and deploys an HTML site via the Vercel API. Would love your engineering perspective on the integration."
+          }
+        ]
+      },
+      "tools": []
+    },
+    "legal": {
+      "id": "legal",
+      "name": "Legal",
+      "emoji": "⚖️",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"terms_of_service\": \"# Terms of Service\\n\\n*AI-generated draft — review with qualified counsel before use.*\\n\\n**Effective date:** 2026-05-23\\n\\nThese terms govern your use of Studio and any artifacts it produces. By using Studio you acknowledge that all outputs are AI-generated and may contain errors, omissions, or content unsuitable for your jurisdiction.\\n\\n## Disclaimer of warranties\\nStudio is provided \\\"as is\\\". We make no warranties, express or implied, regarding merchantability, fitness for purpose, or accuracy of generated content.\",\n  \"privacy_policy\": \"# Privacy Policy\\n\\n*AI-generated draft — review with qualified counsel before use.*\\n\\n**Effective date:** 2026-05-23\\n\\nStudio processes your startup idea transiently to generate a launch kit. Your idea is sent to Google's Gemini API under Google's privacy terms. We do not persist, index, or monetise your inputs.\",\n  \"liability_summary\": \"Outputs are provided for demonstration purposes only. No warranty is given. Users assume all risk for commercial, legal, or technical use.\"\n}",
+      "finalArtifact": {
+        "terms_of_service": "# Terms of Service\n\n*AI-generated draft — review with qualified counsel before use.*\n\n**Effective date:** 2026-05-23\n\nThese terms govern your use of Studio and any artifacts it produces. By using Studio you acknowledge that all outputs are AI-generated and may contain errors, omissions, or content unsuitable for your jurisdiction.\n\n## Disclaimer of warranties\nStudio is provided \"as is\". We make no warranties, express or implied, regarding merchantability, fitness for purpose, or accuracy of generated content.",
+        "privacy_policy": "# Privacy Policy\n\n*AI-generated draft — review with qualified counsel before use.*\n\n**Effective date:** 2026-05-23\n\nStudio processes your startup idea transiently to generate a launch kit. Your idea is sent to Google's Gemini API under Google's privacy terms. We do not persist, index, or monetise your inputs.",
+        "liability_summary": "Outputs are provided for demonstration purposes only. No warranty is given. Users assume all risk for commercial, legal, or technical use."
+      },
+      "tools": []
+    },
+    "analyst": {
+      "id": "analyst",
+      "name": "Analyst",
+      "emoji": "📊",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"competitors\": [\n    {\n      \"name\": \"Cursor\",\n      \"url\": \"https://cursor.sh\",\n      \"positioning\": \"AI-first code editor\",\n      \"pricing\": \"$20/mo\",\n      \"strength\": \"Deep coding productivity, large user base\",\n      \"weakness\": \"Requires developer, no brand or legal output\"\n    },\n    {\n      \"name\": \"Webflow + Relume\",\n      \"url\": \"https://relume.io\",\n      \"positioning\": \"No-code + AI site builder\",\n      \"pricing\": \"$49/mo\",\n      \"strength\": \"Professional design output\",\n      \"weakness\": \"Design-only, requires manual copy and strategy\"\n    },\n    {\n      \"name\": \"Framer AI\",\n      \"url\": \"https://framer.com\",\n      \"positioning\": \"AI-generated landing pages\",\n      \"pricing\": \"Free tier + $15/mo\",\n      \"strength\": \"Beautiful animated sites\",\n      \"weakness\": \"No strategy, no competitor analysis, no legal\"\n    }\n  ],\n  \"market_gap\": \"The market has tools for each individual layer (design, code, copy) but nothing that composes them with shared brand context from a single input.\",\n  \"recommendation\": \"Focus on the judge demo: nine streams of live AI work visible simultaneously. That visual is the differentiator — lean into it.\"\n}",
+      "finalArtifact": {
+        "competitors": [
+          {
+            "name": "Cursor",
+            "url": "https://cursor.sh",
+            "positioning": "AI-first code editor",
+            "pricing": "$20/mo",
+            "strength": "Deep coding productivity, large user base",
+            "weakness": "Requires developer, no brand or legal output"
+          },
+          {
+            "name": "Webflow + Relume",
+            "url": "https://relume.io",
+            "positioning": "No-code + AI site builder",
+            "pricing": "$49/mo",
+            "strength": "Professional design output",
+            "weakness": "Design-only, requires manual copy and strategy"
+          },
+          {
+            "name": "Framer AI",
+            "url": "https://framer.com",
+            "positioning": "AI-generated landing pages",
+            "pricing": "Free tier + $15/mo",
+            "strength": "Beautiful animated sites",
+            "weakness": "No strategy, no competitor analysis, no legal"
+          }
+        ],
+        "market_gap": "The market has tools for each individual layer (design, code, copy) but nothing that composes them with shared brand context from a single input.",
+        "recommendation": "Focus on the judge demo: nine streams of live AI work visible simultaneously. That visual is the differentiator — lean into it."
+      },
+      "tools": [
+        "googleSearch"
+      ]
+    },
+    "director": {
+      "id": "director",
+      "name": "Director",
+      "emoji": "🎬",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"one_line_pitch\": \"An AI-powered startup mission control that builds and deploys a complete strategic and marketing launch package in five minutes.\",\n  \"coherence_score\": 85,\n  \"hot_take\": \"Great visual storytelling. The cascade of agent work is highly engaging for pitch decks and live demos. To build a lasting company, transition the product from a one-time generator to an iterative workspace.\",\n  \"unified_narrative\": \"This startup is built around the core realization that early-stage validation is about speed. Studio provides an automated squad of specialists that eliminates the initial operational drag of naming, positioning, and page setup.\\n\\nThe resulting output is high-fidelity and cohesive, allowing non-technical founders to walk into meetings with a live, responsive web presence and a verified strategic roadmap.\",\n  \"next_7_days\": [\n    \"Day 1: Setup Google Workspace on the new domain name.\",\n    \"Day 2: Hook up Stripe Atlas for quick legal incorporation.\",\n    \"Day 3: Refine the landing page hero copy using the copywriter's secondary drafts.\",\n    \"Day 4: Cold outreach to the first 5 prospects on the growth list.\",\n    \"Day 5: Publish the show HN post using the marketer's copy.\",\n    \"Day 6: Set up basic search engine SEO titles and descriptions.\",\n    \"Day 7: Collect user analytics from the landing page traffic.\"\n  ],\n  \"inconsistencies\": [\n    {\n      \"severity\": \"low\",\n      \"issue\": \"Some prospects on the growth list may require manual email verification.\",\n      \"resolution\": \"Run the prospects list through an email validator tool before launching outreach.\"\n    }\n  ],\n  \"confidence_by_agent\": {\n    \"strategist\": 88,\n    \"namer\": 85,\n    \"designer\": 80,\n    \"copywriter\": 90,\n    \"developer\": 80,\n    \"marketer\": 85,\n    \"growth\": 80,\n    \"legal\": 90,\n    \"analyst\": 85\n  }\n}",
+      "finalArtifact": {
+        "one_line_pitch": "An AI-powered startup mission control that builds and deploys a complete strategic and marketing launch package in five minutes.",
+        "coherence_score": 85,
+        "hot_take": "Great visual storytelling. The cascade of agent work is highly engaging for pitch decks and live demos. To build a lasting company, transition the product from a one-time generator to an iterative workspace.",
+        "unified_narrative": "This startup is built around the core realization that early-stage validation is about speed. Studio provides an automated squad of specialists that eliminates the initial operational drag of naming, positioning, and page setup.\n\nThe resulting output is high-fidelity and cohesive, allowing non-technical founders to walk into meetings with a live, responsive web presence and a verified strategic roadmap.",
+        "next_7_days": [
+          "Day 1: Setup Google Workspace on the new domain name.",
+          "Day 2: Hook up Stripe Atlas for quick legal incorporation.",
+          "Day 3: Refine the landing page hero copy using the copywriter's secondary drafts.",
+          "Day 4: Cold outreach to the first 5 prospects on the growth list.",
+          "Day 5: Publish the show HN post using the marketer's copy.",
+          "Day 6: Set up basic search engine SEO titles and descriptions.",
+          "Day 7: Collect user analytics from the landing page traffic."
+        ],
+        "inconsistencies": [
+          {
+            "severity": "low",
+            "issue": "Some prospects on the growth list may require manual email verification.",
+            "resolution": "Run the prospects list through an email validator tool before launching outreach."
+          }
+        ],
+        "confidence_by_agent": {
+          "strategist": 88,
+          "namer": 85,
+          "designer": 80,
+          "copywriter": 90,
+          "developer": 80,
+          "marketer": 85,
+          "growth": 80,
+          "legal": 90,
+          "analyst": 85
+        }
+      },
+      "tools": []
+    }
+  }
+}

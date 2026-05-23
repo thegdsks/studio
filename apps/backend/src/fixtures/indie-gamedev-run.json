@@ -1,0 +1,332 @@
+{
+  "run_id": "fixture-gamedev",
+  "idea": "AI co-pilot for indie game devs",
+  "startedAt": 1779571011763,
+  "finishedAt": 1779571046763,
+  "agents": {
+    "strategist": {
+      "id": "strategist",
+      "name": "Strategist",
+      "emoji": "🎯",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"positioning\": \"A parallel-agent studio that turns a one-line idea into a fully deployed product in under five minutes.\",\n  \"icp\": \"Solo technical founders and hackathon teams who need a credible launch kit before the demo hour.\",\n  \"jtbd\": \"Go from raw idea to live URL, branded assets, and legal docs without context-switching between twenty tools.\",\n  \"three_risks\": [\n    \"Dependency on third-party APIs (Vercel, Domainr) causing pipeline stalls.\",\n    \"High prompt variability leading to mismatched brand identities across agents.\",\n    \"Rate limits scaling rapidly with simultaneous agent invocations.\"\n  ]\n}",
+      "finalArtifact": {
+        "positioning": "A parallel-agent studio that turns a one-line idea into a fully deployed product in under five minutes.",
+        "icp": "Solo technical founders and hackathon teams who need a credible launch kit before the demo hour.",
+        "jtbd": "Go from raw idea to live URL, branded assets, and legal docs without context-switching between twenty tools.",
+        "three_risks": [
+          "Dependency on third-party APIs (Vercel, Domainr) causing pipeline stalls.",
+          "High prompt variability leading to mismatched brand identities across agents.",
+          "Rate limits scaling rapidly with simultaneous agent invocations."
+        ]
+      },
+      "tools": [
+        "googleSearch"
+      ]
+    },
+    "namer": {
+      "id": "namer",
+      "name": "Namer",
+      "emoji": "🪪",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"names\": [\n    {\n      \"name\": \"studioscript\",\n      \"domain\": \"studioscript.com\",\n      \"available\": true\n    },\n    {\n      \"name\": \"launchpadai\",\n      \"domain\": \"launchpadai.net\",\n      \"available\": false,\n      \"alternative_tld\": \"launchpadai.co\"\n    },\n    {\n      \"name\": \"agentstudio\",\n      \"domain\": \"agentstudio.io\",\n      \"available\": true\n    },\n    {\n      \"name\": \"shackio\",\n      \"domain\": \"shackio.com\",\n      \"available\": false,\n      \"alternative_tld\": \"shackio.net\"\n    },\n    {\n      \"name\": \"geminilabs\",\n      \"domain\": \"geminilabs.co\",\n      \"available\": true\n    }\n  ]\n}",
+      "finalArtifact": {
+        "names": [
+          {
+            "name": "studioscript",
+            "domain": "studioscript.com",
+            "available": true
+          },
+          {
+            "name": "launchpadai",
+            "domain": "launchpadai.net",
+            "available": false,
+            "alternative_tld": "launchpadai.co"
+          },
+          {
+            "name": "agentstudio",
+            "domain": "agentstudio.io",
+            "available": true
+          },
+          {
+            "name": "shackio",
+            "domain": "shackio.com",
+            "available": false,
+            "alternative_tld": "shackio.net"
+          },
+          {
+            "name": "geminilabs",
+            "domain": "geminilabs.co",
+            "available": true
+          }
+        ]
+      },
+      "tools": []
+    },
+    "designer": {
+      "id": "designer",
+      "name": "Designer",
+      "emoji": "🎨",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"mockupUrl\": \"https://images.unsplash.com/photo-1460925895917-afdab827c52f\",\n  \"exportedCode\": \"<div class=\\\"min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6\\\"><h1 class=\\\"text-5xl font-bold\\\">Studio</h1><p class=\\\"mt-3 text-slate-400\\\">Nine agents, one idea.</p></div>\",\n  \"logoUrl\": \"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe\",\n  \"logoVariants\": [],\n  \"palette\": {\n    \"primary\": \"#6366f1\",\n    \"secondary\": \"#0f172a\",\n    \"accent\": \"#38bdf8\"\n  },\n  \"brandKit\": {\n    \"name\": \"Studio\",\n    \"tagline\": \"Nine agents. One idea. Ship.\",\n    \"primary\": \"#6366f1\",\n    \"secondary\": \"#0f172a\",\n    \"headlineFont\": \"Space Grotesk\",\n    \"bodyFont\": \"Inter\",\n    \"logoSvg\": \"<svg xmlns=\\\"http://www.w3.org/2000/svg\\\" width=\\\"64\\\" height=\\\"64\\\" viewBox=\\\"0 0 64 64\\\" fill=\\\"none\\\"><rect width=\\\"64\\\" height=\\\"64\\\" rx=\\\"14\\\" fill=\\\"#6366f1\\\"/><circle cx=\\\"32\\\" cy=\\\"32\\\" r=\\\"14\\\" stroke=\\\"#ffffff\\\" stroke-width=\\\"3\\\" fill=\\\"none\\\"/><line x1=\\\"32\\\" y1=\\\"10\\\" x2=\\\"32\\\" y2=\\\"54\\\" stroke=\\\"#ffffff\\\" stroke-width=\\\"3\\\"/><line x1=\\\"10\\\" y1=\\\"32\\\" x2=\\\"54\\\" y2=\\\"32\\\" stroke=\\\"#ffffff\\\" stroke-width=\\\"3\\\"/></svg>\"\n  }\n}",
+      "finalArtifact": {
+        "mockupUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
+        "exportedCode": "<div class=\"min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6\"><h1 class=\"text-5xl font-bold\">Studio</h1><p class=\"mt-3 text-slate-400\">Nine agents, one idea.</p></div>",
+        "logoUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
+        "logoVariants": [],
+        "palette": {
+          "primary": "#6366f1",
+          "secondary": "#0f172a",
+          "accent": "#38bdf8"
+        },
+        "brandKit": {
+          "name": "Studio",
+          "tagline": "Nine agents. One idea. Ship.",
+          "primary": "#6366f1",
+          "secondary": "#0f172a",
+          "headlineFont": "Space Grotesk",
+          "bodyFont": "Inter",
+          "logoSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"64\" height=\"64\" viewBox=\"0 0 64 64\" fill=\"none\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#6366f1\"/><circle cx=\"32\" cy=\"32\" r=\"14\" stroke=\"#ffffff\" stroke-width=\"3\" fill=\"none\"/><line x1=\"32\" y1=\"10\" x2=\"32\" y2=\"54\" stroke=\"#ffffff\" stroke-width=\"3\"/><line x1=\"10\" y1=\"32\" x2=\"54\" y2=\"32\" stroke=\"#ffffff\" stroke-width=\"3\"/></svg>"
+        }
+      },
+      "tools": []
+    },
+    "copywriter": {
+      "id": "copywriter",
+      "name": "Copywriter",
+      "emoji": "✍️",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"hero\": {\n    \"headline\": \"Launch Your Startup in Seconds with Studio\",\n    \"sub\": \"9 specialist AI agents working in parallel to build your positioning, branding, landing page, and legal docs instantly.\"\n  },\n  \"features\": [\n    {\n      \"title\": \"Parallel Specialists\",\n      \"body\": \"Copywriters, developers, growth hackers, and designers working simultaneously.\"\n    },\n    {\n      \"title\": \"One-Click Deploy\",\n      \"body\": \"Beautiful, responsive landing pages deployed straight to Vercel instantly.\"\n    },\n    {\n      \"title\": \"Grounded & Verified\",\n      \"body\": \"Domains checked live against registry APIs, legal docs reviewed for completeness.\"\n    }\n  ],\n  \"faq\": [\n    {\n      \"q\": \"How does Studio work?\",\n      \"a\": \"Studio orchestrates 9 specialized agents that take your startup idea and produce a unified launch kit.\"\n    },\n    {\n      \"q\": \"Are the domains checked?\",\n      \"a\": \"Yes, domains are checked live against the Domainr API for availability.\"\n    },\n    {\n      \"q\": \"Can I edit the outputs?\",\n      \"a\": \"All outputs are plain text or HTML — download and edit in any editor.\"\n    },\n    {\n      \"q\": \"Is my idea stored?\",\n      \"a\": \"Ideas are used only to generate your kit and are not persisted beyond the session.\"\n    },\n    {\n      \"q\": \"What agents run in parallel?\",\n      \"a\": \"Strategist, Namer, and Analyst run first; then Designer, Copywriter, and Legal; then Developer, Marketer, and Growth.\"\n    }\n  ],\n  \"cta\": \"Start Launching\"\n}",
+      "finalArtifact": {
+        "hero": {
+          "headline": "Launch Your Startup in Seconds with Studio",
+          "sub": "9 specialist AI agents working in parallel to build your positioning, branding, landing page, and legal docs instantly."
+        },
+        "features": [
+          {
+            "title": "Parallel Specialists",
+            "body": "Copywriters, developers, growth hackers, and designers working simultaneously."
+          },
+          {
+            "title": "One-Click Deploy",
+            "body": "Beautiful, responsive landing pages deployed straight to Vercel instantly."
+          },
+          {
+            "title": "Grounded & Verified",
+            "body": "Domains checked live against registry APIs, legal docs reviewed for completeness."
+          }
+        ],
+        "faq": [
+          {
+            "q": "How does Studio work?",
+            "a": "Studio orchestrates 9 specialized agents that take your startup idea and produce a unified launch kit."
+          },
+          {
+            "q": "Are the domains checked?",
+            "a": "Yes, domains are checked live against the Domainr API for availability."
+          },
+          {
+            "q": "Can I edit the outputs?",
+            "a": "All outputs are plain text or HTML — download and edit in any editor."
+          },
+          {
+            "q": "Is my idea stored?",
+            "a": "Ideas are used only to generate your kit and are not persisted beyond the session."
+          },
+          {
+            "q": "What agents run in parallel?",
+            "a": "Strategist, Namer, and Analyst run first; then Designer, Copywriter, and Legal; then Developer, Marketer, and Growth."
+          }
+        ],
+        "cta": "Start Launching"
+      },
+      "tools": []
+    },
+    "developer": {
+      "id": "developer",
+      "name": "Developer",
+      "emoji": "💻",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"liveUrl\": \"https://studio-demo.example.com\",\n  \"html\": \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n  <meta charset=\\\"UTF-8\\\" />\\n  <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0\\\" />\\n  <title>Studio — Nine agents, one idea.</title>\\n  <style>\\n    * { margin: 0; padding: 0; box-sizing: border-box; }\\n    body { background: #09090b; color: #fafafa; font-family: 'Space Grotesk', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }\\n    h1 { font-size: clamp(2rem, 6vw, 5rem); font-weight: 700; letter-spacing: -0.02em; }\\n    p { margin-top: 1rem; color: #a1a1aa; font-size: 1.125rem; max-width: 40ch; }\\n    a { display: inline-block; margin-top: 2rem; padding: 0.75rem 2rem; background: #6366f1; color: #fff; border-radius: 0.5rem; text-decoration: none; font-weight: 600; transition: opacity 0.15s; }\\n    a:hover { opacity: 0.85; }\\n  </style>\\n</head>\\n<body>\\n  <h1>Studio</h1>\\n  <p>Nine specialist AI agents. One idea. Ship in minutes.</p>\\n  <a href=\\\"#\\\">Get Started</a>\\n</body>\\n</html>\",\n  \"deployedAt\": \"2026-05-23T17:00:00.000Z\"\n}",
+      "finalArtifact": {
+        "liveUrl": "https://studio-demo.example.com",
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Studio — Nine agents, one idea.</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { background: #09090b; color: #fafafa; font-family: 'Space Grotesk', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }\n    h1 { font-size: clamp(2rem, 6vw, 5rem); font-weight: 700; letter-spacing: -0.02em; }\n    p { margin-top: 1rem; color: #a1a1aa; font-size: 1.125rem; max-width: 40ch; }\n    a { display: inline-block; margin-top: 2rem; padding: 0.75rem 2rem; background: #6366f1; color: #fff; border-radius: 0.5rem; text-decoration: none; font-weight: 600; transition: opacity 0.15s; }\n    a:hover { opacity: 0.85; }\n  </style>\n</head>\n<body>\n  <h1>Studio</h1>\n  <p>Nine specialist AI agents. One idea. Ship in minutes.</p>\n  <a href=\"#\">Get Started</a>\n</body>\n</html>",
+        "deployedAt": "2026-05-23T17:00:00.000Z"
+      },
+      "tools": []
+    },
+    "marketer": {
+      "id": "marketer",
+      "name": "Marketer",
+      "emoji": "📣",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"tweet_thread\": [\n    \"1/ Imagine launching your startup in 60 seconds. Introducing Studio.\",\n    \"2/ 9 specialist AI agents working in parallel to scaffold your entire launch kit.\",\n    \"3/ Brand positioning, live domains, marketing copy, and a deployed landing page.\",\n    \"4/ Built at Shack15 for Google I/O Hackathon using Gemini Managed Agents.\",\n    \"5/ Launch your next big thing today.\"\n  ],\n  \"producthunt\": {\n    \"tagline\": \"9 specialist AI agents building your startup launch kit in parallel\",\n    \"description\": \"Input your idea and get a fully deployed landing page, branding, marketing copies, legal documents, and growth prospects in under 5 minutes.\"\n  },\n  \"hn_show\": \"Show HN: Studio – 9 Specialist AI Agents Build & Deploy Your Startup Launch Kit in Parallel\",\n  \"linkedin_post\": \"Hackathons are about speed. Today at Shack15 we built Studio — launching a complete startup kit in under 5 minutes using 9 parallel AI agents powered by Gemini.\"\n}",
+      "finalArtifact": {
+        "tweet_thread": [
+          "1/ Imagine launching your startup in 60 seconds. Introducing Studio.",
+          "2/ 9 specialist AI agents working in parallel to scaffold your entire launch kit.",
+          "3/ Brand positioning, live domains, marketing copy, and a deployed landing page.",
+          "4/ Built at Shack15 for Google I/O Hackathon using Gemini Managed Agents.",
+          "5/ Launch your next big thing today."
+        ],
+        "producthunt": {
+          "tagline": "9 specialist AI agents building your startup launch kit in parallel",
+          "description": "Input your idea and get a fully deployed landing page, branding, marketing copies, legal documents, and growth prospects in under 5 minutes."
+        },
+        "hn_show": "Show HN: Studio – 9 Specialist AI Agents Build & Deploy Your Startup Launch Kit in Parallel",
+        "linkedin_post": "Hackathons are about speed. Today at Shack15 we built Studio — launching a complete startup kit in under 5 minutes using 9 parallel AI agents powered by Gemini."
+      },
+      "tools": []
+    },
+    "growth": {
+      "id": "growth",
+      "name": "Growth",
+      "emoji": "🌱",
+      "status": "done",
+      "startedAt": 1779571016762,
+      "finishedAt": 1779571046762,
+      "streamedText": "{\n  \"prospects\": [\n    {\n      \"name\": \"Sarah Chen\",\n      \"role\": \"Managing Director\",\n      \"company\": \"Apex Ventures\",\n      \"linkedin\": \"https://linkedin.com/in/sarahchen-apex\",\n      \"why_fit\": \"Focuses on early-stage developer tools and AI productivity frameworks.\",\n      \"email_draft\": \"Hi Sarah, I saw your work on AI developer tools at Apex. We built Studio — a parallel-agent launcher that ships a full startup kit in minutes. Would love your take on the demo.\"\n    },\n    {\n      \"name\": \"David Miller\",\n      \"role\": \"VP of Product\",\n      \"company\": \"LaunchStack\",\n      \"linkedin\": \"https://linkedin.com/in/davidmiller-launchstack\",\n      \"why_fit\": \"Leads products that help startups deploy landing pages quickly.\",\n      \"email_draft\": \"Hi David, given LaunchStack's focus on rapid deployment I thought you'd appreciate Studio's nine-agent approach to producing a live site from one idea. Happy to share a demo link.\"\n    },\n    {\n      \"name\": \"Priya Nair\",\n      \"role\": \"Partner\",\n      \"company\": \"Founders Fund\",\n      \"linkedin\": \"https://linkedin.com/in/priyanair-ff\",\n      \"why_fit\": \"Invests in automation tools that reduce time-to-market for technical founders.\",\n      \"email_draft\": \"Hi Priya, following Founders Fund's interest in automation-first tools, I wanted to share Studio — we go from idea to deployed product in under five minutes using Gemini Managed Agents.\"\n    }\n  ]\n}",
+      "finalArtifact": {
+        "prospects": [
+          {
+            "name": "Sarah Chen",
+            "role": "Managing Director",
+            "company": "Apex Ventures",
+            "linkedin": "https://linkedin.com/in/sarahchen-apex",
+            "why_fit": "Focuses on early-stage developer tools and AI productivity frameworks.",
+            "email_draft": "Hi Sarah, I saw your work on AI developer tools at Apex. We built Studio — a parallel-agent launcher that ships a full startup kit in minutes. Would love your take on the demo."
+          },
+          {
+            "name": "David Miller",
+            "role": "VP of Product",
+            "company": "LaunchStack",
+            "linkedin": "https://linkedin.com/in/davidmiller-launchstack",
+            "why_fit": "Leads products that help startups deploy landing pages quickly.",
+            "email_draft": "Hi David, given LaunchStack's focus on rapid deployment I thought you'd appreciate Studio's nine-agent approach to producing a live site from one idea. Happy to share a demo link."
+          },
+          {
+            "name": "Priya Nair",
+            "role": "Partner",
+            "company": "Founders Fund",
+            "linkedin": "https://linkedin.com/in/priyanair-ff",
+            "why_fit": "Invests in automation tools that reduce time-to-market for technical founders.",
+            "email_draft": "Hi Priya, following Founders Fund's interest in automation-first tools, I wanted to share Studio — we go from idea to deployed product in under five minutes using Gemini Managed Agents."
+          }
+        ]
+      },
+      "tools": []
+    },
+    "legal": {
+      "id": "legal",
+      "name": "Legal",
+      "emoji": "⚖️",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"terms_of_service\": \"# Terms of Service\\n\\n*AI-generated draft — review with qualified counsel before use.*\\n\\n**Effective date:** 2026-05-23\\n\\nBy accessing Studio you agree to these terms. We provide AI-generated startup kits on an \\\"as is\\\" basis without warranty of any kind. You accept full responsibility for any use of the generated content.\\n\\n## Permitted use\\nYou may use Studio-generated artifacts for commercial and non-commercial purposes provided you review all outputs for accuracy and compliance before publication.\\n\\n## Limitation of liability\\nTo the maximum extent permitted by law, Studio and its contributors are not liable for any damages arising from your use of generated content.\",\n  \"privacy_policy\": \"# Privacy Policy\\n\\n*AI-generated draft — review with qualified counsel before use.*\\n\\n**Effective date:** 2026-05-23\\n\\nWe collect your startup idea solely to generate your launch kit. We do not store ideas beyond the current session, sell your data, or share it with third parties except the AI APIs used to generate your kit.\",\n  \"liability_summary\": \"All liability for domain conflicts, code vulnerabilities, or legal invalidity lies with the end user. These drafts are not legal advice.\"\n}",
+      "finalArtifact": {
+        "terms_of_service": "# Terms of Service\n\n*AI-generated draft — review with qualified counsel before use.*\n\n**Effective date:** 2026-05-23\n\nBy accessing Studio you agree to these terms. We provide AI-generated startup kits on an \"as is\" basis without warranty of any kind. You accept full responsibility for any use of the generated content.\n\n## Permitted use\nYou may use Studio-generated artifacts for commercial and non-commercial purposes provided you review all outputs for accuracy and compliance before publication.\n\n## Limitation of liability\nTo the maximum extent permitted by law, Studio and its contributors are not liable for any damages arising from your use of generated content.",
+        "privacy_policy": "# Privacy Policy\n\n*AI-generated draft — review with qualified counsel before use.*\n\n**Effective date:** 2026-05-23\n\nWe collect your startup idea solely to generate your launch kit. We do not store ideas beyond the current session, sell your data, or share it with third parties except the AI APIs used to generate your kit.",
+        "liability_summary": "All liability for domain conflicts, code vulnerabilities, or legal invalidity lies with the end user. These drafts are not legal advice."
+      },
+      "tools": []
+    },
+    "analyst": {
+      "id": "analyst",
+      "name": "Analyst",
+      "emoji": "📊",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"competitors\": [\n    {\n      \"name\": \"ShipFast\",\n      \"url\": \"https://shipfa.st\",\n      \"positioning\": \"Next.js boilerplate for solo founders\",\n      \"pricing\": \"$169 one-time\",\n      \"strength\": \"Large community, battle-tested code\",\n      \"weakness\": \"Manual deployment, no AI personalization\"\n    },\n    {\n      \"name\": \"Bolt\",\n      \"url\": \"https://bolt.new\",\n      \"positioning\": \"AI-assisted code generation in the browser\",\n      \"pricing\": \"Free tier + $20/mo pro\",\n      \"strength\": \"Real-time code generation, WebContainer runtime\",\n      \"weakness\": \"Single-agent, no brand or legal output\"\n    },\n    {\n      \"name\": \"v0 by Vercel\",\n      \"url\": \"https://v0.dev\",\n      \"positioning\": \"UI component generation from prompts\",\n      \"pricing\": \"Free tier + credits\",\n      \"strength\": \"High-quality Tailwind UI output\",\n      \"weakness\": \"UI only — no positioning, copy, or deployment\"\n    }\n  ],\n  \"market_gap\": \"No existing tool orchestrates multiple specialists (strategist, designer, copywriter, legal, growth) in a single parallel pipeline.\",\n  \"recommendation\": \"Target non-technical founders who want a complete branded kit, not just code. Emphasise time-to-live-URL as the core metric.\"\n}",
+      "finalArtifact": {
+        "competitors": [
+          {
+            "name": "ShipFast",
+            "url": "https://shipfa.st",
+            "positioning": "Next.js boilerplate for solo founders",
+            "pricing": "$169 one-time",
+            "strength": "Large community, battle-tested code",
+            "weakness": "Manual deployment, no AI personalization"
+          },
+          {
+            "name": "Bolt",
+            "url": "https://bolt.new",
+            "positioning": "AI-assisted code generation in the browser",
+            "pricing": "Free tier + $20/mo pro",
+            "strength": "Real-time code generation, WebContainer runtime",
+            "weakness": "Single-agent, no brand or legal output"
+          },
+          {
+            "name": "v0 by Vercel",
+            "url": "https://v0.dev",
+            "positioning": "UI component generation from prompts",
+            "pricing": "Free tier + credits",
+            "strength": "High-quality Tailwind UI output",
+            "weakness": "UI only — no positioning, copy, or deployment"
+          }
+        ],
+        "market_gap": "No existing tool orchestrates multiple specialists (strategist, designer, copywriter, legal, growth) in a single parallel pipeline.",
+        "recommendation": "Target non-technical founders who want a complete branded kit, not just code. Emphasise time-to-live-URL as the core metric."
+      },
+      "tools": [
+        "googleSearch"
+      ]
+    },
+    "director": {
+      "id": "director",
+      "name": "Director",
+      "emoji": "🎬",
+      "status": "done",
+      "startedAt": 1779571016763,
+      "finishedAt": 1779571046763,
+      "streamedText": "{\n  \"one_line_pitch\": \"Studio is the ultimate launch-acceleration machine, turning raw startup concepts into fully-deployed landing pages, brand kits, and strategic assets in under five minutes.\",\n  \"coherence_score\": 92,\n  \"hot_take\": \"Highly cohesive B2B offering. The visual appeal of parallel agent execution is a massive demo moat, but long-term retention depends on letting users edit the generated code post-deployment rather than treating it as a static snapshot.\",\n  \"unified_narrative\": \"Studio solves the initial 'cold start' problem for new ideas. By running specialist agents in parallel—from strategist and namer to developer and legal—it delivers a unified, professional foundation in minutes rather than weeks.\\n\\nThe generated assets align tightly: the modern brand identity matches the high-converting copy, backed by verified domain availability and concrete legal drafts. This is the future of rapid prototyping.\",\n  \"next_7_days\": [\n    \"Day 1: Deploy the landing page and hook up search analytics.\",\n    \"Day 2: Finalize company formation documents and verify trademark availability.\",\n    \"Day 3: Launch the first outbound email campaign targeting the 10 growth prospects.\",\n    \"Day 4: Set up social channels (X, LinkedIn) with the marketer-generated templates.\",\n    \"Day 5: Interview 3 potential customers to validate the value proposition.\",\n    \"Day 6: Refine the landing page messaging based on customer feedback.\",\n    \"Day 7: Launch on Product Hunt and Hacker News.\"\n  ],\n  \"inconsistencies\": [\n    {\n      \"severity\": \"low\",\n      \"issue\": \"Minor styling variations between the designer's palette and the final developer-injected CSS.\",\n      \"resolution\": \"Inject the designer's exact hex codes directly into the global CSS template variables.\"\n    }\n  ],\n  \"confidence_by_agent\": {\n    \"strategist\": 95,\n    \"namer\": 90,\n    \"designer\": 85,\n    \"copywriter\": 90,\n    \"developer\": 80,\n    \"marketer\": 90,\n    \"growth\": 85,\n    \"legal\": 95,\n    \"analyst\": 90\n  }\n}",
+      "finalArtifact": {
+        "one_line_pitch": "Studio is the ultimate launch-acceleration machine, turning raw startup concepts into fully-deployed landing pages, brand kits, and strategic assets in under five minutes.",
+        "coherence_score": 92,
+        "hot_take": "Highly cohesive B2B offering. The visual appeal of parallel agent execution is a massive demo moat, but long-term retention depends on letting users edit the generated code post-deployment rather than treating it as a static snapshot.",
+        "unified_narrative": "Studio solves the initial 'cold start' problem for new ideas. By running specialist agents in parallel—from strategist and namer to developer and legal—it delivers a unified, professional foundation in minutes rather than weeks.\n\nThe generated assets align tightly: the modern brand identity matches the high-converting copy, backed by verified domain availability and concrete legal drafts. This is the future of rapid prototyping.",
+        "next_7_days": [
+          "Day 1: Deploy the landing page and hook up search analytics.",
+          "Day 2: Finalize company formation documents and verify trademark availability.",
+          "Day 3: Launch the first outbound email campaign targeting the 10 growth prospects.",
+          "Day 4: Set up social channels (X, LinkedIn) with the marketer-generated templates.",
+          "Day 5: Interview 3 potential customers to validate the value proposition.",
+          "Day 6: Refine the landing page messaging based on customer feedback.",
+          "Day 7: Launch on Product Hunt and Hacker News."
+        ],
+        "inconsistencies": [
+          {
+            "severity": "low",
+            "issue": "Minor styling variations between the designer's palette and the final developer-injected CSS.",
+            "resolution": "Inject the designer's exact hex codes directly into the global CSS template variables."
+          }
+        ],
+        "confidence_by_agent": {
+          "strategist": 95,
+          "namer": 90,
+          "designer": 85,
+          "copywriter": 90,
+          "developer": 80,
+          "marketer": 90,
+          "growth": 85,
+          "legal": 95,
+          "analyst": 90
+        }
+      },
+      "tools": []
+    }
+  }
+}

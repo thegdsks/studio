@@ -9,9 +9,38 @@
  */
 
 html {
-  color-scheme: dark;
   background-color: var(--color-bg);
   color: var(--color-text);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.light {
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #F1F5F9;
+  --color-surface-sunken: #F8FAFC;
+  --color-text: #0F172A;
+  --color-text-muted: #475569;
+  --color-text-faint: #94A3B8;
+  --color-text-on-accent: #FFFFFF;
+  --color-border: rgba(15, 23, 42, 0.08);
+  --color-border-strong: rgba(15, 23, 42, 0.14);
+  --color-border-accent: rgba(59, 130, 246, 0.45);
+  --color-accent: #2563EB;
+  --color-accent-soft: rgba(37, 99, 235, 0.12);
+  --color-accent-glow: rgba(37, 99, 235, 0.25);
+  --color-status-queued: #94A3B8;
+  --color-status-running: #2563EB;
+  --color-status-running-soft: rgba(37, 99, 235, 0.12);
+  --color-status-done: #16A34A;
+  --color-status-done-soft: rgba(22, 163, 74, 0.12);
+  --color-status-warn: #D97706;
+  --color-status-error: #DC2626;
+  --color-status-error-soft: rgba(220, 38, 38, 0.12);
+  color-scheme: light;
 }
 
 body {

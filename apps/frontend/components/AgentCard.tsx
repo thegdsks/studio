@@ -66,7 +66,7 @@ function StepTrace({ agentId, status, hasChunks, dependencies }: StepTraceProps)
     }
     return (
       <Mono className="italic text-text-faint">
-        Queued — will be {purpose.toLowerCase()}
+        Queued. Will be {purpose.toLowerCase()}
       </Mono>
     );
   }

@@ -20,18 +20,16 @@ function flatten(obj: object, prefix: string, acc: Record<string, string>): void
  */
 export function cssVars(): Record<string, string> {
   const acc: Record<string, string> = {};
-  const emitGroups: Array<keyof typeof tokensJson> = [
+  const emitGroups: string[] = [
     'color',
     'radius',
     'space',
     'motion',
     'shadow',
-    'blur',
-    'gradient',
     'size',
   ];
   for (const group of emitGroups) {
-    const obj = tokensJson[group];
+    const obj = (tokensJson as any)[group];
     if (obj && typeof obj === 'object') {
       flatten(obj as object, group, acc);
     }

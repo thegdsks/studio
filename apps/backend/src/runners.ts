@@ -8,6 +8,8 @@ export interface RunContext {
   idea: string;
   upstream: Partial<Record<AgentId, unknown>>;
   runId?: string;
+  /** When true, privacy-eligible agents try local Gemma before cloud Gemini. */
+  privacy_mode?: boolean;
 }
 
 export type Emit = (event: AgentEvent) => void;
@@ -57,11 +59,16 @@ function makeFakeRunner(agentId: AgentId): AgentRunner {
 
 const strategistRunner: AgentRunner = async (ctx, emit) => {
   const { runStrategist } = await import('../../../agents/strategist/run.js');
-  const result = await runStrategist(ctx.idea, {
-    onChunk: (text) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text } }),
-    onToolCall: (call) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
-    onToolResult: (res) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
-  });
+  const result = await runStrategist(
+    ctx.idea,
+    {
+      onChunk: (text) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text } }),
+      onToolCall: (call) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
+      onToolResult: (res) => emit({ agent_id: 'strategist', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
+      onLocalRun: () => emit({ agent_id: 'strategist', type: 'meta', payload: { ranLocally: true } }),
+    },
+    { privacy_mode: ctx.privacy_mode },
+  );
   return result;
 };
 
@@ -113,7 +120,14 @@ const legalRunner: AgentRunner = async (ctx, emit) => {
 
   emit({ agent_id: 'legal', type: 'chunk', payload: { text: `Drafting terms for ${brandName}…\n` } });
 
-  const result = await runLegal({ brandName, businessType: 'AI SaaS startup platform' });
+  const result = await runLegal({
+    brandName,
+    businessType: 'AI SaaS startup platform',
+    privacy_mode: ctx.privacy_mode,
+    callbacks: {
+      onLocalRun: () => emit({ agent_id: 'legal', type: 'meta', payload: { ranLocally: true } }),
+    },
+  });
 
   const text = JSON.stringify(result, null, 2);
   await streamAsTokens(text, 'legal', emit);
