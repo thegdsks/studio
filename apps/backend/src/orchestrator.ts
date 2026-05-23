@@ -1,54 +1,28 @@
 import type { AgentId } from '@studio/shared';
 import { getRun, updateAgent, emit, stampRunFinished } from './store.js';
-import { agentRunners } from './runners.js';
+import { agentRunners, MOCK_ONLY } from './runners.js';
 import type { RunContext } from './runners.js';
+import { getMockArtifact } from './mockArtifacts.js';
 
-// Mock data fallback (mirrors runners.ts mockDataMap for error recovery)
-const fallbackArtifacts: Partial<Record<AgentId, unknown>> = {
-  strategist: {
-    positioning: "A workspace for specialist agents working in parallel to launch startups instantly.",
-    icp: "Solo founders, hackathon participants, and early-stage startup teams.",
-    jtbd: "Create a complete startup launch kit in under 5 minutes.",
-  },
-  namer: {
-    names: [
-      { name: "agentstudio", domain: "agentstudio.io", available: true },
-      { name: "studioscript", domain: "studioscript.com", available: true },
-    ],
-  },
-  designer: {
-    mockupUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-    palette: { primary: "#0f172a", secondary: "#6366f1", accent: "#38bdf8" },
-  },
-  copywriter: {
-    hero: { headline: "Launch Your Startup Instantly", sub: "9 agents, one idea." },
-    features: [],
-    faq: [],
-    cta: "Get Started",
-  },
-  developer: {
-    liveUrl: "https://studio-demo-app.vercel.app",
-    html: "<!DOCTYPE html><html><head><title>Studio</title></head><body><h1>Studio</h1></body></html>",
-  },
-  marketer: {
-    tweet_thread: ["1/ Launching with Studio today! 🚀"],
-    producthunt: { tagline: "Launch kit from one idea", description: "9 agents build your startup." },
-    hn_show: "Show HN: Studio – Launch a startup in 5 minutes",
-    linkedin_post: "Launching a startup used to take weeks. Not anymore.",
-  },
-  growth: {
-    prospects: [{ name: "Sarah Chen", role: "MD", company: "Apex Ventures", linkedin: "https://linkedin.com/in/sarahchen" }],
-  },
-  legal: {
-    terms_of_service: "# Terms of Service\n\nAI-generated draft. Review with counsel.",
-    privacy_policy: "# Privacy Policy\n\nAI-generated draft. Review with counsel.",
-    liability_summary: "User assumes all liability for generated content.",
-  },
-  analyst: {
-    competitors: [{ name: "ShipFast", url: "https://shipfa.st", weakness: "No AI personalization" }],
-    market_gap: "Zero-code parallel automation for complete startup kits.",
-  },
-};
+// Demo-pacing: stagger agent starts within a wave so the eye can track each one
+// lighting up instead of seeing three pulse simultaneously. 120ms is enough to
+// read as sequential without slowing the run perceptibly.
+const WAVE_STAGGER_MS = Number(process.env['WAVE_STAGGER_MS'] ?? 120);
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function staggerRun(
+  index: number,
+  runId: string,
+  agentId: AgentId,
+  ctx: RunContext,
+): Promise<unknown> {
+  if (index > 0 && WAVE_STAGGER_MS > 0) await sleep(index * WAVE_STAGGER_MS);
+  return runAgent(runId, agentId, ctx);
+}
+
 
 async function runAgent(
   runId: string,
@@ -56,9 +30,11 @@ async function runAgent(
   ctx: RunContext,
 ): Promise<unknown> {
   const runner = agentRunners[agentId];
+  const mode = MOCK_ONLY ? 'mock' : 'real';
+  const t0 = Date.now();
 
   // Signal running
-  updateAgent(runId, agentId, { status: 'running', startedAt: Date.now() });
+  updateAgent(runId, agentId, { status: 'running', startedAt: t0 });
   emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'running' } });
 
   try {
@@ -83,15 +59,17 @@ async function runAgent(
     emit(runId, { agent_id: agentId, type: 'result', payload: { artifact } });
     emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'done' } });
 
+    // eslint-disable-next-line no-console
+    console.log(`[orch] ${runId.slice(0, 8)} ${agentId.padEnd(11)} done  ${String(Date.now() - t0).padStart(5)}ms (${mode})`);
+
     return artifact;
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error(`[orchestrator] ${agentId} failed:`, err);
 
-    // Emit error, then fall back so demo always shows something
+    // Emit error, then fall back to hash-based mock so demo always shows something
     emit(runId, { agent_id: agentId, type: 'error', payload: { message } });
 
-    const fallback = fallbackArtifacts[agentId] ?? {};
+    const fallback = getMockArtifact(agentId, ctx.idea);
     updateAgent(runId, agentId, {
       status: 'error',
       finishedAt: Date.now(),
@@ -100,6 +78,9 @@ async function runAgent(
     });
     emit(runId, { agent_id: agentId, type: 'result', payload: { artifact: fallback } });
     emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'error' } });
+
+    // eslint-disable-next-line no-console
+    console.log(`[orch] ${runId.slice(0, 8)} ${agentId.padEnd(11)} ERROR ${String(Date.now() - t0).padStart(5)}ms (${mode}) — ${message.slice(0, 80)}`);
 
     return fallback;
   }
@@ -118,9 +99,9 @@ export async function startRun(runId: string): Promise<void> {
 
   // ---- WAVE 1: strategist, namer, analyst (depends only on idea) ----------
   await Promise.allSettled([
-    runAgent(runId, 'strategist', { idea, upstream: {} }),
-    runAgent(runId, 'namer', { idea, upstream: {} }),
-    runAgent(runId, 'analyst', { idea, upstream: {} }),
+    staggerRun(0, runId, 'strategist', { idea, upstream: {} }),
+    staggerRun(1, runId, 'namer',      { idea, upstream: {} }),
+    staggerRun(2, runId, 'analyst',    { idea, upstream: {} }),
   ]);
 
   const strategistArtifact = getArtifact(runId, 'strategist');
@@ -135,9 +116,9 @@ export async function startRun(runId: string): Promise<void> {
 
   // ---- WAVE 2: copywriter, designer, legal (need wave 1) ------------------
   await Promise.allSettled([
-    runAgent(runId, 'copywriter', { idea, upstream: wave1Upstream }),
-    runAgent(runId, 'designer', { idea, upstream: wave1Upstream }),
-    runAgent(runId, 'legal', { idea, upstream: wave1Upstream }),
+    staggerRun(0, runId, 'copywriter', { idea, upstream: wave1Upstream }),
+    staggerRun(1, runId, 'designer',   { idea, upstream: wave1Upstream }),
+    staggerRun(2, runId, 'legal',      { idea, upstream: wave1Upstream }),
   ]);
 
   const copywriterArtifact = getArtifact(runId, 'copywriter');
@@ -153,10 +134,24 @@ export async function startRun(runId: string): Promise<void> {
 
   // ---- WAVE 3: developer, marketer, growth (need waves 1+2) ---------------
   await Promise.allSettled([
-    runAgent(runId, 'developer', { idea, upstream: wave2Upstream }),
-    runAgent(runId, 'marketer', { idea, upstream: wave2Upstream }),
-    runAgent(runId, 'growth', { idea, upstream: wave2Upstream }),
+    staggerRun(0, runId, 'developer', { idea, upstream: wave2Upstream }),
+    staggerRun(1, runId, 'marketer',  { idea, upstream: wave2Upstream }),
+    staggerRun(2, runId, 'growth',    { idea, upstream: wave2Upstream }),
   ]);
+
+  const developerArtifact = getArtifact(runId, 'developer');
+  const marketerArtifact = getArtifact(runId, 'marketer');
+  const growthArtifact = getArtifact(runId, 'growth');
+
+  const wave3Upstream: Partial<Record<AgentId, unknown>> = {
+    ...wave2Upstream,
+    developer: developerArtifact,
+    marketer: marketerArtifact,
+    growth: growthArtifact,
+  };
+
+  // ---- WAVE 4: director (needs all prior waves) ----------------------------
+  await runAgent(runId, 'director', { idea, upstream: wave3Upstream, runId });
 
   // ---- done ----------------------------------------------------------------
   stampRunFinished(runId);

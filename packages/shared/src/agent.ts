@@ -10,7 +10,8 @@ export type AgentId =
   | 'marketer'
   | 'growth'
   | 'legal'
-  | 'analyst';
+  | 'analyst'
+  | 'director';
 
 export type AgentStatus = 'queued' | 'running' | 'done' | 'error';
 
@@ -31,11 +32,12 @@ export const AGENT_REGISTRY: Record<AgentId, AgentMeta> = {
   growth:     { id: 'growth',     name: 'Growth',     emoji: '🌱', description: '10 prospects (public-record only)' },
   legal:      { id: 'legal',      name: 'Legal',      emoji: '⚖️', description: 'Terms + Privacy drafts' },
   analyst:    { id: 'analyst',    name: 'Analyst',    emoji: '📊', description: 'Competitor teardown' },
+  director:   { id: 'director',   name: 'Director',   emoji: '🎬', description: 'Cohesive synthesis & hot take' },
 };
 
 export const AGENT_IDS: AgentId[] = [
   'strategist', 'namer', 'designer', 'copywriter', 'developer',
-  'marketer', 'growth', 'legal', 'analyst',
+  'marketer', 'growth', 'legal', 'analyst', 'director',
 ];
 
 export interface Agent {

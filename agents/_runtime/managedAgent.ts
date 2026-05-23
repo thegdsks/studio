@@ -147,6 +147,39 @@ const mockDataMap: Record<string, any> = {
     ],
     market_gap: "Lack of zero-code parallel automation that produces complete, unified marketing and legal kits in one click.",
     recommendation: "Target non-technical founders who want fully customized, deployed landing pages with real domain availability checks."
+  },
+  director: {
+    one_line_pitch: "Studio is the ultimate launch-acceleration machine, turning raw startup concepts into fully-deployed landing pages, brand kits, and strategic assets in under five minutes.",
+    coherence_score: 92,
+    hot_take: "Highly cohesive B2B offering. The visual appeal of parallel agent execution is a massive demo moat, but long-term retention depends on letting users edit the generated code post-deployment rather than treating it as a static snapshot.",
+    unified_narrative: "Studio solves the initial 'cold start' problem for new ideas. By running specialist agents in parallel—from strategist and namer to developer and legal—it delivers a unified, professional foundation in minutes rather than weeks.\n\nThe generated assets align tightly: the modern brand identity matches the high-converting copy, backed by verified domain availability and concrete legal drafts. This is the future of rapid prototyping.",
+    next_7_days: [
+      "Day 1: Deploy the landing page and hook up search analytics.",
+      "Day 2: Finalize company formation documents and verify trademark availability.",
+      "Day 3: Launch the first outbound email campaign targeting the 10 growth prospects.",
+      "Day 4: Set up social channels (X, LinkedIn) with the marketer-generated templates.",
+      "Day 5: Interview 3 potential customers to validate the value proposition.",
+      "Day 6: Refine the landing page messaging based on customer feedback.",
+      "Day 7: Launch on Product Hunt and Hacker News."
+    ],
+    inconsistencies: [
+      {
+        severity: "low",
+        issue: "Minor styling variations between the designer's palette and the final developer-injected CSS.",
+        resolution: "Inject the designer's exact hex codes directly into the global CSS template variables."
+      }
+    ],
+    confidence_by_agent: {
+      strategist: 95,
+      namer: 90,
+      designer: 85,
+      copywriter: 90,
+      developer: 80,
+      marketer: 90,
+      growth: 85,
+      legal: 95,
+      analyst: 90
+    }
   }
 };
 
@@ -293,7 +326,42 @@ export async function spawnManagedAgent(opts: {
   } catch (err) {
     console.warn(`spawnManagedAgent execution error or timeout for ${opts.agentName}:`, err);
     // Return structured mock fallback
-    const mockStructured = mockDataMap[opts.agentName.toLowerCase()] || {};
+    let mockStructured = mockDataMap[opts.agentName.toLowerCase()] || {};
+    if (opts.agentName.toLowerCase() === 'director' && opts.systemPrompt.toLowerCase().includes('dentist')) {
+      mockStructured = {
+        one_line_pitch: "ReferralDentist is an automated B2B referral management network that simplifies patient transfers and tracking between general practitioners and dental specialists.",
+        coherence_score: 88,
+        hot_take: "General dentists hate sending patients into a black box. Specialists hate missing referral papers. The market opportunity is real, but success hinges entirely on getting low-tech clinics to adopt yet another portal. Focus on making referral submission dead simple, ideally via email-to-dashboard ingestion.",
+        unified_narrative: "ReferralDentist bridges the communication gap in oral healthcare by replacing fax machines and paper slips with a secure HIPAA-compliant portal. When a GP dentist identifies a patient needing specialized care, they can instantly send digital X-rays, clinical notes, and tracking updates. This keeps the patient in the loop and ensures high-confidence transitions.\n\nOur specialists have structured a coherent launch system: the brand focuses on trust and security; the copywriter highlights time-savings for office admins; the legal framework covers critical HIPAA patient-privacy requirements; and the marketer addresses local outreach to build the referral network.",
+        next_7_days: [
+          "Day 1: Deploy the landing page with the 'ReferralDentist' brand and primary CTA for general practitioners.",
+          "Day 2: Finalize HIPAA-compliant terms of service drafts and security outlines.",
+          "Day 3: Reach out to 5 local GP dentists to interview them about their current fax referral patterns.",
+          "Day 4: Reach out to 5 local orthodontists/oral surgeons to test their appetite for a receiving portal.",
+          "Day 5: Run a mock referral through the developer-built landing page to check user flow friction.",
+          "Day 6: Set up the growth prospect database with the initial 10 dentist profiles retrieved by the Growth Agent.",
+          "Day 7: Launch the first marketing campaign targeting dental practice managers via LinkedIn/email."
+        ],
+        inconsistencies: [
+          {
+            severity: "medium",
+            issue: "The namer suggested consumer-facing names like 'DentistSpace' but the copywriter targeted enterprise clinics. The positioning is B2B but some brand names sound B2C.",
+            resolution: "Standardize the brand name to 'ReferralDentist' or 'DentiRefer' to emphasize B2B referral utility."
+          }
+        ],
+        confidence_by_agent: {
+          strategist: 90,
+          namer: 80,
+          designer: 85,
+          copywriter: 90,
+          developer: 80,
+          marketer: 85,
+          growth: 80,
+          legal: 95,
+          analyst: 90
+        }
+      };
+    }
     return {
       output: JSON.stringify(mockStructured, null, 2),
       structured: mockStructured,
