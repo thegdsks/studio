@@ -1,6 +1,7 @@
 'use client';
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { Loader2 } from 'lucide-react';
 import { cn } from './cn.js';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
@@ -11,7 +12,24 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   leadingIcon?: ReactNode;
   trailingIcon?: ReactNode;
+  /**
+   * Show a spinner and disable the button. Replaces `leadingIcon` while active.
+   * @deprecated Prefer `loading` — `isLoading` kept for backward compat.
+   */
   isLoading?: boolean;
+  /** Show a spinner and disable the button. Children text is hidden. */
+  loading?: boolean;
+  /**
+   * Add a soft accent glow to the primary variant.
+   * Uses `shadow-glow-accent-soft` token — no effect on secondary/ghost.
+   */
+  glow?: boolean;
+  /**
+   * Keyboard shortcut chip rendered on the trailing edge (e.g. "⌘↵").
+   * Displayed in mono, tracked +0.4px, at muted opacity.
+   * Automatically hidden when `loading` is true.
+   */
+  kbd?: string;
 }
 
 const variants: Record<ButtonVariant, string> = {
@@ -36,6 +54,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     leadingIcon,
     trailingIcon,
     isLoading,
+    loading,
+    glow,
+    kbd,
     className,
     children,
     disabled,
@@ -43,27 +64,43 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   },
   ref,
 ) {
+  const isSpinning = loading ?? isLoading ?? false;
+
   return (
     <button
       ref={ref}
-      disabled={disabled || isLoading}
+      disabled={disabled || isSpinning}
       className={cn(
         'inline-flex items-center justify-center font-medium',
         'transition-[background-color,box-shadow,border-color,color] duration-state',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         variants[variant],
         sizes[size],
+        glow && variant === 'primary' && 'shadow-glow-accent-soft',
         className,
       )}
       {...rest}
     >
-      {isLoading ? (
-        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      {isSpinning ? (
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
       ) : (
         leadingIcon
       )}
-      <span>{children}</span>
-      {!isLoading && trailingIcon}
+      {!isSpinning && <span>{children}</span>}
+      {!isSpinning && trailingIcon}
+      {!isSpinning && kbd && (
+        <span
+          className={cn(
+            'ml-auto pl-2',
+            'font-mono text-[10.5px] tracking-[0.4px]',
+            'text-text-muted opacity-60',
+            'select-none',
+          )}
+          aria-hidden="true"
+        >
+          {kbd}
+        </span>
+      )}
     </button>
   );
 });

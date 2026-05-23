@@ -18,3 +18,18 @@ export interface CreateRunRequest {
 export interface CreateRunResponse {
   run_id: string;
 }
+
+export interface RunSummary {
+  run_id: string;
+  idea: string;
+  startedAt: number;
+  finishedAt?: number;
+  privacy_mode: boolean;
+  counts: { queued: number; running: number; done: number; error: number };
+  ranLocally: number;
+  total: number;
+}
+
+export interface ListRunsResponse {
+  runs: RunSummary[];
+}

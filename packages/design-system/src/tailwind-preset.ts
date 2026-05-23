@@ -55,22 +55,38 @@ export const studioPreset: Partial<Config> = {
       ),
       boxShadow: asVarMap('shadow', t.shadow),
       transitionTimingFunction: {
-        DEFAULT: 'var(--motion-ease)',
-        ease:    'var(--motion-ease)',
-        'ease-in': 'var(--motion-ease-in)',
-      },
-      transitionDuration: {
-        chunk: 'var(--motion-duration-chunk)',
-        state: 'var(--motion-duration-state)',
+        DEFAULT:    'var(--motion-ease)',
+        ease:       'var(--motion-ease)',
+        'ease-in':  'var(--motion-ease-in)',
+        'ease-card':'var(--motion-ease-out-card)',
       },
       keyframes: {
         'pulse-dot': {
           '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%':      { opacity: '0.55', transform: 'scale(0.85)' },
+          '50%':      { opacity: '0.55', transform: 'scale(1.15)' },
+        },
+        'blink-caret': {
+          '0%, 49%':   { opacity: '1' },
+          '50%, 100%': { opacity: '0' },
+        },
+        'ring-flash': {
+          '0%':   { boxShadow: '0 0 0 1px var(--color-accent)' },
+          '100%': { boxShadow: '0 0 0 1px transparent' },
         },
       },
       animation: {
-        'pulse-dot': 'pulse-dot var(--motion-pulse-duration) var(--motion-ease) infinite',
+        'pulse-dot':   'pulse-dot var(--motion-pulse-duration) ease-in-out infinite',
+        'blink-caret': 'blink-caret 1.06s steps(1) infinite',
+        'ring-flash':  'ring-flash var(--motion-duration-ring) ease-out forwards',
+      },
+      transitionDuration: {
+        chunk:  'var(--motion-duration-chunk)',
+        state:  'var(--motion-duration-state)',
+        fast:   'var(--motion-duration-fast)',
+        base:   'var(--motion-duration-base)',
+        panel:  'var(--motion-duration-panel)',
+        hover:  'var(--motion-duration-hover)',
+        ring:   'var(--motion-duration-ring)',
       },
     },
   },

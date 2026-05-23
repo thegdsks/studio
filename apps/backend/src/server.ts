@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { createRun, getRun, findCachedRun } from './store.js';
+import { createRun, getRun, findCachedRun, listRunSummaries, deleteRun } from './store.js';
+import { listMedia, readMediaFile } from './media.js';
 import { sseHandler } from './sse.js';
 import { startRun } from './orchestrator.js';
 import { MOCK_ONLY } from './runners.js';
@@ -49,10 +50,9 @@ app.post('/api/runs', (req, res) => {
     return;
   }
 
-  // Idempotency: same idea within 5min returns the existing run_id (no cost).
-  // Privacy-mode swap creates a fresh run so the local-vs-cloud trace is honest.
-  const cached = findCachedRun(idea);
-  if (cached && cached.privacy_mode === privacy_mode) {
+  // Idempotency: same (idea, privacy_mode) within 5min returns the existing run_id (no cost).
+  const cached = findCachedRun(idea, privacy_mode);
+  if (cached) {
     res.status(200).json({ run_id: cached.run_id, cached: true });
     return;
   }
@@ -81,6 +81,11 @@ app.post('/api/runs', (req, res) => {
   res.status(201).json({ run_id: run.run_id });
 });
 
+// List all runs (summaries — no per-agent artifacts). Newest first.
+app.get('/api/runs', (_req, res) => {
+  res.json({ runs: listRunSummaries() });
+});
+
 // SSE stream for a run
 app.get('/api/runs/:id/events', sseHandler);
 
@@ -92,6 +97,38 @@ app.get('/api/runs/:id', (req, res) => {
     return;
   }
   res.json(run);
+});
+
+// Media — list assets for a run
+app.get('/api/media/:runId', (req, res) => {
+  const runId = req.params['runId'] ?? '';
+  const items = listMedia(runId);
+  res.json({ media: items });
+});
+
+// Media — serve a single asset file
+app.get('/api/media/file/:runId/:slug', (req, res) => {
+  const runId = req.params['runId'] ?? '';
+  const slug = req.params['slug'] ?? '';
+  const file = readMediaFile(runId, slug);
+  if (!file) {
+    res.status(404).json({ error: 'Media not found' });
+    return;
+  }
+  res.setHeader('Content-Type', file.mime);
+  res.setHeader('Cache-Control', 'private, max-age=3600');
+  res.send(file.bytes);
+});
+
+// Delete a run (and cascade its agents). Used by dashboard row delete.
+app.delete('/api/runs/:id', (req, res) => {
+  const id = req.params['id'] ?? '';
+  const removed = deleteRun(id);
+  if (!removed) {
+    res.status(404).json({ error: 'Run not found' });
+    return;
+  }
+  res.status(204).end();
 });
 
 // Share card generator (runs/:id/share.png)

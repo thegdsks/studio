@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, Link, Share2, Check } from 'lucide-react';
 import type { Agent, AgentId } from '@studio/shared';
 import { AGENT_IDS, AGENT_REGISTRY } from '@studio/shared';
 import { Button, Chip, Heading, Label } from '@studio/ui';
 import { BrandPreview } from './BrandPreview';
+import ArtifactRenderer from './artifacts/ArtifactRenderer';
 
 interface FinalKitModalProps {
   run: { agents: Record<AgentId, Agent> };
@@ -190,7 +191,7 @@ function AgentSection({
         </p>
       )}
       {agent.finalArtifact !== undefined ? (
-        renderArtifact(agent.finalArtifact)
+        <ArtifactRenderer agentId={agent.id} artifact={agent.finalArtifact} />
       ) : !errored ? (
         <p className="text-body-sm text-text-faint italic">No artifact produced.</p>
       ) : null}
@@ -198,39 +199,6 @@ function AgentSection({
   );
 }
 
-function renderArtifact(artifact: unknown): ReactNode {
-  if (artifact === null || artifact === undefined) {
-    return <span className="text-text-faint italic">No artifact</span>;
-  }
-  if (typeof artifact === 'string') {
-    return (
-      <div className="space-y-2">
-        {artifact.split(/\n\n+/).map((para, i) => (
-          <p key={i} className="text-body-md text-text whitespace-pre-wrap">
-            {para}
-          </p>
-        ))}
-      </div>
-    );
-  }
-  if (Array.isArray(artifact)) {
-    return (
-      <ul className="space-y-1">
-        {artifact.map((item, i) => (
-          <li key={i} className="text-body-md text-text flex gap-2">
-            <span className="text-text-faint flex-shrink-0">·</span>
-            <span>{typeof item === 'string' ? item : JSON.stringify(item, null, 2)}</span>
-          </li>
-        ))}
-      </ul>
-    );
-  }
-  return (
-    <pre className="font-mono text-mono-sm text-text-muted bg-surface-sunken rounded-md p-3 overflow-auto whitespace-pre-wrap break-all border border-border">
-      {JSON.stringify(artifact, null, 2)}
-    </pre>
-  );
-}
 
 function getDeployedUrl(artifact: unknown): string | null {
   if (typeof artifact !== 'object' || artifact === null) return null;
