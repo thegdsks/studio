@@ -21,14 +21,17 @@ function asVarMap<T extends Record<string, unknown>>(group: string, obj: T | und
   return out;
 }
 
-const t = tokensJson;
+/** tokens.gradient is not currently defined; typed as an optional record to avoid `any`. */
+type TokensWithGradient = typeof tokensJson & { gradient?: Record<string, string> };
+
+const t = tokensJson as TokensWithGradient;
 
 export const studioPreset: Partial<Config> = {
   darkMode: 'class',
   theme: {
     extend: {
       colors: asVarMap('color', t.color),
-      backgroundImage: asVarMap('gradient', (t as any).gradient),
+      backgroundImage: asVarMap('gradient', t.gradient ?? null),
       borderRadius: asVarMap('radius', t.radius),
       spacing: asVarMap('space', t.space),
       maxWidth: {
@@ -39,6 +42,8 @@ export const studioPreset: Partial<Config> = {
         'agent-card': 'var(--size-agent-card-h)',
         'row-sm':     'var(--size-row-sm)',
         'row-md':     'var(--size-row-md)',
+        /** Tall button size — 56px hit target for primary CTAs */
+        '14': '3.5rem',
       },
       fontFamily: {
         display: t.font.display.split(',').map((s) => s.trim()),
@@ -54,11 +59,15 @@ export const studioPreset: Partial<Config> = {
         }),
       ),
       boxShadow: asVarMap('shadow', t.shadow),
+      backdropBlur: {
+        /** tokens.blur.glass = 24px — for glass-morphism surfaces */
+        glass: 'var(--blur-glass)',
+      },
       transitionTimingFunction: {
-        DEFAULT:    'var(--motion-ease)',
-        ease:       'var(--motion-ease)',
-        'ease-in':  'var(--motion-ease-in)',
-        'ease-card':'var(--motion-ease-out-card)',
+        DEFAULT:     'var(--motion-ease)',
+        ease:        'var(--motion-ease)',
+        'ease-in':   'var(--motion-ease-in)',
+        'ease-card': 'var(--motion-ease-out-card)',
       },
       keyframes: {
         'pulse-dot': {
@@ -80,6 +89,8 @@ export const studioPreset: Partial<Config> = {
         'ring-flash':  'ring-flash var(--motion-duration-ring) ease-out forwards',
       },
       transitionDuration: {
+        /** 80ms — micro-interactions: border tint, dot opacity, affordance nudge */
+        micro:  'var(--motion-duration-micro)',
         chunk:  'var(--motion-duration-chunk)',
         state:  'var(--motion-duration-state)',
         fast:   'var(--motion-duration-fast)',

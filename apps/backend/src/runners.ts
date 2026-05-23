@@ -10,6 +10,12 @@ export interface RunContext {
   runId?: string;
   /** When true, privacy-eligible agents try local Gemma before cloud Gemini. */
   privacy_mode?: boolean;
+  /**
+   * User feedback supplied via POST /refine. When present the orchestrator
+   * pre-emits a visible chunk so the user sees the iteration is in progress.
+   * The underlying runner call is unchanged — the feedback is advisory.
+   */
+  refine_feedback?: string;
 }
 
 export type Emit = (event: AgentEvent) => void;

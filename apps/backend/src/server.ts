@@ -1,10 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import { createRun, getRun, findCachedRun, listRunSummaries, deleteRun } from './store.js';
+import { createRun, getRun, findCachedRun, listRunSummaries, deleteRun, updateAgent, emit, resetAgentForRerun } from './store.js';
 import { listMedia, readMediaFile } from './media.js';
 import { sseHandler } from './sse.js';
-import { startRun } from './orchestrator.js';
+import { startRun, runAgent } from './orchestrator.js';
 import { MOCK_ONLY } from './runners.js';
+import type { AgentId } from '@studio/shared';
 
 const app = express();
 const PORT = process.env['PORT'] ? Number(process.env['PORT']) : 4000;
@@ -118,6 +119,57 @@ app.get('/api/media/file/:runId/:slug', (req, res) => {
   res.setHeader('Content-Type', file.mime);
   res.setHeader('Cache-Control', 'private, max-age=3600');
   res.send(file.bytes);
+});
+
+// Re-run an individual agent with optional refinement feedback (body-style).
+// Body: { agent_id: AgentId, feedback?: string }
+app.post('/api/runs/:id/refine', (req, res) => {
+  const runId = req.params['id'] ?? '';
+  const body = req.body as { agent_id?: AgentId; feedback?: string };
+  if (!body.agent_id) { res.status(400).json({ error: 'agent_id required' }); return; }
+  const run = getRun(runId);
+  if (!run) { res.status(404).json({ error: 'Run not found' }); return; }
+
+  const agent = run.agents[body.agent_id];
+  if (!agent) { res.status(404).json({ error: 'Agent not found' }); return; }
+  if (agent.status === 'running') { res.status(409).json({ error: 'agent already running' }); return; }
+
+  const upstream: Partial<Record<AgentId, unknown>> = {};
+  for (const [id, a] of Object.entries(run.agents)) {
+    if (id !== body.agent_id && a.finalArtifact !== undefined) {
+      upstream[id as AgentId] = a.finalArtifact;
+    }
+  }
+
+  const newIteration = (agent.iteration ?? 1) + 1;
+  updateAgent(runId, body.agent_id, { iteration: newIteration, refined_with: body.feedback });
+  resetAgentForRerun(runId, body.agent_id);
+  updateAgent(runId, body.agent_id, { status: 'queued' });
+  emit(runId, { agent_id: body.agent_id, type: 'status', payload: { status: 'queued' } });
+
+  void runAgent(runId, body.agent_id, {
+    idea: run.idea,
+    upstream,
+    runId,
+    privacy_mode: run.privacy_mode,
+    refine_feedback: body.feedback,
+  }).catch((err: unknown) => console.error(`[refine] ${runId} ${body.agent_id as string} failed:`, err));
+
+  res.status(202).json({ ok: true, agent_id: body.agent_id, iteration: newIteration });
+});
+
+// Mark an in-flight agent as stopped. Does not cancel mid-flight network
+// requests — records user intent and surfaces a 'stopped' status event so the
+// UI updates immediately. Exposed as "stop and skip ahead" in the workspace.
+app.post('/api/runs/:id/agents/:agentId/stop', (req, res) => {
+  const runId = req.params['id'] ?? '';
+  const agentId = req.params['agentId'] as AgentId;
+  const run = getRun(runId);
+  if (!run) { res.status(404).json({ error: 'Run not found' }); return; }
+  updateAgent(runId, agentId, { status: 'error', error: 'Stopped by user', finishedAt: Date.now() });
+  emit(runId, { agent_id: agentId, type: 'error', payload: { message: 'Stopped by user' } });
+  emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'error' } });
+  res.status(202).json({ ok: true });
 });
 
 // Delete a run (and cascade its agents). Used by dashboard row delete.
@@ -250,6 +302,126 @@ app.get('/api/runs/:id/share.png', (req, res) => {
 
   res.setHeader('Content-Type', 'image/svg+xml');
   res.send(svg);
+});
+
+// Helper: build the RunContext for a re-run from the current run snapshot.
+// All already-completed agents are included as upstream so the runner has
+// the same context as when the pipeline originally ran that wave.
+function buildRerunCtx(runId: string, agentId: AgentId, feedback?: string) {
+  const run = getRun(runId);
+  if (!run) return null;
+  // Collect every peer agent's finalArtifact as upstream context.
+  const upstream: Partial<Record<AgentId, unknown>> = {};
+  for (const [id, agent] of Object.entries(run.agents)) {
+    if (id !== agentId && agent.finalArtifact !== undefined) {
+      upstream[id as AgentId] = agent.finalArtifact;
+    }
+  }
+  return {
+    idea: run.idea,
+    upstream,
+    runId,
+    privacy_mode: run.privacy_mode,
+    refine_feedback: feedback,
+  };
+}
+
+// POST /api/runs/:id/agents/:agentId/refine
+// Re-runs a single agent incorporating explicit user feedback.
+app.post('/api/runs/:id/agents/:agentId/refine', (req, res) => {
+  const runId = req.params['id'] ?? '';
+  const agentId = req.params['agentId'] as AgentId;
+  const body = req.body as { feedback?: string };
+
+  const feedback = typeof body.feedback === 'string' ? body.feedback.trim() : '';
+  if (!feedback) {
+    res.status(400).json({ error: 'feedback is required' });
+    return;
+  }
+  if (feedback.length > 500) {
+    res.status(400).json({ error: 'feedback must be 500 chars or fewer' });
+    return;
+  }
+
+  const run = getRun(runId);
+  if (!run) {
+    res.status(404).json({ error: 'Run not found' });
+    return;
+  }
+  const agent = run.agents[agentId];
+  if (!agent) {
+    res.status(404).json({ error: 'Agent not found' });
+    return;
+  }
+  if (agent.status === 'running') {
+    res.status(409).json({ error: 'agent already running' });
+    return;
+  }
+
+  const newIteration = (agent.iteration ?? 1) + 1;
+
+  // Persist the iteration bump and feedback reference, then reset transient state.
+  updateAgent(runId, agentId, { iteration: newIteration, refined_with: feedback });
+  resetAgentForRerun(runId, agentId);
+  updateAgent(runId, agentId, { status: 'queued' });
+  emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'queued' } });
+
+  const ctx = buildRerunCtx(runId, agentId, feedback);
+  if (!ctx) {
+    res.status(500).json({ error: 'Failed to build run context' });
+    return;
+  }
+
+  // Fire and forget — the orchestrator emits SSE events for progress.
+  runAgent(runId, agentId, ctx).catch((err: unknown) => {
+    console.error(`[server] refine error for ${runId}/${agentId}:`, err);
+  });
+
+  res.status(202).json({ accepted: true, iteration: newIteration });
+});
+
+// POST /api/runs/:id/agents/:agentId/rerun
+// Re-runs a single agent with no user feedback but a prompt nudge to vary output.
+app.post('/api/runs/:id/agents/:agentId/rerun', (req, res) => {
+  const runId = req.params['id'] ?? '';
+  const agentId = req.params['agentId'] as AgentId;
+
+  const run = getRun(runId);
+  if (!run) {
+    res.status(404).json({ error: 'Run not found' });
+    return;
+  }
+  const agent = run.agents[agentId];
+  if (!agent) {
+    res.status(404).json({ error: 'Agent not found' });
+    return;
+  }
+  if (agent.status === 'running') {
+    res.status(409).json({ error: 'agent already running' });
+    return;
+  }
+
+  const newIteration = (agent.iteration ?? 1) + 1;
+
+  updateAgent(runId, agentId, { iteration: newIteration });
+  resetAgentForRerun(runId, agentId);
+  updateAgent(runId, agentId, { status: 'queued' });
+  emit(runId, { agent_id: agentId, type: 'status', payload: { status: 'queued' } });
+
+  // Inject a rerun nudge via refine_feedback so the orchestrator pre-emits
+  // a visible chunk without touching individual runner implementations.
+  const rerunNudge = 'This is a re-run. Vary the angle and pick different concrete examples than before.';
+  const ctx = buildRerunCtx(runId, agentId, rerunNudge);
+  if (!ctx) {
+    res.status(500).json({ error: 'Failed to build run context' });
+    return;
+  }
+
+  runAgent(runId, agentId, ctx).catch((err: unknown) => {
+    console.error(`[server] rerun error for ${runId}/${agentId}:`, err);
+  });
+
+  res.status(202).json({ accepted: true, iteration: newIteration });
 });
 
 app.listen(PORT, () => {

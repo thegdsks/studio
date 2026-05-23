@@ -3,11 +3,19 @@ import {
   type HTMLAttributes,
   type ElementType,
   type ComponentPropsWithRef,
+  type ReactNode,
 } from 'react';
 import { cn } from './cn.js';
 
 export type CardTone = 'resting' | 'active' | 'success' | 'error' | 'idle';
 export type CardGlow = 'soft' | 'subtle' | 'off';
+/**
+ * Surface treatment for elevated cards.
+ * - `'flat'` (default): bg-surface-raised, no shadow.
+ * - `'glass'`: backdrop-blur-glass + bg-surface/60 + shadow-elev-1 + 8% border.
+ * - `'lifted'`: bg-surface-raised + shadow-elev-2 — for primary content cards.
+ */
+export type CardSurface = 'flat' | 'glass' | 'lifted';
 
 interface CardBaseProps {
   tone?: CardTone;
@@ -20,12 +28,22 @@ interface CardBaseProps {
    */
   glow?: boolean | CardGlow;
   /**
+   * Surface treatment. Controls background + shadow depth.
+   * Defaults to `'flat'` for full back-compat.
+   */
+  surface?: CardSurface;
+  /**
+   * Lift on hover: translateY(-1px) + border opacity bump + one shadow step up.
+   * 120ms ease-card. Skips transform under prefers-reduced-motion.
+   */
+  lift?: boolean;
+  /**
    * Border opacity transitions 6%→14% over 80ms linear on hover.
-   * No transform, no shadow, no scale — per research §micro-detail 5.
    */
   hover?: boolean;
   /**
    * Same as hover plus `cursor-pointer` and a 1px ring-flash on click (180ms).
+   * Adds full-card button semantics — pair with `as="button"`.
    */
   interactive?: boolean;
   /**
@@ -38,6 +56,11 @@ interface CardBaseProps {
    * Default: true when both CardHeader and CardBody are present (opt-out with false).
    */
   divided?: boolean;
+  /**
+   * Affordance node rendered bottom-right (e.g. a Lucide arrow icon).
+   * Slides 2px right on hover. Only rendered when `interactive` is true.
+   */
+  affordance?: ReactNode;
 }
 
 type CardProps<E extends ElementType = 'div'> = CardBaseProps &
@@ -56,9 +79,13 @@ const toneClasses: Record<CardTone, string> = {
   error:   'border-y border-r border-border border-l-2 border-l-status-error',
 };
 
-function resolveGlowClass(
-  glow: boolean | CardGlow | undefined,
-): string {
+const surfaceClasses: Record<CardSurface, string> = {
+  flat:   'bg-surface-raised',
+  glass:  'bg-surface/60 backdrop-blur-glass border border-white/[0.08] shadow-elev-1',
+  lifted: 'bg-surface-raised shadow-elev-2',
+};
+
+function resolveGlowClass(glow: boolean | CardGlow | undefined): string {
   if (!glow || glow === 'off') return '';
   if (glow === true || glow === 'subtle') return 'shadow-glow-accent';
   if (glow === 'soft') return 'shadow-glow-accent-soft';
@@ -70,8 +97,11 @@ export const Card = forwardRef<HTMLElement, CardProps>(function Card(
     as: Tag = 'div',
     tone = 'resting',
     glow = 'off',
+    surface = 'flat',
+    lift,
     hover,
     interactive,
+    affordance,
     divided,
     className,
     children,
@@ -79,31 +109,52 @@ export const Card = forwardRef<HTMLElement, CardProps>(function Card(
   },
   ref,
 ) {
+  const isElevatable = lift || interactive;
+
   return (
     <Tag
       ref={ref}
       className={cn(
-        'flex flex-col rounded-lg',
-        'bg-surface-raised',
-        toneClasses[tone],
+        'flex flex-col rounded-lg relative group',
+        surfaceClasses[surface],
+        // Tone adds its own border; glass surface manages border inline
+        surface !== 'glass' && toneClasses[tone],
         resolveGlowClass(glow),
-        // Hover: border opacity 6%→14%, 80ms linear — no transform, no scale
+        // Hover: border opacity bump, 80ms linear
         (hover || interactive) && [
-          'transition-[border-color] duration-hover ease-linear',
+          'transition-[border-color,box-shadow,transform] duration-micro ease-linear',
           'hover:border-border-strong',
+        ],
+        // Lift: -1px translate + shadow step up, 120ms ease-card, reduced-motion safe
+        isElevatable && [
+          'motion-safe:hover:-translate-y-px',
+          surface === 'lifted'
+            ? 'motion-safe:hover:shadow-elev-3'
+            : 'motion-safe:hover:shadow-elev-2',
         ],
         interactive && [
           'cursor-pointer',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-bg',
           'active:animate-ring-flash',
         ],
-        // Idle tone: muted text + dimmer border, no glow
         tone === 'idle' && 'text-text-muted',
         className,
       )}
       {...rest}
     >
       {children}
+      {interactive && affordance && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'absolute bottom-3 right-3 text-text-faint',
+            'transition-transform duration-micro ease-linear',
+            'group-hover:translate-x-0.5',
+          )}
+        >
+          {affordance}
+        </span>
+      )}
     </Tag>
   );
 });

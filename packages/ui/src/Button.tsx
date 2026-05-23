@@ -5,12 +5,24 @@ import { Loader2 } from 'lucide-react';
 import { cn } from './cn.js';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  /**
+   * Lucide icon node rendered before the label.
+   * Replaces `leadingIcon` alias (both work).
+   */
+  iconLeft?: ReactNode;
+  /**
+   * Lucide icon node rendered after the label.
+   * Replaces `trailingIcon` alias (both work).
+   */
+  iconRight?: ReactNode;
+  /** @deprecated Use iconLeft */
   leadingIcon?: ReactNode;
+  /** @deprecated Use iconRight */
   trailingIcon?: ReactNode;
   /**
    * Show a spinner and disable the button. Replaces `leadingIcon` while active.
@@ -26,15 +38,20 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   glow?: boolean;
   /**
    * Keyboard shortcut chip rendered on the trailing edge (e.g. "⌘↵").
-   * Displayed in mono, tracked +0.4px, at muted opacity.
+   * Displayed in mono, tracked, at muted opacity.
    * Automatically hidden when `loading` is true.
    */
   kbd?: string;
 }
 
 const variants: Record<ButtonVariant, string> = {
-  primary:
-    'bg-accent text-text-on-accent hover:shadow-glow-accent focus-visible:shadow-glow-accent',
+  primary: [
+    'bg-accent text-text-on-accent',
+    // Elevation: elev-1 at rest, elev-2 + -1px lift on hover (120ms ease-out-card)
+    'shadow-elev-1',
+    'motion-safe:hover:shadow-elev-2 motion-safe:hover:-translate-y-px',
+    'focus-visible:shadow-glow-accent',
+  ].join(' '),
   secondary:
     'bg-surface-raised text-text border border-border hover:border-border-strong',
   ghost:
@@ -44,13 +61,16 @@ const variants: Record<ButtonVariant, string> = {
 const sizes: Record<ButtonSize, string> = {
   sm: 'h-9 px-3 text-body-sm rounded-md gap-1.5',
   md: 'h-10 px-4 text-title-md rounded-lg gap-2',
-  lg: 'h-12 px-6 text-title-md rounded-lg gap-2',
+  lg: 'h-12 px-5 text-title-md rounded-lg gap-2',
+  xl: 'h-14 px-6 text-body-md rounded-lg gap-2.5',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = 'primary',
     size = 'md',
+    iconLeft,
+    iconRight,
     leadingIcon,
     trailingIcon,
     isLoading,
@@ -65,6 +85,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   ref,
 ) {
   const isSpinning = loading ?? isLoading ?? false;
+  const leading = iconLeft ?? leadingIcon;
+  const trailing = iconRight ?? trailingIcon;
 
   return (
     <button
@@ -72,7 +94,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || isSpinning}
       className={cn(
         'inline-flex items-center justify-center font-medium',
-        'transition-[background-color,box-shadow,border-color,color] duration-state',
+        'transition-[background-color,box-shadow,border-color,color,transform] duration-[120ms] ease-card',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         variants[variant],
         sizes[size],
@@ -84,15 +106,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {isSpinning ? (
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
       ) : (
-        leadingIcon
+        leading
       )}
       {!isSpinning && <span>{children}</span>}
-      {!isSpinning && trailingIcon}
+      {!isSpinning && trailing}
       {!isSpinning && kbd && (
         <span
           className={cn(
             'ml-auto pl-2',
-            'font-mono text-[10.5px] tracking-[0.4px]',
+            'font-mono text-micro',
             'text-text-muted opacity-60',
             'select-none',
           )}

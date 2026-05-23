@@ -53,6 +53,14 @@ export interface Agent {
   error?: string;
   /** True when this agent's run executed locally via Gemma (Ollama) instead of cloud Gemini. */
   ranLocally?: boolean;
+  /** 0-100 quality score assigned by self-critique after the agent finishes. */
+  quality_score?: number;
+  /** One-line biggest specific improvement identified by self-critique. */
+  quality_critique?: string;
+  /** Run iteration: 1 = first run, 2 = first refine, etc. */
+  iteration?: number;
+  /** User feedback that triggered the most recent refine. */
+  refined_with?: string;
 }
 
 // SSE event union. The frontend switches on `type` and routes by `agent_id`.
@@ -62,5 +70,5 @@ export type AgentEvent =
   | { agent_id: AgentId; type: 'chunk';  payload: { text: string } }
   | { agent_id: AgentId; type: 'result'; payload: { artifact: unknown } }
   | { agent_id: AgentId; type: 'error';  payload: { message: string } }
-  | { agent_id: AgentId; type: 'meta';   payload: { ranLocally?: boolean } }
+  | { agent_id: AgentId; type: 'meta';   payload: { ranLocally?: boolean; quality_score?: number; quality_critique?: string } }
   | { agent_id: '__run'; type: 'complete'; payload: { run_id: string } };

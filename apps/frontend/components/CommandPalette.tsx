@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, RefObject } from 'react';
-import { Rocket, Moon, Sun, Eye, EyeOff, Github, BookOpen, LayoutDashboard } from 'lucide-react';
+import { Rocket, Moon, Sun, Eye, EyeOff, Github, BookOpen, LayoutDashboard, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/useTheme';
 

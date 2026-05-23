@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import * as dotenv from 'dotenv';
+import { recordCost, type RunContext } from './costRecorder.js';
 dotenv.config();
 
 const client = new GoogleGenAI({});
@@ -343,6 +344,7 @@ export async function spawnManagedAgent(opts: {
   onToolCall: (call: { name: string; args: any }) => void;
   onToolResult: (result: any) => void;
   timeoutMs?: number;
+  runContext?: RunContext;
 }): Promise<{ output: string; structured?: any; toolCalls: any[] }> {
   // Graceful total timeout fallback
   const timeoutMs = opts.timeoutMs ?? 60000;
@@ -400,7 +402,32 @@ export async function spawnManagedAgent(opts: {
 
       // Query completed interaction state to inspect steps and status
       const interaction = await client.interactions.get(interactionId);
-      
+
+      // Record cost for this interaction turn — wrap in try/catch so billing
+      // never breaks the agent pipeline.
+      if (opts.runContext) {
+        try {
+          const usage = (interaction as any).usage;
+          const inputTokens: number =
+            typeof usage?.prompt_token_count === 'number'
+              ? usage.prompt_token_count
+              : 0;
+          const outputTokens: number =
+            typeof usage?.candidates_token_count === 'number'
+              ? usage.candidates_token_count
+              : 0;
+          void recordCost({
+            runContext: opts.runContext,
+            model: opts.model ?? 'antigravity-preview-05-2026',
+            provider: 'antigravity',
+            inputTokens,
+            outputTokens,
+          });
+        } catch {
+          // ignore — cost recording must never crash the agent
+        }
+      }
+
       if (interaction.status === 'requires_action') {
         const functionCallStep = interaction.steps?.find(
           (step: any) => step.type === 'function_call'
@@ -421,7 +448,7 @@ export async function spawnManagedAgent(opts: {
           try {
             result = await executeTool(call.name, call.args);
           } catch (err: any) {
-            console.error(`Local execution of tool ${call.name} failed:`, err);
+            process.stderr.write(`[managedAgent] local execution of tool ${call.name} failed: ${err instanceof Error ? err.message : String(err)}\n`);
             result = { error: err.message || "Local execution failed" };
           }
 
@@ -474,7 +501,17 @@ export async function spawnManagedAgent(opts: {
   try {
     return await Promise.race([executionPromise(), timeoutPromise]);
   } catch (err) {
-    console.warn(`spawnManagedAgent execution error or timeout for ${opts.agentName}:`, err);
+    process.stderr.write(`[managedAgent] execution error or timeout for ${opts.agentName}: ${err instanceof Error ? err.message : String(err)}\n`);
+    // Record zero-cost mock event for parity
+    if (opts.runContext) {
+      void recordCost({
+        runContext: opts.runContext,
+        model: 'mock',
+        provider: 'mock',
+        inputTokens: 0,
+        outputTokens: 0,
+      });
+    }
     // Return structured mock fallback
     let mockStructured = mockDataMap[opts.agentName.toLowerCase()] || {};
     if (opts.agentName.toLowerCase() === 'director' && opts.systemPrompt.toLowerCase().includes('dentist')) {

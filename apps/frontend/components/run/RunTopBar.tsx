@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import type { AgentStatus } from '@studio/shared';
 import { Chip, Label, cn } from '@studio/ui';
@@ -132,9 +132,17 @@ export function RunTopBar({
         <ElapsedTimer startedAt={startedAt} frozen={finishedAt} />
       </div>
 
-      {/* Right: status pill + dashboard link */}
+      {/* Right: status pill + workspace + dashboard links */}
       <div className="flex items-center gap-3 flex-shrink-0">
         <Chip tone={statusTone[runStatus]}>{runStatus}</Chip>
+        <Link
+          href={`/workspace/${runHash}`}
+          aria-label="Open workspace"
+          className="inline-flex items-center gap-1.5 rounded-sm border border-border bg-surface-raised px-2 py-1 text-text-muted hover:border-border-strong hover:text-text transition-colors"
+        >
+          <MessageSquare className="h-3 w-3" />
+          <Label>Workspace</Label>
+        </Link>
         <Link
           href="/dashboard"
           aria-label="Dashboard"

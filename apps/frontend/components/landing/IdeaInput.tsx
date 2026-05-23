@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useState, type FormEvent, type RefObject } from 'react';
 import { Button } from '@studio/ui';
 import { PrivacyToggle } from '@/components/PrivacyToggle';
 

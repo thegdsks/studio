@@ -21,6 +21,7 @@ import {
   dbUpdateAgent,
   dbStampRunFinished,
   dbListSummaries,
+  dbResetAgentArtifactAndQuality,
 } from './db.js';
 
 const emitters = new Map<string, EventEmitter>();
@@ -105,6 +106,21 @@ export function getBuffer(runId: string): AgentEvent[] {
 
 export function stampRunFinished(runId: string): void {
   dbStampRunFinished(runId, Date.now());
+}
+
+/**
+ * Reset an agent's transient fields in preparation for a re-run or refine.
+ * Does NOT touch status — the caller is responsible for setting that.
+ * We clear streamed text, artifact, error, and quality data so the next
+ * run starts with a blank slate.
+ */
+export function resetAgentForRerun(runId: string, agentId: AgentId): void {
+  // Clear streamed text via the dedicated reset path (empty string sentinel).
+  dbUpdateAgent(runId, agentId, { streamedText: '' });
+  // Null out quality fields by passing score=0 and empty critique explicitly;
+  // the refine endpoint will treat this as "pending critique".
+  // We also clear the artifact by setting it to null via a direct DB call.
+  dbResetAgentArtifactAndQuality(runId, agentId);
 }
 
 export function listRunSummaries(): RunSummary[] {
