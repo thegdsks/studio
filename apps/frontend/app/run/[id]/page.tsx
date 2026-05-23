@@ -10,6 +10,21 @@ import { subscribeRun } from '@/lib/sse-client';
 import AgentCard from '@/components/AgentCard';
 import FinalKitModal from '@/components/FinalKitModal';
 
+// ─── Dependencies Map ──────────────────────────────────────────────────────────
+
+const AGENT_DEPENDENCIES: Record<AgentId, AgentId[]> = {
+  strategist: [],
+  namer: [],
+  analyst: [],
+  legal: ['namer'],
+  copywriter: ['strategist'],
+  designer: ['namer'],
+  developer: ['designer', 'copywriter'],
+  marketer: ['strategist', 'copywriter'],
+  growth: ['strategist'],
+  director: ['strategist', 'namer', 'analyst', 'legal', 'copywriter', 'designer', 'developer', 'marketer', 'growth']
+};
+
 // ─── State ────────────────────────────────────────────────────────────────────
 
 type AgentsState = Record<AgentId, Agent>;
@@ -431,7 +446,18 @@ export default function RunPage({ params }: RunPageProps) {
           {AGENT_IDS.filter((id) => id !== 'director').map((id) => {
             const agent = agents[id];
             if (!agent) return null;
-            return <AgentCard key={id} agent={agent} />;
+
+            const depIds = AGENT_DEPENDENCIES[id] || [];
+            const dependencies = depIds.map((depId) => {
+              const depAgent = agents[depId];
+              return {
+                name: AGENT_REGISTRY[depId].name,
+                emoji: AGENT_REGISTRY[depId].emoji,
+                done: depAgent ? depAgent.status === 'done' || depAgent.status === 'error' : false,
+              };
+            });
+
+            return <AgentCard key={id} agent={agent} dependencies={dependencies} />;
           })}
         </div>
       </main>

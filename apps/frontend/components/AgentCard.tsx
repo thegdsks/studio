@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import type { Agent } from '@studio/shared';
+import type { Agent, AgentId } from '@studio/shared';
 import {
   Card,
   CardHeader,
@@ -17,8 +17,69 @@ import {
   type CardTone,
 } from '@studio/ui';
 
+// ─── Per-agent purpose strings (frontend-only; not in @studio/shared) ─────────
+
+const AGENT_PURPOSE: Record<AgentId, string> = {
+  strategist: 'Drafting positioning',
+  namer:      'Generating names',
+  designer:   'Designing brand visuals',
+  copywriter: 'Writing launch copy',
+  developer:  'Building the site',
+  marketer:   'Crafting launch posts',
+  growth:     'Finding prospects',
+  legal:      'Drafting legal docs',
+  analyst:    'Analysing competitors',
+  director:   'Synthesising the launch story',
+};
+
+// ─── StepTrace ─────────────────────────────────────────────────────────────────
+
+interface StepTraceProps {
+  agentId: AgentId;
+  status: Agent['status'];
+  hasChunks: boolean;
+  dependencies?: { name: string; emoji: string; done: boolean }[];
+}
+
+function StepTrace({ agentId, status, hasChunks, dependencies }: StepTraceProps) {
+  const purpose = AGENT_PURPOSE[agentId];
+
+  if (status === 'queued') {
+    const pendingDeps = dependencies?.filter((d) => !d.done) || [];
+    if (pendingDeps.length > 0) {
+      return (
+        <Mono className="italic text-text-faint flex flex-col gap-1.5">
+          <span className="text-[11px]">Waiting for upstream:</span>
+          <span className="flex flex-wrap gap-1.5 mt-0.5">
+            {pendingDeps.map((dep) => (
+              <span
+                key={dep.name}
+                className="inline-flex items-center gap-1 bg-surface-raised px-2 py-0.5 rounded border border-border/50 text-[10px] not-italic text-text-muted select-none"
+              >
+                <span>{dep.emoji}</span>
+                <span>{dep.name}</span>
+              </span>
+            ))}
+          </span>
+        </Mono>
+      );
+    }
+    return (
+      <Mono className="italic text-text-faint">
+        Queued — will be {purpose.toLowerCase()}
+      </Mono>
+    );
+  }
+
+  const label = hasChunks ? 'Streaming…' : 'Starting…';
+  return <Mono className="italic">{label}</Mono>;
+}
+
+// ─── Card ──────────────────────────────────────────────────────────────────────
+
 interface AgentCardProps {
   agent: Agent;
+  dependencies?: { name: string; emoji: string; done: boolean }[];
 }
 
 const cardToneByStatus: Record<Agent['status'], CardTone> = {
@@ -28,10 +89,12 @@ const cardToneByStatus: Record<Agent['status'], CardTone> = {
   error: 'error',
 };
 
-export default function AgentCard({ agent }: AgentCardProps) {
+export default function AgentCard({ agent, dependencies }: AgentCardProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [flashDone, setFlashDone] = useState(false);
   const prevStatusRef = useRef<Agent['status']>(agent.status);
+  const hasEverStreamedRef = useRef(agent.streamedText.length > 0);
+  if (agent.streamedText.length > 0) hasEverStreamedRef.current = true;
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -75,11 +138,13 @@ export default function AgentCard({ agent }: AgentCardProps) {
       </CardHeader>
 
       <CardBody className="streamfade">
-        {text === '' && agent.status === 'queued' && (
-          <Mono className="italic">Waiting to start…</Mono>
-        )}
-        {text === '' && agent.status === 'running' && (
-          <Mono className="italic">Thinking…</Mono>
+        {text === '' && (agent.status === 'queued' || agent.status === 'running') && (
+          <StepTrace
+            agentId={agent.id}
+            status={agent.status}
+            hasChunks={hasEverStreamedRef.current}
+            dependencies={dependencies}
+          />
         )}
         {text !== '' && (
           <div ref={scrollRef} className="font-mono text-mono-md text-text-muted">

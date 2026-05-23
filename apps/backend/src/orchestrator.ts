@@ -9,6 +9,11 @@ import { getMockArtifact } from './mockArtifacts.js';
 // read as sequential without slowing the run perceptibly.
 const WAVE_STAGGER_MS = Number(process.env['WAVE_STAGGER_MS'] ?? 120);
 
+// Demo-theater: deliberate pause between waves for presentation legibility.
+// Without this, agents in downstream waves might fire too quickly in a blur,
+// making it hard for the audience on stage to trace the wave-by-wave cascade.
+const WAVE_TRANSITION_MS = 400;
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -114,6 +119,9 @@ export async function startRun(runId: string): Promise<void> {
     analyst: analystArtifact,
   };
 
+  // Wait before starting Wave 2
+  await sleep(WAVE_TRANSITION_MS);
+
   // ---- WAVE 2: copywriter, designer, legal (need wave 1) ------------------
   await Promise.allSettled([
     staggerRun(0, runId, 'copywriter', { idea, upstream: wave1Upstream }),
@@ -132,6 +140,9 @@ export async function startRun(runId: string): Promise<void> {
     legal: legalArtifact,
   };
 
+  // Wait before starting Wave 3
+  await sleep(WAVE_TRANSITION_MS);
+
   // ---- WAVE 3: developer, marketer, growth (need waves 1+2) ---------------
   await Promise.allSettled([
     staggerRun(0, runId, 'developer', { idea, upstream: wave2Upstream }),
@@ -149,6 +160,9 @@ export async function startRun(runId: string): Promise<void> {
     marketer: marketerArtifact,
     growth: growthArtifact,
   };
+
+  // Wait before starting Wave 4
+  await sleep(WAVE_TRANSITION_MS);
 
   // ---- WAVE 4: director (needs all prior waves) ----------------------------
   await runAgent(runId, 'director', { idea, upstream: wave3Upstream, runId });
