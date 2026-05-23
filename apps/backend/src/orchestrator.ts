@@ -15,6 +15,12 @@ const WAVE_STAGGER_MS = Number(process.env['WAVE_STAGGER_MS'] ?? 120);
 // making it hard for the audience on stage to trace the wave-by-wave cascade.
 const WAVE_TRANSITION_MS = 400;
 
+// Auto-refine: if a critique score is below this threshold and the agent has
+// not yet been refined, the orchestrator fires one refine pass automatically.
+// Set AUTO_REFINE_DISABLE=1 in env to skip entirely (fast test runs).
+const AUTO_REFINE_THRESHOLD = Number(process.env['AUTO_REFINE_THRESHOLD'] ?? 70);
+const AUTO_REFINE_DISABLED = process.env['AUTO_REFINE_DISABLE'] === '1';
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -83,15 +89,60 @@ export async function runAgent(
     // The UI should show a loading shimmer on the score badge until the meta
     // event arrives. We intentionally don't await this in staggerRun so it
     // doesn't delay downstream waves.
-    critiqueArtifact({ agentId, idea: ctx.idea, artifact }).then(({ score, critique }) => {
+    critiqueArtifact({ agentId, idea: ctx.idea, artifact }).then(async ({ score, critique }) => {
       updateAgent(runId, agentId, { quality_score: score, quality_critique: critique });
       emit(runId, {
         agent_id: agentId,
         type: 'meta',
         payload: { quality_score: score, quality_critique: critique },
       });
+
+      // Auto-refine: one pass if score is below threshold and this is the first run.
+      // ctx.refine_feedback being set means we are already in a refine pass — skip.
+      const isFirstIteration = !ctx.refine_feedback;
+      if (
+        !AUTO_REFINE_DISABLED &&
+        isFirstIteration &&
+        score < AUTO_REFINE_THRESHOLD
+      ) {
+        try {
+          const { refinedScore, refinedCritique } = await runAutoRefine(
+            runId,
+            agentId,
+            ctx,
+            score,
+            critique,
+          );
+          emit(runId, {
+            agent_id: agentId,
+            type: 'meta',
+            payload: {
+              auto_refined: true,
+              original_score: score,
+              quality_score: refinedScore,
+              quality_critique: refinedCritique,
+            },
+          });
+          // eslint-disable-next-line no-console
+          console.log(
+            `[orch] ${runId.slice(0, 8)} ${agentId.padEnd(11)} auto-refined ${score} -> ${refinedScore}`,
+          );
+        } catch (refineErr: unknown) {
+          // Refine failed: log, emit error meta so the frontend knows, but do NOT
+          // change agent status or overwrite the original artifact. Demo-safe.
+          const msg = refineErr instanceof Error ? refineErr.message : 'Unknown refine error';
+          // eslint-disable-next-line no-console
+          console.error(`[orch] auto-refine failed for ${agentId}:`, refineErr);
+          emit(runId, {
+            agent_id: agentId,
+            type: 'meta',
+            payload: { quality_critique: `Auto-refine failed: ${msg}` },
+          });
+        }
+      }
     }).catch((err: unknown) => {
       // Critique failures are non-fatal — log only.
+      // eslint-disable-next-line no-console
       console.error(`[orch] critique failed for ${agentId}:`, err);
     });
 
@@ -125,6 +176,44 @@ export async function runAgent(
 function getArtifact(runId: string, agentId: AgentId): unknown {
   const run = getRun(runId);
   return run?.agents[agentId]?.finalArtifact;
+}
+
+/**
+ * Attempt one automatic refine pass for an agent that scored below threshold.
+ * Resolves with the refined score and critique, or throws on runner error.
+ * Never loops: one pass only, regardless of the refined score.
+ */
+async function runAutoRefine(
+  runId: string,
+  agentId: AgentId,
+  ctx: RunContext,
+  originalScore: number,
+  critiqueFeedback: string,
+): Promise<{ refinedScore: number; refinedCritique: string }> {
+  const refineCtx: RunContext = {
+    ...ctx,
+    refine_feedback: critiqueFeedback,
+  };
+
+  // Re-run the agent with feedback. This resets streamed text, bumps iteration, etc.
+  const artifact = await runAgent(runId, agentId, refineCtx);
+
+  // Re-critique the refined output (one pass, no recursion).
+  const { score: refinedScore, critique: refinedCritique } = await critiqueArtifact({
+    agentId,
+    idea: ctx.idea,
+    artifact,
+  });
+
+  // Persist auto_refined + original_score + new quality fields on the agent record.
+  updateAgent(runId, agentId, {
+    auto_refined: true,
+    original_score: originalScore,
+    quality_score: refinedScore,
+    quality_critique: refinedCritique,
+  });
+
+  return { refinedScore, refinedCritique };
 }
 
 export async function startRun(runId: string): Promise<void> {
@@ -176,7 +265,7 @@ export async function startRun(runId: string): Promise<void> {
 
   // ---- WAVE 3: developer, marketer, growth (need waves 1+2) ---------------
   await Promise.allSettled([
-    staggerRun(0, runId, 'developer', { idea, upstream: wave2Upstream }),
+    staggerRun(0, runId, 'developer', { idea, upstream: wave2Upstream, runId }),
     staggerRun(1, runId, 'marketer',  { idea, upstream: wave2Upstream }),
     staggerRun(2, runId, 'growth',    { idea, upstream: wave2Upstream }),
   ]);
