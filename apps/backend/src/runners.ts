@@ -1,6 +1,8 @@
 import type { AgentId, AgentEvent } from '@studio/shared';
+import type { GrowthOutput, Prospect } from '../../../agents/growth/schema.js';
 import { getMockArtifact } from './mockArtifacts.js';
 import { getRun } from './store.js';
+import { developerRunner } from './developerRunner.js';
 
 // ---- types ----------------------------------------------------------------
 
@@ -289,54 +291,63 @@ const designerRunner: AgentRunner = async (ctx, emit) => {
   return result;
 };
 
-const developerRunner: AgentRunner = async (ctx, emit) => {
-  const { runDeveloper } = await import('../../../agents/developer/run.js');
-  const { deployLandingPage } = await import('./deploy/cloudflare.js');
+// ---- growth fallback -------------------------------------------------------
 
-  const designerOut = ctx.upstream['designer'];
-  const copywriterOut = ctx.upstream['copywriter'];
-  const namerOut = ctx.upstream['namer'] as { names?: Array<{ name: string }> } | undefined;
-  const brandSlug = namerOut?.names?.[0]?.name ?? 'studio';
+/**
+ * Constructs a hand-built but believable 10-prospect list when the Growth
+ * agent LLM call fails entirely. Prospects are tagged `source: 'fallback'`
+ * so downstream consumers know to treat them as starting-point leads, not
+ * verified contacts. Names and companies are derived from the idea and brand
+ * to keep them relevant for the specific demo run.
+ */
+function synthesizeFallbackProspects(
+  idea: string,
+  brandName: string,
+  positioning: string,
+  icp: string,
+): GrowthOutput {
+  const brand = brandName || 'Studio';
+  const domain = idea.slice(0, 60);
 
-  const result = await runDeveloper(designerOut ?? {}, copywriterOut ?? {}, {
-    onChunk: (text) => emit({ agent_id: 'developer', type: 'chunk', payload: { text } }),
-    onToolCall: (call) => emit({ agent_id: 'developer', type: 'chunk', payload: { text: `\n[tool] ${call.name}(…)\n` } }),
-    onToolResult: (res) => emit({ agent_id: 'developer', type: 'chunk', payload: { text: `[result] ${truncate(JSON.stringify(res), 120)}\n` } }),
-    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'developer' } : undefined,
+  const roles: Array<{ name: string; role: string; company: string; seniority: Prospect['seniority']; priority: Prospect['priority'] }> = [
+    { name: 'Alex Rivera', role: 'Chief Product Officer', company: `${brand}scale Ventures`, seniority: 'C-level', priority: 1 },
+    { name: 'Jordan Kim', role: 'VP of Growth', company: 'Momentum Labs', seniority: 'VP', priority: 1 },
+    { name: 'Taylor Chen', role: 'Founder and CEO', company: 'Launchpad AI', seniority: 'C-level', priority: 1 },
+    { name: 'Morgan Lee', role: 'Head of Product', company: 'Forge Digital', seniority: 'Director', priority: 2 },
+    { name: 'Casey Patel', role: 'VP of Marketing', company: 'Openfield Growth', seniority: 'VP', priority: 2 },
+    { name: 'Riley Thompson', role: 'Co-Founder', company: 'Nucleus Studio', seniority: 'C-level', priority: 2 },
+    { name: 'Drew Martinez', role: 'Director of Strategy', company: 'Keystone Ventures', seniority: 'Director', priority: 2 },
+    { name: 'Quinn Nakamura', role: 'Product Manager', company: 'Clearpath Software', seniority: 'Manager', priority: 3 },
+    { name: 'Avery Johnson', role: 'Head of Partnerships', company: 'Bridge Collective', seniority: 'Director', priority: 3 },
+    { name: 'Sam Williams', role: 'GTM Lead', company: 'Traction Systems', seniority: 'IC', priority: 3 },
+  ];
+
+  const prospects: Prospect[] = roles.map((r) => {
+    const slug = r.name.toLowerCase().replace(' ', '-');
+    return {
+      name: r.name,
+      role: r.role,
+      company: r.company,
+      linkedin: `https://linkedin.com/in/${slug}`,
+      why_fit: `${r.name} leads ${r.role.toLowerCase()} at ${r.company}, which operates in the space directly relevant to ${domain}. Their focus on ${positioning.slice(0, 60)} makes them a natural early adopter. ${brand} solves a pain point their team faces daily.`,
+      email_draft: `Subject: Quick question about ${domain.slice(0, 30)}\n\nHi ${r.name.split(' ')[0]},\n\nI noticed your work at ${r.company} and thought ${brand} might be relevant to what your team is building. We help teams with ${positioning.slice(0, 80)}. Would a 20-minute call this week make sense?\n\nBest,\n[Your Name]`,
+      seniority: r.seniority,
+      connection_hook: `Likely active in communities focused on ${icp}. Verify via LinkedIn before outreach.`,
+      priority: r.priority,
+      source: 'fallback',
+    };
   });
 
-  // Deploy the generated landing page (real or stubbed via DEPLOY_ENABLED).
-  emit({ agent_id: 'developer', type: 'chunk', payload: { text: '\nDeploying landing page...\n' } });
+  const outreach_sequence: GrowthOutput['outreach_sequence'] = [
+    { day: 1, channel: 'linkedin', template: `Hi {{name}}, I am building ${brand}, a tool for ${positioning.slice(0, 60)}. Would love to connect and get your perspective.` },
+    { day: 3, channel: 'email', template: `Subject: ${brand} for ${icp.slice(0, 40)}\n\nHi {{name}}, following up on my LinkedIn note. ${brand} helps with ${positioning.slice(0, 80)}. Would a quick call this week work?` },
+    { day: 7, channel: 'email', template: `Hi {{name}}, just checking in. Happy to send a short demo video if that is easier than a call.` },
+    { day: 14, channel: 'linkedin', template: `Hi {{name}}, I reached out a couple of weeks ago about ${brand}. We just hit a new milestone. Still open to a quick chat?` },
+    { day: 21, channel: 'twitter', template: `Hi {{name}}, your recent posts on ${icp.slice(0, 30)} caught my eye. We are building ${brand} for exactly this problem. Would love your take.` },
+  ];
 
-  const { url: deployUrl, deployment_id: deploymentId } = await deployLandingPage({
-    brandSlug,
-    htmlPayload: { html: result.html },
-  });
-
-  // Broadcast deploy fields via meta so the SSE client can update the card
-  // before finalArtifact lands.
-  emit({
-    agent_id: 'developer',
-    type: 'meta',
-    payload: { deploy_url: deployUrl, deployment_id: deploymentId },
-  });
-
-  emit({
-    agent_id: 'developer',
-    type: 'chunk',
-    payload: { text: `\nLive site: ${deployUrl}\n` },
-  });
-
-  // Merge deploy_url into the artifact. The orchestrator persists this via
-  // updateAgent(finalArtifact), so deploy_url is available to late-joining
-  // clients via agent.finalArtifact.liveUrl / agent.finalArtifact.deploy_url.
-  return {
-    ...result,
-    liveUrl: result.liveUrl ?? deployUrl,
-    deploy_url: deployUrl,
-    deployment_id: deploymentId,
-  };
-};
+  return { prospects, outreach_sequence };
+}
 
 const growthRunner: AgentRunner = async (ctx, emit) => {
   const { runGrowth } = await import('../../../agents/growth/run.js');
@@ -345,19 +356,31 @@ const growthRunner: AgentRunner = async (ctx, emit) => {
   const strategistOut = ctx.upstream['strategist'] as Record<string, string> | undefined;
   const basePositioning = strategistOut?.['positioning'] ?? ctx.idea;
   const positioning = basePositioning + refinementSuffix(ctx);
+  const icp = strategistOut?.['icp'] ?? 'founders and product leaders';
 
-  const result = await runGrowth({
-    brandName,
-    positioning,
-    idea: ctx.idea + refinementSuffix(ctx),
-    runContext: ctx.runId ? { runId: ctx.runId, agentId: 'growth' } : undefined,
-    callbacks: {
-      onChunk: (text) => emit({ agent_id: 'growth', type: 'chunk', payload: { text } }),
-      onToolCall: (call) => emit({ agent_id: 'growth', type: 'chunk', payload: { text: `\n🔧 ${call.name}(…)\n` } }),
-      onToolResult: (res) => emit({ agent_id: 'growth', type: 'chunk', payload: { text: `↩️ ${truncate(JSON.stringify(res), 120)}\n` } }),
-    }
-  });
-  return result;
+  try {
+    const result = await runGrowth({
+      brandName,
+      positioning,
+      idea: ctx.idea + refinementSuffix(ctx),
+      runContext: ctx.runId ? { runId: ctx.runId, agentId: 'growth' } : undefined,
+      callbacks: {
+        onChunk: (text) => emit({ agent_id: 'growth', type: 'chunk', payload: { text } }),
+        onToolCall: (call) => emit({ agent_id: 'growth', type: 'chunk', payload: { text: `\n[tool] ${call.name}(…)\n` } }),
+        onToolResult: (res) => emit({ agent_id: 'growth', type: 'chunk', payload: { text: `[result] ${truncate(JSON.stringify(res), 120)}\n` } }),
+      }
+    });
+    return result;
+  } catch (err) {
+    const runId = ctx.runId ?? 'unknown';
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error(`[growth] runner failed runId=${runId} idea="${ctx.idea.slice(0, 80)}" error="${errMsg}"`);
+
+    emit({ agent_id: 'growth', type: 'chunk', payload: { text: '[ generating fallback prospects ]\n' } });
+
+    const fallback = synthesizeFallbackProspects(ctx.idea, brandName, positioning, icp);
+    return fallback;
+  }
 };
 
 const analystRunner: AgentRunner = async (ctx, emit) => {
