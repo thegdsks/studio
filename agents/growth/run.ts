@@ -29,39 +29,10 @@ export async function runGrowth(opts: {
     .replace('{{positioning}}', opts.positioning)
     .replace('{{idea}}', opts.idea);
 
-  // Declare apolloSearch tool for the Managed Agent Sandbox to call
-  const tools = [
-    {
-      functionDeclarations: [
-        {
-          name: "apolloSearch",
-          description: "Search Apollo's database for targeted professional profiles.",
-          parameters: {
-            type: "OBJECT",
-            properties: {
-              titles: {
-                type: "ARRAY",
-                items: { type: "STRING" },
-                description: "List of job titles to search for (e.g. ['CEO', 'Founder', 'VP of Product'])."
-              },
-              keywords: {
-                type: "ARRAY",
-                items: { type: "STRING" },
-                description: "List of industry or company keywords (e.g. ['AI', 'SaaS', 'Marketing'])."
-              }
-            },
-            required: ["titles", "keywords"]
-          }
-        }
-      ]
-    }
-  ];
-
   const result = await spawnManagedAgent({
     agentName: 'growth',
     systemPrompt: systemPrompt,
-    userMessage: `Find growth leads and compile prospects for ${opts.brandName}`,
-    tools: tools,
+    userMessage: `Synthesize 10 realistic growth prospects for ${opts.brandName}`,
     onChunk: opts.callbacks?.onChunk ?? (() => {}),
     onToolCall: opts.callbacks?.onToolCall ?? (() => {}),
     onToolResult: opts.callbacks?.onToolResult ?? (() => {}),

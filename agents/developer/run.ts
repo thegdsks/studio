@@ -27,30 +27,12 @@ export async function runDeveloper(
     .replace('{{designerOutput}}', JSON.stringify(designerOutput, null, 2))
     .replace('{{copywriterOutput}}', JSON.stringify(copywriterOutput, null, 2));
 
-  const tools = [
-    {
-      functionDeclarations: [
-        {
-          name: "deploy",
-          description: "Deploy the compiled HTML landing page to Vercel.",
-          parameters: {
-            type: "OBJECT",
-            properties: {
-              html: { type: "STRING", description: "The complete HTML code of the website to deploy." },
-              projectPath: { type: "STRING", description: "A unique URL path slug based on the brand (e.g. brandname-landing)." }
-            },
-            required: ["html", "projectPath"]
-          }
-        }
-      ]
-    }
-  ];
-
+  // No tools -- the agent returns structured JSON directly.
+  // Deployment is handled by the runner wrapper after this call returns.
   const result = await spawnManagedAgent({
     agentName: 'developer',
     systemPrompt: systemPrompt,
-    userMessage: `Deploy the merged landing page website to Vercel`,
-    tools: tools,
+    userMessage: `Build the complete production-ready HTML landing page. Return only the JSON object described in your instructions.`,
     onChunk: callbacks?.onChunk ?? (() => {}),
     onToolCall: callbacks?.onToolCall ?? (() => {}),
     onToolResult: callbacks?.onToolResult ?? (() => {}),
@@ -66,9 +48,9 @@ export async function runDeveloper(
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]) as DeveloperOutput;
     }
-  } catch (err) {
+  } catch {
     // handled below
   }
 
-  throw new Error(`Failed to parse output from Developer agent: ${result.output}`);
+  throw new Error(`Failed to parse output from Developer agent: ${result.output.slice(0, 200)}`);
 }
