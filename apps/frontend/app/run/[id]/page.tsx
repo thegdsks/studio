@@ -19,7 +19,8 @@ import {
 import { RunTopBarComposed } from '@/components/run/RunTopBarComposed';
 import type { ViewMode } from '@/components/run/RunTopBarComposed';
 import { AgentRail } from '@/components/run/AgentRail';
-import { DirectorPanel } from '@/components/run/DirectorPanel';
+import { DirectorPill } from '@/components/run/DirectorPill';
+import { DirectorModal } from '@/components/run/DirectorModal';
 import { FinalKitPanel } from '@/components/run/FinalKitPanel';
 import { DagCanvas } from '@/components/run/DagCanvas';
 import { RadialCanvas } from '@/components/run/RadialCanvas';
@@ -111,6 +112,8 @@ export default function RunPage({ params }: RunPageProps) {
     runStartedAt,
     runFinishedAt,
   } = useRunState(runId);
+
+  const [directorModalOpen, setDirectorModalOpen] = useState(false);
 
   const prefersReduced = usePrefersReducedMotion();
 
@@ -220,19 +223,6 @@ export default function RunPage({ params }: RunPageProps) {
           </ErrorBoundary>
         </main>
 
-        {/* Right: Director panel */}
-        <aside className="w-80 flex-shrink-0 border-l border-border overflow-y-auto p-4">
-          {agents.director && agents.director.status !== 'queued' ? (
-            <DirectorPanel agent={agents.director} />
-          ) : (
-            <div className="flex flex-col gap-2 py-4">
-              <p className="font-mono text-label-xs tracking-[0.08em] uppercase text-text-faint">
-                Director
-              </p>
-              <p className="text-body-sm text-text-faint italic">Waiting for all agents...</p>
-            </div>
-          )}
-        </aside>
       </div>
 
       {/* Bottom status bar */}
@@ -273,6 +263,19 @@ export default function RunPage({ params }: RunPageProps) {
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
         runId={runId}
+      />
+
+      {/* Director floating pill */}
+      <DirectorPill
+        agent={agents.director}
+        onClick={() => setDirectorModalOpen(true)}
+      />
+
+      {/* Director briefing modal */}
+      <DirectorModal
+        open={directorModalOpen}
+        onClose={() => setDirectorModalOpen(false)}
+        agent={agents.director}
       />
     </div>
   );

@@ -48,14 +48,17 @@ interface Props {
 }
 
 export default function DesignerCard({ shape }: Props): JSX.Element {
-  const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
 
+  const [primaryFailed, setPrimaryFailed] = useState(false);
   const { mockupUrl, palette, brandKit: bk, media } = shape;
-  const imageUrl = media?.composedUrl ?? mockupUrl;
+  const primaryUrl = media?.composedUrl ?? mockupUrl;
+  const fallbackUrl = media?.backdropUrl;
+  const imageUrl = primaryFailed && fallbackUrl ? fallbackUrl : primaryUrl;
   const hasMedia = Boolean(imageUrl);
-  const hasBanana = Boolean(media?.composedUrl);
+  const hasBanana = Boolean(media?.composedUrl) && !primaryFailed;
+  const imgError = primaryFailed && !fallbackUrl;
 
   const fontChip =
     bk?.headlineFont && bk?.bodyFont
@@ -91,7 +94,7 @@ export default function DesignerCard({ shape }: Props): JSX.Element {
               initial="hidden"
               animate={imgLoaded ? 'visible' : 'hidden'}
               onLoad={() => setImgLoaded(true)}
-              onError={() => setImgError(true)}
+              onError={() => setPrimaryFailed(true)}
             />
           </>
         ) : (
