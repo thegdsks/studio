@@ -33,11 +33,14 @@ interface Props {
 }
 
 export default function DesignerDetail({ shape }: Props): JSX.Element {
-  const [imgError, setImgError] = useState(false);
+  const [primaryFailed, setPrimaryFailed] = useState(false);
   const { mockupUrl, palette, brandKit: bk, media } = shape;
-  const imageUrl = media?.composedUrl ?? mockupUrl;
+  const primaryUrl = media?.composedUrl ?? mockupUrl;
+  const fallbackUrl = media?.backdropUrl;
+  const imageUrl = primaryFailed && fallbackUrl ? fallbackUrl : primaryUrl;
   const hasMedia = Boolean(imageUrl);
-  const hasBanana = Boolean(media?.composedUrl);
+  const hasBanana = Boolean(media?.composedUrl) && !primaryFailed;
+  const imgError = primaryFailed && !fallbackUrl;
 
   const swatches: { hex: string; label: string }[] = [];
   if (palette) {
@@ -60,7 +63,7 @@ export default function DesignerDetail({ shape }: Props): JSX.Element {
               alt={bk?.name ? `Brand mockup: ${bk.name}` : 'Designer agent brand mockup'}
               loading="eager"
               className="w-full object-contain max-h-[420px]"
-              onError={() => setImgError(true)}
+              onError={() => setPrimaryFailed(true)}
             />
             {hasBanana && (
               <div className="absolute top-3 right-3">

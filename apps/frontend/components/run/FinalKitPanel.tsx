@@ -56,7 +56,8 @@ export function FinalKitPanel({ run, open, onClose, runId }: FinalKitPanelProps)
 
           <motion.div
             key="final-kit-panel"
-            className="fixed bottom-0 left-0 right-0 z-50 bg-surface-raised border-t border-border-accent rounded-t-xl overflow-hidden backdrop-blur-glass"
+            className="fixed bottom-0 right-0 z-50 bg-surface-raised border-t border-border-accent rounded-t-xl overflow-hidden backdrop-blur-glass"
+            style={{ left: 'var(--sidebar-width, 0px)' }}
             variants={panelVariants}
             initial="hidden"
             animate="visible"
@@ -85,7 +86,7 @@ export function FinalKitPanel({ run, open, onClose, runId }: FinalKitPanelProps)
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: 0.08 }}
-                className="overflow-y-auto px-6 py-6 space-y-10 max-h-[40vh]"
+                className="overflow-y-auto overflow-x-hidden px-6 py-6 space-y-10 max-h-[70vh]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -214,7 +215,7 @@ function AgentSection({
         <p className="text-body-sm text-status-error font-mono">{agent.error}</p>
       )}
       {agent.finalArtifact !== undefined ? (
-        <ArtifactRenderer agentId={agent.id} artifact={agent.finalArtifact} />
+        <ArtifactRenderer agentId={agent.id} artifact={agent.finalArtifact} variant="detail" />
       ) : !errored ? (
         <p className="text-body-sm text-text-faint italic">No artifact produced.</p>
       ) : null}

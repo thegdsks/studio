@@ -104,13 +104,15 @@ export function assertValidBrandKit(kit: unknown): asserts kit is BrandKit {
   if (k.surface !== undefined && (typeof k.surface !== 'string' || !HEX_RE.test(k.surface))) {
     throw new Error(`[BrandKit] invalid surface color: ${String(k.surface)}`);
   }
-  if (typeof k.headlineFont !== 'string' || !isAllowedFont(k.headlineFont)) {
-    throw new Error(
-      `[BrandKit] headlineFont not in allow-list: ${String(k.headlineFont)}`,
-    );
+  if (k.headlineFont === undefined || k.headlineFont === null) {
+    k.headlineFont = 'Space Grotesk';
+  } else if (typeof k.headlineFont !== 'string' || !isAllowedFont(k.headlineFont)) {
+    k.headlineFont = 'Space Grotesk';
   }
-  if (typeof k.bodyFont !== 'string' || !isAllowedFont(k.bodyFont)) {
-    throw new Error(`[BrandKit] bodyFont not in allow-list: ${String(k.bodyFont)}`);
+  if (k.bodyFont === undefined || k.bodyFont === null) {
+    k.bodyFont = 'Inter';
+  } else if (typeof k.bodyFont !== 'string' || !isAllowedFont(k.bodyFont)) {
+    k.bodyFont = 'Inter';
   }
 }
 

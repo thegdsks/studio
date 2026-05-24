@@ -32,6 +32,18 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
+function isLikelyValidProfile(url: string | undefined): boolean {
+  if (!url) return false;
+  if (url.includes('linkedin.com/search/')) return true;
+  if (url.includes('linkedin.com/company/')) return true;
+  return false;
+}
+
+function buildSearchUrl(name: string, company: string): string {
+  const query = encodeURIComponent(`${name} ${company}`.trim());
+  return `https://www.linkedin.com/search/results/people/?keywords=${query}`;
+}
+
 interface Props {
   artifact: unknown;
   variant?: 'card' | 'detail';
@@ -51,7 +63,11 @@ export default function GrowthArtifact({ artifact }: Props): JSX.Element {
       </p>
       <div className="space-y-2">
         {prospects.map((p, i) => {
-          const profileHref = p.profileUrl ?? p.linkedin;
+          const declaredUrl = p.profileUrl ?? p.linkedin;
+          const profileHref = isLikelyValidProfile(declaredUrl)
+            ? declaredUrl
+            : buildSearchUrl(p.name, p.company);
+          const linkLabel = isLikelyValidProfile(declaredUrl) ? 'Profile' : 'Find on LinkedIn';
           return (
             <div
               key={i}
@@ -70,7 +86,7 @@ export default function GrowthArtifact({ artifact }: Props): JSX.Element {
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-body-sm text-accent hover:underline shrink-0"
                     >
-                      Profile
+                      {linkLabel}
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
